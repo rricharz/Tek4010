@@ -9,25 +9,36 @@
 
 #define MEM 128
 
-#define TODO 4          // for speed reasons, draw TODO small vectors until screen updates
+#define TODO 6          // for speed reasons, draw multiple objects until screen updates
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <termios.h>
 #include <sys/ioctl.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #include <errno.h>
 
 #include "main.h"
 #include "tek4010.h"
 
-static int counter = 0;
-static int memx1[MEM], memy1[MEM], memx2[MEM], memy2[MEM];
-static float memv[MEM]; 
+extern void gtk_main_quit();
+extern int globalClearPersistent;
 
-static int count = 0;
+/* not yet used, for dsrk mode
+int memx1[MEM], memy1[MEM], memx2[MEM], memy2[MEM];
+float memv[MEM];
+*/
+
+int count = 0;
 static int mode;
 static int x0,y0,x2,y2;
+
+int leftmargin;
+
+int hDotsPerChar;
+int vDotsPerChar;
 
 FILE *getData;
 int getDataPipe[2];
@@ -84,15 +95,13 @@ int getk()
                 close(getDataPipe[1]); // not used
                 close(putKeysPipe[0]); // not used
                 
-                printf("rsh is running\n");
-                
                 // use termios to turn off line buffering for both pipes
                 struct termios term;
                 tcgetattr(getDataPipe[0], &term);
                 term.c_lflag &= ~ICANON ;
                 tcsetattr(getDataPipe[0], TCSANOW,&term);
                 tcgetattr(putKeysPipe[1], &term);
-                term.c_lflag &= ~ICANON ;
+                // term.c_lflag &= ~ICANON ;
                 tcsetattr(putKeysPipe[0], TCSANOW,&term);
                 
                 // open now a stream from the getDataPipe descriptor
@@ -125,9 +134,9 @@ int getk()
 void tek4010_init()
 // put any code here to initialize the tek4010
 {
-	counter = 0;         // example
-        x0 = 0;
-        y0 = WINDOW_HEIGHT - WINDOW_HEIGHT / 36;
+        hDotsPerChar  = WINDOW_WIDTH / 74;
+        vDotsPerChar  = WINDOW_HEIGHT / 35;
+        globalClearPersistent = 1;
 }
 
 int tek4010_on_timer_event()
@@ -166,11 +175,9 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
         int ch;
         int todo;
         char s[2];
+        int showCursor = 1;
         
-        if (first) { // first surface is only cleared to black once
-                cairo_set_source_rgb(cr, 0, 0, 0);
-                cairo_paint(cr);
-                
+/*        if (first) {
                 for (int i=0; i<MEM; i++) {
                         memx1[i]=2;
                         memy1[i]=i * (WINDOW_HEIGHT/MEM); 
@@ -178,6 +185,14 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                         memy2[i]=i * (WINDOW_HEIGHT/MEM);
                         memv[i]=0;
                 }
+        } */
+        if (globalClearPersistent) {
+                cairo_set_source_rgb(cr, 0, 0, 0);
+                cairo_paint(cr);
+                globalClearPersistent = 0;
+                x0 = 0;
+                y0 = WINDOW_HEIGHT - vDotsPerChar;
+                leftmargin = 0;
         }
         cairo_set_source_rgba(cr2, 0, 0, 0, 0); // second surface is cleared each time
         cairo_set_operator(cr2, CAIRO_OPERATOR_SOURCE);
@@ -191,19 +206,26 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
         cairo_set_source_rgb(cr, 0, 0.8, 0);
         
         cairo_select_font_face(cr, "Monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-        cairo_set_font_size(cr, 16);
+        cairo_set_font_size(cr, 18);
         cairo_select_font_face(cr2, "Monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-        cairo_set_font_size(cr2, 16);
+        cairo_set_font_size(cr2, 18);
         
         todo = TODO;
         
         do {
                 ch = getk();
-                if (ch == 31) {
+                if (ch == 31) {               // exit from graphics mode
                         mode = 0;
                         ch = getk();
                 }
-                if (ch == -1) todo = 0;  // no char available     
+                if (ch == -1) todo--;         // no char available, need to allow for updates
+                
+                if ((mode>=1) && (mode <=9) &&
+                                        ((ch==31) || (ch==13))) {
+                        mode = 0;  // leave graphics mode
+                        showCursor = 0;
+                }
+                
                 switch (mode) {
                         case 1: y0 = 32 * (ch - 32); mode++; break;
                         case 2: y0 = y0 + ch - 96; mode++; break;
@@ -212,13 +234,14 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                         case 5: y2 = 32 * (ch - 32); mode++; break;
                         case 6: y2 = y2 + ch - 96; mode++; break;
                         case 7: x2 =  32 * (ch - 32); mode++; break;
-                        case 8: x2 = x2 + ch - 64; mode++; break;
-                        case 9: cairo_move_to(cr, x0, WINDOW_HEIGHT - y0);
+                        case 8: x2 = x2 + ch - 64;
+                                cairo_move_to(cr, x0, WINDOW_HEIGHT - y0);
                                 cairo_line_to(cr, x2, WINDOW_HEIGHT - y2);
                                 cairo_stroke (cr);                        
                                 cairo_move_to(cr2, x0, WINDOW_HEIGHT - y0);
                                 cairo_line_to(cr2, x2, WINDOW_HEIGHT - y2);
                                 cairo_stroke (cr2);
+                                showCursor = 0;
                                 
                                 // for speed reasons, do not update screen right away
                                 // if many very small verctors are drawn
@@ -228,44 +251,98 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                 if ((y2-y0) > TODO) todo = 0;
                                 if ((y0-y2) > TODO) todo = 0;
                                 
-                                mode = 0;
+                                x0 = x2;        // prepare to additional vectors
+                                y0 = y2;                                
+                                mode = 5;
                                 break;
                         case 10:                        // handle escape modes
                                 switch (ch) {
-                                case 12:cairo_set_source_rgb(cr, 0, 0.0, 0);
-                                        cairo_paint(cr);
-                                        cairo_set_source_rgb(cr, 0, 0.8, 0);
-                                        x0 = 0;
-                                        y0 = WINDOW_HEIGHT - WINDOW_HEIGHT / 36;                                               
+                                    case 12: cairo_set_source_rgb(cr, 0, 0.0, 0); // clear screen
+                                         cairo_paint(cr);
+                                         cairo_set_source_rgb(cr, 0, 0.8, 0);
+                                         x0 = 0;
+                                         y0 = WINDOW_HEIGHT - vDotsPerChar;
+                                         mode = 0;
+                                         break;
+                                    case '[': // a second escape code follows, do not reset mode
+                                         break;
+                                    default: // printf("Escape code %d\n",ch);
+                                         mode = 0;
+                                         break;                                               
                                 }
-                                mode = 0;
                                 break;
-                        default:switch (ch) {
-                                case 0:  return; break;
-                                case EOF: return; break;
-                                case 9:  x0 = x0 + 1 - (x0 % (8 * WINDOW_WIDTH / 74)) + 8* WINDOW_WIDTH / 74 - 1;
-                                         break;
-                                case 10: y0 -= WINDOW_HEIGHT / 36; x0 = 0;
-                                         if (y0 < 10) y0 = WINDOW_HEIGHT - WINDOW_HEIGHT / 36; 
-                                         break;
-                                case 13: mode = 0; todo = 0; x0 = 0; break;
-                                case 27: mode = 10; break; // escape mode
-                                case 29: mode = 1; break;
+                        default:// if (ch != -1) printf("ch code %d\n",ch);
+                                switch (ch) {
+                                case 0:     break;
+                                case EOF:   break;
+                                case 8:     // backspace
+                                            x0 -= hDotsPerChar;
+                                            if (x0<leftmargin) x0 = leftmargin;
+                                            break;
+                                case 9:     // tab
+                                            x0 = x0 - (x0 % (8 * hDotsPerChar)) + 8 * hDotsPerChar;
+                                            break;
+                                case 10:    // new line
+                                            y0 -= vDotsPerChar;
+                                            if (y0 < 4) {
+                                                y0 = WINDOW_HEIGHT - vDotsPerChar;
+                                                if (leftmargin) leftmargin = 0;
+                                                else leftmargin = WINDOW_WIDTH / 2;
+                                            }
+                                            x0 = leftmargin;
+                                            break;
+                                case 11:    // VT, move one line up
+                                            y0 += vDotsPerChar;
+                                            break;
+                                case 13:    // return
+                                            mode = 0; todo = 0; x0 = leftmargin;
+                                            break;
+                                case 27:    // escape
+                                            mode = 10;
+                                            break;
+                                case 29:    // group separator
+                                            mode = 1;
+                                            break;
+                                case 31:    // US, leave graphics mode
+                                            mode = 0;
+                                            break;
                                 default:
-                                        if ((ch >= 32) && (ch <=127)) { // printable character
+                                            if ((ch >= 32) && (ch <=127)) { // printable character
+                                                if (y0 < 8) y0 = 8;
                                                 s[0] = ch;
                                                 s[1] = 0;
-                                                cairo_move_to(cr, x0, WINDOW_HEIGHT - y0);
+                                                cairo_move_to(cr, x0, WINDOW_HEIGHT - y0 + 4);
                                                 cairo_show_text(cr, s);
-                                                cairo_move_to(cr2, x0, WINDOW_HEIGHT - y0);
+                                                cairo_move_to(cr2, x0, WINDOW_HEIGHT - y0 + 4);
                                                 cairo_show_text(cr2, s);
-                                                x0 += WINDOW_WIDTH / 74;
+                                                x0 += hDotsPerChar;
                                                 todo--;
-                                        }
-                                        break;
+                                            }
+                                            break;
                                 }
                                 break;                                
                 }
         }
         while (todo);
+        
+        // display cursor
+        
+        if (showCursor) {
+        
+                cairo_set_source_rgb(cr2, 0, 0.8, 0);
+                cairo_set_line_width (cr, 1);
+                cairo_rectangle(cr2, x0, WINDOW_HEIGHT - y0 - vDotsPerChar + 8,
+                                                hDotsPerChar - 3, vDotsPerChar - 3);
+                cairo_fill(cr2);
+                cairo_stroke (cr2);
+        }
+        
+        // is child process still running?
+        
+        int status;
+        if (waitpid(-1, &status, WNOHANG)) {    // Is child process terminated?
+                tek4010_quit();
+                gtk_main_quit();
+                exit(0);
+        }
 }

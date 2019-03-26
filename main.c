@@ -46,7 +46,8 @@ extern FILE *putKeys;
 
 static cairo_surface_t *global_surface, *global_surface2;
 static int global_firstcall;
-static int global_char;
+
+int globalClearPersistent;
 
 static void do_drawing(cairo_t *, GtkWidget *);
 
@@ -106,26 +107,31 @@ static void do_drawing(cairo_t *cr, GtkWidget *widget)
 
 static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
 {
-    printf("key pressed, state =%04X, keyval=%04X\r\n", event->state, event->keyval);
+        int ch;
+        // printf("key pressed, state =%04X, keyval=%04X\r\n", event->state, event->keyval);
         
-    // control keys
-    if (event->state & GDK_CONTROL_MASK)
-        global_char = event->keyval & 0x1F;
-                
-    // shift special keys
-    else if ((event->state & GDK_SHIFT_MASK) && ((event->keyval &  0xFF00) == 0xFF00)) {
-        global_char = event->keyval & 0xFEFF;
-        printf("Shift key %04x\n",global_char);
-    }
-                
-    // normal keys
-    else {
-        global_char = event->keyval;
-        if (putKeys) {
-                printf("Sending character %c to child process\n", global_char);
-                putc(global_char,putKeys);      // pipe key to child process, if stream open
+        if ((event->keyval == 0xFF50) ||        // "home" key
+                (event->keyval == 0xFF55) ||    // "page up" key
+                (event->keyval == 0xFF56))      // "page down" key        
+        {
+                globalClearPersistent = 1;
+                return;
         }
-    }
+        
+        // control keys
+        else if ((event->keyval >= 0xFF00) && (event->keyval <= 0xFF1F))
+                ch = event->keyval & 0x1F;
+        else if (event->state & GDK_CONTROL_MASK)
+                ch = event->keyval & 0x1F;
+        
+        // normal keys
+        else if ((event->keyval >= 0x0020) && (event->keyval <= 0x007F))
+                ch = event->keyval & 0x7F;
+                
+        else return;
+                
+        if (putKeys)
+                putc(ch,putKeys);      // pipe key to child process, if stream open
 }
 
 int main (int argc, char *argv[])
