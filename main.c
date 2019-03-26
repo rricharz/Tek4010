@@ -140,6 +140,8 @@ int main (int argc, char *argv[])
 	GtkWidget *window;
   
 	gtk_init(&argc, &argv);
+        
+        
 	
 	global_firstcall = TRUE;
 
@@ -170,7 +172,7 @@ int main (int argc, char *argv[])
 		gtk_window_set_icon_from_file(GTK_WINDOW(window), ICON_NAME, NULL);	
 	}
 	
-	tek4010_init();
+	tek4010_init(argc, argv);
 
 	gtk_widget_show_all(window);
 

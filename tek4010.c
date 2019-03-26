@@ -51,78 +51,6 @@ int getk()
 // When called for the first time, a child process for rsh is forked
 // and communication between parent and child are established
 {
-        static int initialized = 0;
-        
-        if (!initialized) {
-                
-                // create pipes for communication between parent and child
-                if (pipe(getDataPipe) == -1) {
-                        printf("Cannot initialize data pipe\n");
-                        exit(1);
-                }
-                
-                if (pipe(putKeysPipe) == -1) {
-                        printf("Cannot initialize key pipe\n");
-                        exit(1);
-                }
-                
-                // now fork a child process
-                pid_t pid = fork();
-                if (pid == -1) {
-                        printf("Cannot fork child process\n");
-                        exit(1);
-                }
-                else if (pid == 0) {  // child process
-                        
-                        // set stdout of child process to getDataPipe
-                        while ((dup2(getDataPipe[1], STDOUT_FILENO) == -1) && (errno == EINTR)) {}
-                        close(getDataPipe[1]); // not used anymore
-                        close(getDataPipe[0]); // not used
-                        
-                        // set stdin of child process to putKeysPipe
-                        while ((dup2(putKeysPipe[0], STDIN_FILENO) == -1) && (errno == EINTR)) {}
-                        close(putKeysPipe[1]); // not used
-                        close(putKeysPipe[0]); // not used anymore
-                        
-                        // run rsh in the child process
-                        execl("/usr/bin/rsh","/home/bin/rsh","-l","rene","pdp11",(char*)NULL);
-                        printf("Child: Cannot execute rsh\n");
-                        exit(1);
-                }
-                
-                // parent process
-                
-                close(getDataPipe[1]); // not used
-                close(putKeysPipe[0]); // not used
-                
-                // use termios to turn off line buffering for both pipes
-                struct termios term;
-                tcgetattr(getDataPipe[0], &term);
-                term.c_lflag &= ~ICANON ;
-                tcsetattr(getDataPipe[0], TCSANOW,&term);
-                tcgetattr(putKeysPipe[1], &term);
-                // term.c_lflag &= ~ICANON ;
-                tcsetattr(putKeysPipe[0], TCSANOW,&term);
-                
-                // open now a stream from the getDataPipe descriptor
-                getData = fdopen(getDataPipe[0],"r");
-                if (getData == 0) {
-                        printf("Parent: Cannot open input stream\n");
-                        exit(1);
-                }
-                setbuf(getData,0);
-                
-                // open now a stream from the putKeysPipe descriptor
-                putKeys = fdopen(putKeysPipe[1],"w");
-                if (putKeys == 0) {
-                        printf("Parent: Cannot open output stream\n");
-                        exit(1);
-                }
-                setbuf(putKeys,0);                
-                
-                initialized = 1;
-        }
-        
         int bytesWaiting;
         ioctl(getDataPipe[0], FIONREAD, &bytesWaiting);
         if (bytesWaiting > 0)
@@ -131,12 +59,86 @@ int getk()
                 return -1;
 }
 
-void tek4010_init()
+void tek4010_init(int argc, char* argv[])
 // put any code here to initialize the tek4010
 {
+        char *argv2[10];
+        if ((argc<2) || (argc>9)) {
+                printf("Error:number of arguments\n");
+                exit(1);
+        }
         hDotsPerChar  = WINDOW_WIDTH / 74;
         vDotsPerChar  = WINDOW_HEIGHT / 35;
         globalClearPersistent = 1;
+                
+        // create pipes for communication between parent and child
+        if (pipe(getDataPipe) == -1) {
+                printf("Cannot initialize data pipe\n");
+                exit(1);
+        }
+                
+        if (pipe(putKeysPipe) == -1) {
+                printf("Cannot initialize key pipe\n");
+                exit(1);
+        }
+                
+        // now fork a child process
+        pid_t pid = fork();
+        if (pid == -1) {
+                printf("Cannot fork child process\n");
+                exit(1);
+        }
+        else if (pid == 0) {  // child process
+                
+                // we need a second string array with an empty string as last item!
+                argv2[0] = argv[1];
+                argv2[argc] = (char*) NULL;
+                for (int i = 1; i < argc; i++)
+                        argv2[i] = argv[i];
+                        
+                // set stdout of child process to getDataPipe
+                while ((dup2(getDataPipe[1], STDOUT_FILENO) == -1) && (errno == EINTR)) {}
+                close(getDataPipe[1]); // not used anymore
+                close(getDataPipe[0]); // not used
+                        
+                // set stdin of child process to putKeysPipe
+                while ((dup2(putKeysPipe[0], STDIN_FILENO) == -1) && (errno == EINTR)) {}
+                close(putKeysPipe[1]); // not used
+                close(putKeysPipe[0]); // not used anymore
+                
+                // run rsh in the child process
+                execv(argv2[0],argv2+1);
+                exit(1);
+        }
+                
+        // parent process
+                
+        close(getDataPipe[1]); // not used
+        close(putKeysPipe[0]); // not used
+                
+        // use termios to turn off line buffering for both pipes
+        struct termios term;
+        tcgetattr(getDataPipe[0], &term);
+        term.c_lflag &= ~ICANON ;
+        tcsetattr(getDataPipe[0], TCSANOW,&term);
+        tcgetattr(putKeysPipe[1], &term);
+        tcsetattr(putKeysPipe[0], TCSANOW,&term);
+                
+        // open now a stream from the getDataPipe descriptor
+        getData = fdopen(getDataPipe[0],"r");
+        if (getData == 0) {
+                printf("Parent: Cannot open input stream\n");
+                exit(1);
+        }
+        setbuf(getData,0);
+                
+        // open now a stream from the putKeysPipe descriptor
+        putKeys = fdopen(putKeysPipe[1],"w");
+        if (putKeys == 0) {
+                printf("Parent: Cannot open output stream\n");
+                exit(1);
+        }
+        setbuf(putKeys,0);                
 }
 
 int tek4010_on_timer_event()
@@ -224,6 +226,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                         ((ch==31) || (ch==13))) {
                         mode = 0;  // leave graphics mode
                         showCursor = 0;
+                        ch = -1;
                 }
                 
                 switch (mode) {
