@@ -19,9 +19,9 @@ of the system, for example
 
 	rsh -l rene pdp11
 
-Only if this works properly, you can use the tek4010 emulator. Call is as follows:
+Only if this works properly, you can use the tek4010 emulator. Call it as follows:
 
-	tek4010 rsh -l user_name system
+	tek4010 /usr/bin/rsh -l user_name system
 
 In principle, other commands such as telnet instead of rsh could also be used, but have not
 yet been tested.
