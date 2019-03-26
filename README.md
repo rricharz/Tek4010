@@ -19,12 +19,11 @@ of the system, for example
 
 	rsh -l rene pdp11
 
-Only if this works properly, you can use the tek4010 emulator. Call it as follows:
+If this works properly, you can use the tek4010 emulator. Call it as follows:
 
 	tek4010 /usr/bin/rsh -l user_name system
 
-In principle, other commands such as telnet instead of rsh could also be used, but have not
-yet been tested.
+At the moment, it only seems to work with rsh.
 
 The following keys are not transmitted to the Unix system, but are executed locally
 in the terminal emulator:
