@@ -32,8 +32,26 @@ float memv[MEM];
 */
 
 int count = 0;
-static int mode;
 static int x0,y0,x2,y2;
+
+// mode handles the current state of the emulator:
+//
+// mode 0       alpha mode
+//
+// mode 1       expecting first byte of dark mode (move to) address
+// mode 2       expecting second byte of dark mode (move to) address
+// mode 3       expecting third byte of dark mode (move to) address
+// mode 4       expecting fourth byte of dark mode (move to) address
+// mode 5       expecting first byte of persistent vector end point address
+// mode 6       expecting second byte of persistent vector end point address
+// mode 7       expecting third byte of persistent vector end point address
+// mode 8       expecting fourth byte of persistent vector end point address
+//
+// mode 30      expecting escape sequence, escape code received
+// mode 31      ; received in ANSI escape sequence, escape sequence continues if next char is digit
+//
+
+static int mode;
 
 int leftmargin;
 
@@ -228,6 +246,10 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                         showCursor = 0;
                         ch = -1;
                 }
+                if (mode == 31) {
+                        // printf("ANSI escape mode 31, ch=%02x\n",ch);
+                        if ((ch>='0') && (ch<='9')) mode = 30;
+                }
                 
                 switch (mode) {
                         case 1: y0 = 32 * (ch - 32); mode++; break;
@@ -258,7 +280,8 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                 y0 = y2;                                
                                 mode = 5;
                                 break;
-                        case 10:                        // handle escape modes
+                        case 30:                        // handle escape sequencies
+                                // printf("Escape mode 30, ch=%02x\n",ch);
                                 switch (ch) {
                                     case 12: cairo_set_source_rgb(cr, 0, 0.0, 0); // clear screen
                                          cairo_paint(cr);
@@ -269,12 +292,31 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                          break;
                                     case '[': // a second escape code follows, do not reset mode
                                          break;
+// start of ignoring ANSI escape sequencies, could be improved (but the Tek4010 couldn't do this either!)
+                                    case '0':
+                                    case '1':
+                                    case '2':
+                                    case '3':
+                                    case '4':
+                                    case '5':
+                                    case '6':
+                                    case '7':
+                                    case '8':
+                                    case '9': break;
+                                    case ';': mode = 31; break;
+                                    case ']': break;
+                                    case 'm': mode = 0; break;
+// end of ignoring ANSI escape sequencies
                                     default: // printf("Escape code %d\n",ch);
                                          mode = 0;
                                          break;                                               
                                 }
                                 break;
-                        default:// if (ch != -1) printf("ch code %d\n",ch);
+                        default: // if (ch != -1) {
+                                 //     printf("ch code %2x",ch);
+                                 //     if ((ch>0x20)&&(ch<=0x7E)) printf("(%c)",ch);
+                                 //     printf("\n");
+                                 // }
                                 switch (ch) {
                                 case 0:     break;
                                 case EOF:   break;
@@ -301,7 +343,8 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                             mode = 0; todo = 0; x0 = leftmargin;
                                             break;
                                 case 27:    // escape
-                                            mode = 10;
+                                            mode = 30;
+                                            // printf("Starting escape mode\n");
                                             break;
                                 case 29:    // group separator
                                             mode = 1;
