@@ -11,7 +11,29 @@ It is currently in alpha-test and updated daily.
 It can be used to log into a historical Unix system such as 2.11 BSD on the PiDP11
 or a real historical system
 
-Install the tek4010 emulator from this repo on a Raspberry Pi. The emulator uses "rsh",
+Install the tek4010 emulator from this repo on a Raspberry Pi. I propose using
+
+	git clone git://github.com/rricharz/Tek4010
+	cd Tek4010
+
+This allows you to get updates later easily as follows:
+
+	cd Tek4010
+	git pull
+
+There is a file "captured_data" in the repo, which you can use to test the tek4010 emulator.
+"captured_data" was produced in 2.11 BSD using my program "dodekagon". Type
+
+	./tek4010 /bin/cat captured_data -noexit
+
+Don't forget the absolute path to "cat" and the LAST argument "-noexit", which tells
+tek4010 to stay alive after cat has finished so that you have a chance to look at the output.
+By the way, the "-noexit" as the LAST argument might also be helpful if you want to
+experiment with other commands. Let me know if you find anything which works and makes sense.
+Because tek4010 pipes from stdout of that program and into stdin of that program, some
+programs will not work.
+
+The emulator uses "rsh",
 because historical Unix systems do not support the secure ssh, and because ssh does not
 allow using a virtual emulator such as tek4010. You need therefore to install rsh
 on the Raspberry Pi running the tek4010 emulator:
@@ -38,7 +60,11 @@ If this works properly, you can use the tek4010 emulator. Call it as follows:
 
 It the current alpha-testing version, there are very few useful hints if this does not work.
 If the terminal window is closed right away, there is a problem with your rsh call or you
-forgot to use the absolute path for rsh.
+forgot to use the absolute path for rsh. If it does not work, you might want to try
+
+	./tek4010 /usr/bin/rsh -l user_name system -noexit
+
+If you are lucky, rsh will produce an output which might tell you something. 
 
 The following keys are not transmitted to the Unix system, but are executed locally
 in the terminal emulator and clear the persistent screen:
@@ -60,14 +86,14 @@ VNC viewer from a laptop!
 
 Expect a bit of slow down from time to time. In my test version the
 PiDP11 software and the tek4010 software are using all 4 cores of the Raspberry Pi 3B+ running
-at 70% CPU usage! It's amazing how powerful the Raspberry Pi 3B+ is!
+at 60% CPU usage! It's amazing how powerful the Raspberry Pi 3B+ is!
 
 You cannot use the tek4010 emulator running screens, as it is done in the standard setup
 of the PiDP using the console, because screens filters the output stream of simh and is
 therefore unsuitable for graphics terminals such as the tek4010 emulator. If you don't
-want to change the standard setup, use <ctrl>e to stop simh, and then "exit" to quit simh.
+want to change the standard setup, use control-e to stop simh, and then "exit" to quit simh.
 
-Because tek4010 insists on using rsh, you need to install rsh-server and rsh-client on
+Because tek4010 needs rsh, you need to install rsh-server and rsh-client on
 the Raspberry Pi:
 
 	sudo apt-get install rsh-server

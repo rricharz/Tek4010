@@ -25,6 +25,7 @@
 
 extern void gtk_main_quit();
 extern int globalClearPersistent;
+extern int global_noexit;
 
 /* not yet used, for dsrk mode
 int memx1[MEM], memy1[MEM], memx2[MEM], memy2[MEM];
@@ -386,7 +387,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
         // is child process still running?
         
         int status;
-        if (waitpid(-1, &status, WNOHANG)) {    // Is child process terminated?
+        if ((! global_noexit) && (waitpid(-1, &status, WNOHANG))) {    // Is child process terminated?
                 tek4010_quit();
                 gtk_main_quit();
                 exit(0);
