@@ -33,13 +33,13 @@ float memv[MEM];
 */
 
 int count = 0;
-static int x0,y0,x2,y2;
+static int x0,y0,x2,y2,xh,xl,yh,yl;
 
 // mode handles the current state of the emulator:
 //
 // mode 0       alpha mode
 //
-// mode 1       expecting first byte of dark mode (move to) address
+// mode 1       expecting address byte of dark mode (move to) address
 // mode 2       expecting second byte of dark mode (move to) address
 // mode 3       expecting third byte of dark mode (move to) address
 // mode 4       expecting fourth byte of dark mode (move to) address
@@ -242,8 +242,8 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                 if (ch == -1) todo--;         // no char available, need to allow for updates
                 
                 if ((mode>=1) && (mode <=9) &&
-                                        ((ch==31) || (ch==13))) {
-                        mode = 0;  // leave graphics mode
+                                ((ch==31) || (ch==13))) {
+                        mode = 0;  // exit from graphics mode
                         showCursor = 0;
                         ch = -1;
                 }
@@ -252,15 +252,40 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                         if ((ch>='0') && (ch<='9')) mode = 30;
                 }
                 
-                switch (mode) {
-                        case 1: y0 = 32 * (ch - 32); mode++; break;
-                        case 2: y0 = y0 + ch - 96; mode++; break;
-                        case 3: x0 =  32 * (ch - 32); mode++; break;
-                        case 4: x0 = x0 + ch - 64; mode++; break;
-                        case 5: y2 = 32 * (ch - 32); mode++; break;
-                        case 6: y2 = y2 + ch - 96; mode++; break;
-                        case 7: x2 =  32 * (ch - 32); mode++; break;
-                        case 8: x2 = x2 + ch - 64;
+                if ((mode>=1)&&(mode<=8)) {
+                        if ((mode == 5) && (ch == 29)) {
+                                mode = 1; return;
+                        }
+                        int tag = ch >> 5;
+                        if (tag == 0) {
+                                return;
+                        }
+                        // if (mode & 1)
+                        //        printf("H%d-%d,",tag, 32 * (ch & 31));
+                        // else
+                        //        printf("L%d-%d,",tag, ch & 31);
+                        if (tag > 0) {  // bytes identified by tag, some can be skipped
+                                if ((mode == 5) && (tag != 1)) mode = 6;                                
+                                if ((mode == 6) && (tag != 3)) mode = 7;                                
+                                if ((mode == 7) && (tag != 1)) mode = 8;                                
+                        }
+                }
+                
+                switch (mode) {                                
+                        case 1: yh = 32 * (ch & 31);          mode++; break;
+                        case 2: yl = (ch & 31); y0 = yh + yl; mode++; break;
+                        case 3: xh = 32 * (ch & 31);          mode++; break;
+                        case 4: xl = (ch & 31); x0= xh + xl;  mode++; 
+                                // printf("\nMoving to (%d,%d)\n",x0,y0);
+                                break;
+                        case 5: yh = 32 * (ch & 31);          mode++; break;
+                        case 6: yl = (ch & 31);               mode++; break;
+                        case 7: xh = 32 * (ch & 31);          mode++; break;
+                        case 8: xl = (ch & 31);
+                                x2 = xh + xl;
+                                y2 = yh + yl;
+                                
+                                // printf("\nDrawing vector to (%d,%d)\n",x2,y2);
                                 cairo_move_to(cr, x0, WINDOW_HEIGHT - y0);
                                 cairo_line_to(cr, x2, WINDOW_HEIGHT - y2);
                                 cairo_stroke (cr);                        

@@ -26,7 +26,11 @@ There is a file "captured_data" in the repo, which you can use to test the tek40
 
 	./tek4010 /bin/cat captured_data -noexit
 
-Don't forget the absolute path to "cat" and the LAST argument "-noexit", which tells
+If you want to test text output, type for example
+
+	./tek4010 /usr/bin/head -n 32 tek4010.c -noexit
+
+Don't forget the absolute path to "cat" or "head" and the LAST argument "-noexit", which tells
 tek4010 to stay alive after cat has finished so that you have a chance to look at the output.
 By the way, the "-noexit" as the LAST argument might also be helpful if you want to
 experiment with other commands. Let me know if you find anything which works and makes sense.
@@ -60,11 +64,7 @@ If this works properly, you can use the tek4010 emulator. Call it as follows:
 
 It the current alpha-testing version, there are very few useful hints if this does not work.
 If the terminal window is closed right away, there is a problem with your rsh call or you
-forgot to use the absolute path for rsh. If it does not work, you might want to try
-
-	./tek4010 /usr/bin/rsh -l user_name system -noexit
-
-If you are lucky, rsh will produce an output which might tell you something. 
+forgot to use the absolute path for rsh.
 
 The following keys are not transmitted to the Unix system, but are executed locally
 in the terminal emulator and clear the persistent screen:
