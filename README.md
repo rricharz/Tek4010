@@ -1,15 +1,18 @@
 # Tektronix 4010 Emulator
 
-This is a Tektronix 4010 terminal emulator for the Raspberry Pi.
+This is a [Tektronix 4010](https://en.wikipedia.org/wiki/Tektronix_4010) terminal emulator
+for the Raspberry Pi.
 
-It attempts to emulate the storage tube display of the 4010, including the bright drawing spot.
-At the moment, it only supports persistent drawing, but there are plans to emulate the 4014 with
-its ability for fading objects.
+It attempts to emulate the storage tube display of the Tektronix 4010, including the bright
+drawing spot. At the moment, it only supports persistent drawing, but there are plans to
+emulate the Tektronix 4014 with its ability for fading objects.
 
-It is currently in alpha-test and updated daily.
+It is currently in alpha-testing and updated daily.
 
-It can be used to log into a historical Unix system such as 2.11 BSD on the PiDP11
-or a real historical system
+It can be used to log into a historical Unix system such as
+[2.11 BSD](https://en.wikipedia.org/wiki/Berkeley_Software_Distribution) on the
+[pidp11](http://obsolescence.wixsite.com/obsolescence/pidp-11)
+or a real historical system.
 
 Install the tek4010 emulator from this repo on a Raspberry Pi. I propose using
 
@@ -37,10 +40,9 @@ experiment with other commands. Let me know if you find anything which works and
 Because tek4010 pipes from stdout of that program and into stdin of that program, some
 programs will not work.
 
-The emulator uses "rsh",
-because historical Unix systems do not support the secure ssh, and because ssh does not
-allow using a virtual emulator such as tek4010. You need therefore to install rsh
-on the Raspberry Pi running the tek4010 emulator:
+The emulator uses "rsh", because historical Unix systems do not support the secure ssh,
+and because ssh does not allow using a virtual emulator such as tek4010 for security reasons.
+You need therefore to install rsh on the Raspberry Pi running the tek4010 emulator:
 
 	sudo apt-get install rsh-client
 
@@ -62,7 +64,7 @@ If this works properly, you can use the tek4010 emulator. Call it as follows:
 
 	./tek4010 /usr/bin/rsh -l user_name system
 
-It the current alpha-testing version, there are very few useful hints if this does not work.
+In the current alpha-testing version, there are very few useful hints if this does not work.
 If the terminal window is closed right away, there is a problem with your rsh call or you
 forgot to use the absolute path for rsh.
 
