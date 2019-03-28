@@ -40,11 +40,14 @@ experiment with other commands. Let me know if you find anything which works and
 Because tek4010 pipes from stdout of that program and into stdin of that program, some
 programs will not work.
 
-The emulator uses "rsh", because historical Unix systems do not support the secure ssh,
-and because ssh does not allow using a virtual emulator such as tek4010 for security reasons.
-You need therefore to install rsh on the Raspberry Pi running the tek4010 emulator:
+The emulator can use "rsh" or "telnet", because historical Unix systems do not support
+the secure ssh protocol, and because ssh does not allow using a virtual emulator such as tek4010
+for security reasons. You need therefore to install rsh or telnet on the Raspberry Pi running
+the tek4010 emulator:
 
 	sudo apt-get install rsh-client
+or
+	sudo apt-get install telnet
 
 **Login in a remote historical Unix system**
 
@@ -54,19 +57,25 @@ as the PiDP-11.
 First, you need to login remotely from your client machine into your historical system, using
 
 	rsh -l user_name system
+or
+	telnet system
 
 where "user_name" is the name of the user on the historical Unix system, and "system" is the name
 of the system, for example
 
 	rsh -l rene pdp11
+or
+	telnet pdp11
 
 If this works properly, you can use the tek4010 emulator. Call it as follows:
 
 	./tek4010 /usr/bin/rsh -l user_name system
+or
+	./tek4010 /usr/bin/telnet system
 
-In the current alpha-testing version, there are very few useful hints if this does not work.
-If the terminal window is closed right away, there is a problem with your rsh call or you
-forgot to use the absolute path for rsh.
+In the current alpha-testing version, there are very few useful error messages if this does
+not work. If the terminal window is closed right away, there is a problem with your rsh or
+telnet call or you forgot to use the absolute path for rsh or telnet.
 
 The following keys are not transmitted to the Unix system, but are executed locally
 in the terminal emulator and clear the persistent screen:
@@ -96,7 +105,7 @@ therefore unsuitable for graphics terminals such as the tek4010 emulator. If you
 want to change the standard setup, use control-e to stop simh, and then "exit" to quit simh.
 
 Because tek4010 needs rsh, you need to install rsh-server and rsh-client on
-the Raspberry Pi:
+the Raspberry Pi. You cannot use telnet here.
 
 	sudo apt-get install rsh-server
 	sudo apt-get install rsh-client
@@ -109,7 +118,7 @@ This should give you a login prompt into your Raspberry Pi. If not, test the rsh
 
 Once your password has been accepted, be prepared to use the "home" key or any of the other
 keys described above frequently to avoid to get a mess on the dump 4010 terminal emulator!
-The following will start the PiDP software:
+The following will start the PiDP software without using screens:
 
 	cd /opt/pidp11/bin
 	./pidp11.sh
