@@ -27,13 +27,13 @@ This allows you to get updates later easily as follows:
 There is a file "captured_data" in the repo, which you can use to test the tek4010 emulator.
 "captured_data" was produced in 2.11 BSD using my program "dodekagon". Type
 
-	./tek4010 /bin/cat captured_data -noexit
+	./tek4010 cat captured_data -noexit
 
 If you want to test text output, type for example
 
-	./tek4010 /usr/bin/head -n 32 tek4010.c -noexit
+	./tek4010 head -n 32 tek4010.c -noexit
 
-Don't forget the absolute path to "cat" or "head" and the LAST argument "-noexit", which tells
+Don't forget the LAST argument "-noexit", which tells
 tek4010 to stay alive after cat has finished so that you have a chance to look at the output.
 By the way, the "-noexit" as the LAST argument might also be helpful if you want to
 experiment with other commands. Let me know if you find anything which works and makes sense.
@@ -54,7 +54,8 @@ or
 This can either be a real historical computer, or a virtual system using simh such
 as the PiDP-11.
 
-First, you need to login remotely from your client machine into your historical system, using
+First, you need to test the remote login from your client machine into your historical
+system, using
 
 	rsh -l user_name system
 or
@@ -69,13 +70,12 @@ or
 
 If this works properly, you can use the tek4010 emulator. Call it as follows:
 
-	./tek4010 /usr/bin/rsh -l user_name system
+	./tek4010 rsh -l user_name system
 or
-	./tek4010 /usr/bin/telnet system
+	./tek4010 telnet system
 
-In the current alpha-testing version, there are very few useful error messages if this does
-not work. If the terminal window is closed right away, there is a problem with your rsh or
-telnet call or you forgot to use the absolute path for rsh or telnet.
+If the terminal window is closed right away, there is a problem with your rsh or
+telnet call.
 
 The following keys are not transmitted to the Unix system, but are executed locally
 in the terminal emulator and clear the persistent screen:
@@ -112,7 +112,7 @@ the Raspberry Pi. You cannot use telnet here.
 
 Now start tek4010 as follows:
 
-	./tek4010 /usr/bin/rsh -l pi localhost
+	./tek4010 rsh -l pi localhost
 
 This should give you a login prompt into your Raspberry Pi. If not, test the rsh call first.
 

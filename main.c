@@ -47,7 +47,6 @@ extern FILE *putKeys;
 static cairo_surface_t *global_surface, *global_surface2;
 static int global_firstcall;
 
-int global_noexit;
 int globalClearPersistent;
 
 static void do_drawing(cairo_t *, GtkWidget *);
@@ -141,14 +140,7 @@ int main (int argc, char *argv[])
 {
 	GtkWidget *darea;
 	GtkWidget *window;
-        
-        if (strcmp(argv[argc-1],"-noexit") == 0) {
-                global_noexit = 1;
-                argc--;
-        }
-        else
-                global_noexit = 0;
-  
+          
 	gtk_init(&argc, &argv);
 	
 	global_firstcall = TRUE;

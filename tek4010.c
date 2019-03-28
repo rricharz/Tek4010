@@ -6,13 +6,14 @@
  * Copyright 2016,2019  rricharz
  * 
  */
-
+ 
 #define MEM 128
 
 #define TODO 6          // for speed reasons, draw multiple objects until screen updates
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h> 
 #include <termios.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
@@ -25,7 +26,7 @@
 
 extern void gtk_main_quit();
 extern int globalClearPersistent;
-extern int global_noexit;
+int noexit;
 
 /* not yet used, for dsrk mode
 int memx1[MEM], memy1[MEM], memx2[MEM], memy2[MEM];
@@ -82,10 +83,40 @@ void tek4010_init(int argc, char* argv[])
 // put any code here to initialize the tek4010
 {
         char *argv2[10];
+        size_t bufsize = 127;
         if ((argc<2) || (argc>9)) {
                 printf("Error:number of arguments\n");
                 exit(1);
         }
+        
+        if (strcmp(argv[argc-1],"-noexit") == 0) {
+                noexit = 1;
+                argc--;
+        }
+        else
+                noexit = 0;
+        
+        // expand argv[1] to full path and check, whether it exists
+        char *str = (char *) malloc(bufsize * sizeof(char));
+        if (str == NULL) {
+               printf("Cannot allocate memory for absolute path\n");
+               exit(1);
+        }
+        strcpy(str,"which ");
+        strcat(str, argv[1]);
+        FILE *fullPath = popen(str,"r");
+        if (fullPath) {
+                getline(&str, &bufsize,fullPath);
+                // remove the endline character
+                str[strlen(str)-1] = 0;
+                argv[1] = str;
+                pclose(fullPath);
+        }
+        else {
+                printf("Cannot find command %s\n", argv[1]);
+                exit(1);
+        }
+                
         hDotsPerChar  = WINDOW_WIDTH / 74;
         vDotsPerChar  = WINDOW_HEIGHT / 35;
         globalClearPersistent = 1;
@@ -127,10 +158,13 @@ void tek4010_init(int argc, char* argv[])
                 
                 // run rsh in the child process
                 execv(argv2[0],argv2+1);
-                exit(1);
+                free(str);
+                exit(0);
         }
                 
         // parent process
+        
+        free(str);
                 
         close(getDataPipe[1]); // not used
         close(putKeysPipe[0]); // not used
@@ -412,9 +446,10 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
         // is child process still running?
         
         int status;
-        if ((! global_noexit) && (waitpid(-1, &status, WNOHANG))) {    // Is child process terminated?
+        if ((! noexit) && (waitpid(-1, &status, WNOHANG))) {    // Is child process terminated?
                 tek4010_quit();
                 gtk_main_quit();
+                printf("Child process has been terminated\n");
                 exit(0);
         }
 }
