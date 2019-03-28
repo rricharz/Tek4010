@@ -9,6 +9,8 @@
  
 #define MEM 128
 
+#define DEBUG 0         // print debug info
+
 #define TODO 6          // for speed reasons, draw multiple objects until screen updates
 
 #include <stdio.h>
@@ -34,7 +36,7 @@ float memv[MEM];
 */
 
 int count = 0;
-static int x0,y0,x2,y2,xh,xl,yh,yl;
+static int x0,y0,x2,y2,xh,xl,yh,yl,xy2014;
 
 // mode handles the current state of the emulator:
 //
@@ -50,8 +52,9 @@ static int x0,y0,x2,y2,xh,xl,yh,yl;
 // mode 8       expecting fourth byte of persistent vector end point address
 //
 // mode 30      expecting escape sequence, escape code received
-// mode 31      ; received in ANSI escape sequence, escape sequence continues if next char is digit
+// mode 31      received in ANSI escape sequence, escape sequence continues if next char is digit
 //
+// mode 40      incremental plot (4104); is ignored until exit from incremental plot received
 
 static int mode;
 
@@ -275,9 +278,16 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                 }
                 if (ch == -1) todo--;         // no char available, need to allow for updates
                 
-                if ((mode>=1) && (mode <=9) &&
-                                ((ch==31) || (ch==13))) {
+                if (DEBUG && (ch != -1)) {
+                        printf("mode=%d, ch code %02X",mode,ch);
+                        if ((ch>0x20)&&(ch<=0x7E)) printf(" (%c)",ch);
+                        printf("\n");
+                }
+                
+                if ((mode>=1) && (mode <=9))
+                        if ((ch==31) || (ch==13) || (ch==27) || (ch==12)) {
                         mode = 0;  // exit from graphics mode
+                        if (DEBUG) printf("Leaving graphics mode\n");
                         showCursor = 0;
                         ch = -1;
                 }
@@ -286,20 +296,49 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                         if ((ch>='0') && (ch<='9')) mode = 30;
                 }
                 
+                int tag = ch >> 5;
+                
+                // this overwrites the extra data byte of the 4014 for the
+                // first dark mode coordinates and stores it for further use
+                if ((mode == 3) && (tag == 3)) {
+                        mode = 2;
+                        xy2014 = yl;
+                        if (DEBUG) printf("4014 coordinates, overwrite last value\n");
+                }
+                                
                 if ((mode>=1)&&(mode<=8)) {
                         if ((mode == 5) && (ch == 29)) {
                                 mode = 1; return;
                         }
-                        int tag = ch >> 5;
+                        if (ch == 30) {
+                                if (DEBUG) printf("Leaving graphics mode\n");
+                                mode = 0; return;
+                        }
                         if (tag == 0) {
                                 return;
                         }
-                        // if (mode & 1)
-                        //        printf("H%d-%d,",tag, 32 * (ch & 31));
-                        // else
-                        //        printf("L%d-%d,",tag, ch & 31);
+                        
+                        if (DEBUG) {
+                                if (mode & 1)
+                                        printf("mode=%d,tag=%d-H-val=%d\n",
+                                                mode,tag, 32 * (ch & 31));
+                                else
+                                        printf("mode=%d,tag=%d-L-val=%d\n",
+                                                mode,tag, ch & 31);
+                        }
+                                
                         if (tag > 0) {  // bytes identified by tag, some can be skipped
-                                if ((mode == 5) && (tag != 1)) mode = 6;                                
+                                if ((mode == 5) && (tag != 1)) mode = 6;
+                                
+                                // this overwrites the extra data byte of the 4014 for the
+                                // persistent mode ccordinates and stores it for further use
+                                if ((mode == 7) && (tag == 3)) {
+                                        mode = 6;
+                                        xy2014 = yl;
+                                        if (DEBUG)
+                                            printf("4014 coordinates, overwrite last value\n");
+                                }
+                                                              
                                 if ((mode == 6) && (tag != 3)) mode = 7;                                
                                 if ((mode == 7) && (tag != 1)) mode = 8;                                
                         }
@@ -310,7 +349,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                         case 2: yl = (ch & 31); y0 = yh + yl; mode++; break;
                         case 3: xh = 32 * (ch & 31);          mode++; break;
                         case 4: xl = (ch & 31); x0= xh + xl;  mode++; 
-                                // printf("\nMoving to (%d,%d)\n",x0,y0);
+                                if (DEBUG) printf("***** Moving to (%d,%d)\n",x0,y0);
                                 break;
                         case 5: yh = 32 * (ch & 31);          mode++; break;
                         case 6: yl = (ch & 31);               mode++; break;
@@ -319,7 +358,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                 x2 = xh + xl;
                                 y2 = yh + yl;
                                 
-                                // printf("\nDrawing vector to (%d,%d)\n",x2,y2);
+                                if (DEBUG) printf("tag=%d,***** Drawing vector to (%d,%d)\n",tag,x2,y2);
                                 cairo_move_to(cr, x0, WINDOW_HEIGHT - y0);
                                 cairo_line_to(cr, x2, WINDOW_HEIGHT - y2);
                                 cairo_stroke (cr);                        
@@ -341,9 +380,11 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                 mode = 5;
                                 break;
                         case 30:                        // handle escape sequencies
-                                // printf("Escape mode 30, ch=%02x\n",ch);
+                                if (DEBUG) printf("Escape mode, ch=%02X\n",ch);
                                 switch (ch) {
-                                    case 12: cairo_set_source_rgb(cr, 0, 0.0, 0); // clear screen
+                                    case 12:
+                                         if (DEBUG) printf("Form feed, clear screen\n");
+                                         cairo_set_source_rgb(cr, 0, 0.0, 0); // clear screen
                                          cairo_paint(cr);
                                          cairo_set_source_rgb(cr, 0, 0.8, 0);
                                          x0 = 0;
@@ -367,17 +408,13 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                     case ']': break;
                                     case 'm': mode = 0; break;
 // end of ignoring ANSI escape sequencies
-                                    default: // printf("Escape code %d\n",ch);
+                                    default: 
+                                         if (DEBUG) printf("Ignore\n");
                                          mode = 0;
                                          break;                                               
                                 }
                                 break;
-                        default: // if (ch != -1) {
-                                 //     printf("ch code %2x",ch);
-                                 //     if ((ch>0x20)&&(ch<=0x7E)) printf("(%c)",ch);
-                                 //     printf("\n");
-                                 // }
-                                switch (ch) {
+                        default: switch (ch) {
                                 case 0:     break;
                                 case EOF:   break;
                                 case 8:     // backspace

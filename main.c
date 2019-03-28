@@ -111,8 +111,6 @@ static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_da
         // printf("key pressed, state =%04X, keyval=%04X\r\n", event->state, event->keyval);
         
         if ((event->keyval == 0xFF50) ||        // "home" key
-                (event->keyval == 0xFF51) ||    // "<ctrl>left arrow" key
-                (event->keyval == 0xFF52) ||    // "<ctrl>up arrow" key
                 (event->keyval == 0xFF55) ||    // "page up" key
                 (event->keyval == 0xFF56))      // "page down" key        
         {
@@ -123,8 +121,15 @@ static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_da
         // control keys
         else if ((event->keyval >= 0xFF00) && (event->keyval <= 0xFF1F))
                 ch = event->keyval & 0x1F;
-        else if (event->state & GDK_CONTROL_MASK)
-                ch = event->keyval & 0x1F;
+        else if (event->state & GDK_CONTROL_MASK) {
+                if ((event->keyval == 0xFF51) ||    // "<ctrl>left arrow" key
+                    (event->keyval == 0xFF52)) {    // "<ctrl>up arrow" key
+                        globalClearPersistent = 1;
+                        return;
+                }
+                else
+                        ch = event->keyval & 0x1F;
+        }
         
         // normal keys
         else if ((event->keyval >= 0x0020) && (event->keyval <= 0x007F))
