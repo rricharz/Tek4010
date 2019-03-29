@@ -44,7 +44,6 @@
 
 extern FILE *putKeys;
 
-static cairo_surface_t *global_surface, *global_surface2;
 static int global_firstcall;
 
 int globalClearPersistent;
@@ -61,14 +60,14 @@ static gboolean on_draw_event(GtkWidget *widget, cairo_t *cr,
 static gboolean on_timer_event(GtkWidget *widget)
 {
 	if (tek4010_on_timer_event())
-	  gtk_widget_queue_draw(widget);
+                gtk_widget_queue_draw(widget);
 	return TRUE;
 }
 
 static gboolean clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
     if (tek4010_clicked(event->button, event->x, event->y))
-        gtk_widget_queue_draw(widget);
+                gtk_widget_queue_draw(widget);
     return TRUE;
 }
 
@@ -81,28 +80,30 @@ static void on_quit_event()
 
 static void do_drawing(cairo_t *cr, GtkWidget *widget)
 {
-	int width = WINDOW_WIDTH;		// we do not use actual window size here
-	int height = WINDOW_HEIGHT;             // because global_surface does not change size
+	int width = WINDOW_WIDTH;	// we do not use actual window size here
+	int height = WINDOW_HEIGHT;     // because surfaces does not change size
+        
+        static cairo_surface_t *permanent_surface, *temporary_surface;
 	
 	if (global_firstcall) {
-		global_surface = cairo_surface_create_similar(cairo_get_target(cr),
+		permanent_surface = cairo_surface_create_similar(cairo_get_target(cr),
 			CAIRO_CONTENT_COLOR_ALPHA, width, height);
-                global_surface2 = cairo_surface_create_similar(cairo_get_target(cr),
+                temporary_surface = cairo_surface_create_similar(cairo_get_target(cr),
 			CAIRO_CONTENT_COLOR_ALPHA, width, height);
 	}
 	
-	cairo_t *surface_cr = cairo_create(global_surface);
-        cairo_t *surface2_cr = cairo_create(global_surface2);
-	tek4010_draw(surface_cr, surface2_cr, width, height, global_firstcall);
+	cairo_t *permanent_cr = cairo_create(permanent_surface);
+        cairo_t *temporary_cr = cairo_create(temporary_surface);
+	tek4010_draw(permanent_cr, temporary_cr, width, height, global_firstcall);
 	global_firstcall = FALSE;
 
-	cairo_set_source_surface(cr, global_surface, 0, 0);
+	cairo_set_source_surface(cr, permanent_surface, 0, 0);
 	cairo_paint(cr);
-        cairo_set_source_surface(cr, global_surface2, 0, 0);
+        cairo_set_source_surface(cr, temporary_surface, 0, 0);
 	cairo_paint(cr);
   
-	cairo_destroy(surface_cr);
-        cairo_destroy(surface2_cr);  
+	cairo_destroy(permanent_cr);
+        cairo_destroy(temporary_cr);  
 }
 
 static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
@@ -115,6 +116,7 @@ static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_da
                 (event->keyval == 0xFF56))      // "page down" key        
         {
                 globalClearPersistent = 1;
+                gtk_widget_queue_draw(widget);
                 return;
         }
         
@@ -125,6 +127,7 @@ static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_da
                 if ((event->keyval == 0xFF51) ||    // "<ctrl>left arrow" key
                     (event->keyval == 0xFF52)) {    // "<ctrl>up arrow" key
                         globalClearPersistent = 1;
+                        gtk_widget_queue_draw(widget);
                         return;
                 }
                 else
@@ -157,7 +160,7 @@ int main (int argc, char *argv[])
 	gtk_widget_add_events(window, GDK_BUTTON_PRESS_MASK);
         gtk_widget_add_events(window, GDK_KEY_PRESS_MASK);
 
-	g_signal_connect(G_OBJECT(darea), "draw",  G_CALLBACK(on_draw_event), NULL);
+	g_signal_connect(G_OBJECT(darea),  "draw",  G_CALLBACK(on_draw_event), NULL);
 	g_signal_connect(G_OBJECT(window), "destroy", G_CALLBACK(on_quit_event), NULL);
 	g_signal_connect(G_OBJECT(window), "button-press-event", G_CALLBACK(clicked), NULL);
         g_signal_connect(G_OBJECT(window), "key_press_event", G_CALLBACK(on_key_press), NULL);

@@ -7,11 +7,9 @@
  * 
  */
  
-#define MEM 128
-
 #define DEBUG 0         // print debug info
 
-#define TODO 6          // for speed reasons, draw multiple objects until screen updates
+#define TODO 8          // for speed reasons, draw multiple objects until screen updates
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,15 +26,13 @@
 
 extern void gtk_main_quit();
 extern int globalClearPersistent;
-int noexit;
 
-/* not yet used, for dsrk mode
-int memx1[MEM], memy1[MEM], memx2[MEM], memy2[MEM];
-float memv[MEM];
-*/
+int noexit = 0;
+int showCursor;
+int isBrightSpot = 0;
 
 int count = 0;
-static int x0,y0,x2,y2,xh,xl,yh,yl,xy2014;
+static int x0,y0,x2,y2,xh,xl,yh,yl,xy4014;
 
 // mode handles the current state of the emulator:
 //
@@ -69,14 +65,18 @@ int getDataPipe[2];
 FILE *putKeys;
 int putKeysPipe[2];
 
-int getk()
-// get a char, if available, otherwise return -1
-// When called for the first time, a child process for rsh is forked
-// and communication between parent and child are established
+int isInput()
+// is char available on getDataPipe?
 {
         int bytesWaiting;
         ioctl(getDataPipe[0], FIONREAD, &bytesWaiting);
-        if (bytesWaiting > 0)
+        return bytesWaiting;
+}
+
+int getInputChar()
+// get a char from getDataPipe, if available, otherwise return -1
+{
+        if (isInput())
                 return getc(getData);
         else
                 return -1;
@@ -96,8 +96,9 @@ void tek4010_init(int argc, char* argv[])
                 noexit = 1;
                 argc--;
         }
-        else
-                noexit = 0;
+                
+        // A child process for rsh is forked ans communication
+        // between parent and child are established
         
         // expand argv[1] to full path and check, whether it exists
         char *str = (char *) malloc(bufsize * sizeof(char));
@@ -202,7 +203,11 @@ int tek4010_on_timer_event()
 // is called every TIMER-INTERVAL milliseconds
 // if the function returns 1, the window is redrawn by calling applicatin_draw
 {
-	return 1;
+        // if there is a char available on the imput stream
+        // or there is still a bright spot, return 1 to ask for
+        // one more redraw
+        
+        return (isBrightSpot || isInput);
 }
  
 int tek4010_clicked(int button, int x, int y)
@@ -221,34 +226,40 @@ void tek4010_quit()
         pclose(getData);
 }
 
+int checkExitFromGraphics(int ch)
+// test for exit from graphics character
+{
+        if ((ch==31) || (ch==13) || (ch==27) || (ch==12)) {
+                mode = 0;
+                if (DEBUG) printf("Leaving graphics mode\n");
+                showCursor = 0;
+                if (ch == 12) globalClearPersistent = 1;
+                return 1;
+        }
+        else return 0;
+}
 
 
 void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
 // draw onto the main window using cairo
 // width is the actual width of the main window
 // height is the actual height of the main window
-// surface1 is used for persistent drawing, surface2 for faiding drawing 
+// cr is used for persistent drawing, cr2 for temporary drawing 
 
 {		
         int ch;
         int todo;
         char s[2];
-        int showCursor = 1;
+
+        showCursor = 1;
+        isBrightSpot = 0;
         
-/*        if (first) {
-                for (int i=0; i<MEM; i++) {
-                        memx1[i]=2;
-                        memy1[i]=i * (WINDOW_HEIGHT/MEM); 
-                        memx2[i]=100;
-                        memy2[i]=i * (WINDOW_HEIGHT/MEM);
-                        memv[i]=0;
-                }
-        } */
+        // clear persistent surface, if necessary
         if (globalClearPersistent) {
                 cairo_set_source_rgb(cr, 0, 0, 0);
                 cairo_paint(cr);
                 globalClearPersistent = 0;
-                x0 = 0;
+                 x0 = 0;
                 y0 = WINDOW_HEIGHT - vDotsPerChar;
                 leftmargin = 0;
         }
@@ -271,11 +282,8 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
         todo = TODO;
         
         do {
-                ch = getk();
-                if (ch == 31) {               // exit from graphics mode
-                        mode = 0;
-                        ch = getk();
-                }
+                ch = getInputChar();
+
                 if (ch == -1) todo--;         // no char available, need to allow for updates
                 
                 if (DEBUG && (ch != -1)) {
@@ -284,38 +292,35 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                         printf("\n");
                 }
                 
-                if ((mode>=1) && (mode <=9))
-                        if ((ch==31) || (ch==13) || (ch==27) || (ch==12)) {
-                        mode = 0;  // exit from graphics mode
-                        if (DEBUG) printf("Leaving graphics mode\n");
-                        showCursor = 0;
-                        ch = -1;
-                }
                 if (mode == 31) {
                         // printf("ANSI escape mode 31, ch=%02x\n",ch);
                         if ((ch>='0') && (ch<='9')) mode = 30;
                 }
                 
                 int tag = ch >> 5;
-                
-                // this overwrites the extra data byte of the 4014 for the
-                // first dark mode coordinates and stores it for further use
-                if ((mode == 3) && (tag == 3)) {
-                        mode = 2;
-                        xy2014 = yl;
-                        if (DEBUG) printf("4014 coordinates, overwrite last value\n");
-                }
                                 
-                if ((mode>=1)&&(mode<=8)) {
+                if ((mode >= 1) && (mode <= 8)) {
+                        
+                        checkExitFromGraphics(ch);
+                        
+                        // handle skipped coordinate bytes
+                        // this cannot be done in switch(mode) below, because multiple bytes
+                        // can be switched and the current byte must be executed after a mode change
+                        
+                        if ((mode == 3) && (tag == 3)) {
+                                // this overwrites the extra data byte of the 4014 for the
+                                // first dark mode coordinates and stores it for further use
+                                mode = 2;
+                                xy4014 = yl;
+                                if (DEBUG) printf("4014 coordinates, overwrite last value\n");
+                        }
+                        
                         if ((mode == 5) && (ch == 29)) {
                                 mode = 1; return;
                         }
                         if (ch == 30) {
-                                if (DEBUG) printf("Leaving graphics mode\n");
-                                mode = 0; return;
-                        }
-                        if (tag == 0) {
-                                return;
+                                if (DEBUG) printf("Starting incremental plot mode (4014)\n");
+                                mode = 40; return;
                         }
                         
                         if (DEBUG) {
@@ -326,39 +331,53 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                         printf("mode=%d,tag=%d-L-val=%d\n",
                                                 mode,tag, ch & 31);
                         }
-                                
-                        if (tag > 0) {  // bytes identified by tag, some can be skipped
-                                if ((mode == 5) && (tag != 1)) mode = 6;
-                                
+                        
+                        if (tag == 0) {
+                                return; // each coordinate byte must have a tag. If not, ignore
+                        }
+                                               
+                        if ((mode == 5) && (tag != 1)) mode = 6;                                
+
+                        if ((mode == 7) && (tag == 3)) {
                                 // this overwrites the extra data byte of the 4014 for the
                                 // persistent mode ccordinates and stores it for further use
-                                if ((mode == 7) && (tag == 3)) {
-                                        mode = 6;
-                                        xy2014 = yl;
-                                        if (DEBUG)
-                                            printf("4014 coordinates, overwrite last value\n");
-                                }
-                                                              
-                                if ((mode == 6) && (tag != 3)) mode = 7;                                
-                                if ((mode == 7) && (tag != 1)) mode = 8;                                
+                                mode = 6;
+                                xy4014 = yl;
+                                if (DEBUG)
+                                        printf("4014 coordinates, overwrite last value\n");
                         }
+                                                              
+                        if ((mode == 6) && (tag != 3)) mode = 7;
+                                                        
+                        if ((mode == 7) && (tag != 1)) mode = 8;                                
+                                
                 }
                 
-                switch (mode) {                                
-                        case 1: yh = 32 * (ch & 31);          mode++; break;
-                        case 2: yl = (ch & 31); y0 = yh + yl; mode++; break;
-                        case 3: xh = 32 * (ch & 31);          mode++; break;
-                        case 4: xl = (ch & 31); x0= xh + xl;  mode++; 
-                                if (DEBUG) printf("***** Moving to (%d,%d)\n",x0,y0);
+                 switch (mode) {                                
+                        case 1: yh = 32 * (ch & 31); mode++;
                                 break;
-                        case 5: yh = 32 * (ch & 31);          mode++; break;
-                        case 6: yl = (ch & 31);               mode++; break;
-                        case 7: xh = 32 * (ch & 31);          mode++; break;
+                        case 2: yl = (ch & 31); y0 = yh + yl; mode++;
+                                break;
+                        case 3: xh = 32 * (ch & 31);          mode++;
+                                break;
+                        case 4: xl = (ch & 31); x0= xh + xl;  mode++; 
+                                        if (DEBUG) printf("***** Moving to (%d,%d)\n",x0,y0);
+                                break;
+                        case 5: if (ch == 29) mode = 1;
+                                else {
+                                        yh = 32 * (ch & 31);          mode++;
+                                }
+                                break;
+                        case 6: yl = (ch & 31);               mode++;
+                                break;
+                        case 7: xh = 32 * (ch & 31);          mode++;
+                                break;
                         case 8: xl = (ch & 31);
                                 x2 = xh + xl;
                                 y2 = yh + yl;
                                 
-                                if (DEBUG) printf("tag=%d,***** Drawing vector to (%d,%d)\n",tag,x2,y2);
+                                if (DEBUG) printf("tag=%d,***** Drawing vector to (%d,%d)\n",
+                                                                tag, x2, y2);
                                 cairo_move_to(cr, x0, WINDOW_HEIGHT - y0);
                                 cairo_line_to(cr, x2, WINDOW_HEIGHT - y2);
                                 cairo_stroke (cr);                        
@@ -366,6 +385,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                 cairo_line_to(cr2, x2, WINDOW_HEIGHT - y2);
                                 cairo_stroke (cr2);
                                 showCursor = 0;
+                                isBrightSpot = 1;
                                 
                                 // for speed reasons, do not update screen right away
                                 // if many very small verctors are drawn
@@ -379,7 +399,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                 y0 = y2;                                
                                 mode = 5;
                                 break;
-                        case 30:                        // handle escape sequencies
+                        case 30:                // handle escape sequencies
                                 if (DEBUG) printf("Escape mode, ch=%02X\n",ch);
                                 switch (ch) {
                                     case 12:
@@ -414,6 +434,9 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                          break;                                               
                                 }
                                 break;
+                        case 40: // used to ignore certain 4014 sequencies
+                                if (ch == 31) mode = 0;  // leave this mode
+                                break;
                         default: switch (ch) {
                                 case 0:     break;
                                 case EOF:   break;
@@ -446,6 +469,9 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                 case 29:    // group separator
                                             mode = 1;
                                             break;
+                                case 30:    // record separator
+                                            mode = 40;
+                                            break;
                                 case 31:    // US, leave graphics mode
                                             mode = 0;
                                             break;
@@ -459,6 +485,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                                 cairo_move_to(cr2, x0, WINDOW_HEIGHT - y0 + 4);
                                                 cairo_show_text(cr2, s);
                                                 x0 += hDotsPerChar;
+                                                isBrightSpot = 1;
                                                 todo--;
                                             }
                                             break;
