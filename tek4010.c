@@ -9,7 +9,7 @@
  
 #define DEBUG 0         // print debug info
 
-#define TODO 8          // for speed reasons, draw multiple objects until screen updates
+#define TODO  8         // for speed reasons, draw multiple objects until screen updates
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -174,12 +174,12 @@ void tek4010_init(int argc, char* argv[])
         close(putKeysPipe[0]); // not used
                 
         // use termios to turn off line buffering for both pipes
-        struct termios term;
-        tcgetattr(getDataPipe[0], &term);
-        term.c_lflag &= ~ICANON ;
-        tcsetattr(getDataPipe[0], TCSANOW,&term);
-        tcgetattr(putKeysPipe[1], &term);
-        tcsetattr(putKeysPipe[0], TCSANOW,&term);
+        // struct termios term;
+        // tcgetattr(getDataPipe[0], &term);
+        // term.c_lflag &= ~ICANON ;
+        // tcsetattr(getDataPipe[0], TCSANOW,&term);
+        // tcgetattr(putKeysPipe[1], &term);
+        // tcsetattr(putKeysPipe[0], TCSANOW,&term);
                 
         // open now a stream from the getDataPipe descriptor
         getData = fdopen(getDataPipe[0],"r");
@@ -332,24 +332,23 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                                 mode,tag, ch & 31);
                         }
                         
-                        if (tag == 0) {
-                                return; // each coordinate byte must have a tag. If not, ignore
-                        }
+                        if (tag != 0) {                        
                                                
-                        if ((mode == 5) && (tag != 1)) mode = 6;                                
+                                if ((mode == 5) && (tag != 1)) mode = 6;                                
 
-                        if ((mode == 7) && (tag == 3)) {
-                                // this overwrites the extra data byte of the 4014 for the
-                                // persistent mode ccordinates and stores it for further use
-                                mode = 6;
-                                xy4014 = yl;
-                                if (DEBUG)
-                                        printf("4014 coordinates, overwrite last value\n");
-                        }
+                                if ((mode == 7) && (tag == 3)) {
+                                        // this overwrites the extra data byte of the 4014 for the
+                                        // persistent mode ccordinates and stores it for further use
+                                        mode = 6;
+                                        xy4014 = yl;
+                                        if (DEBUG)
+                                                printf("4014 coordinates, overwrite last value\n");
+                                }
                                                               
-                        if ((mode == 6) && (tag != 3)) mode = 7;
+                                if ((mode == 6) && (tag != 3)) mode = 7;
                                                         
-                        if ((mode == 7) && (tag != 1)) mode = 8;                                
+                                if ((mode == 7) && (tag != 1)) mode = 8;
+                        }
                                 
                 }
                 
@@ -376,8 +375,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                 x2 = xh + xl;
                                 y2 = yh + yl;
                                 
-                                if (DEBUG) printf("tag=%d,***** Drawing vector to (%d,%d)\n",
-                                                                tag, x2, y2);
+                                if (DEBUG) printf("tag=%d,***** Drawing vector to (%d,%d)\n",tag,x2,y2);
                                 cairo_move_to(cr, x0, WINDOW_HEIGHT - y0);
                                 cairo_line_to(cr, x2, WINDOW_HEIGHT - y2);
                                 cairo_stroke (cr);                        
@@ -388,14 +386,14 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                 isBrightSpot = 1;
                                 
                                 // for speed reasons, do not update screen right away
-                                // if many very small verctors are drawn
+                                // if many very small vectors are drawn
                                 todo--;
-                                if ((x2-x0) > TODO) todo = 0;
-                                if ((x0-x2) > TODO) todo = 0;
-                                if ((y2-y0) > TODO) todo = 0;
-                                if ((y0-y2) > TODO) todo = 0;
+                                if ((x2-x0) > 25) todo = 0;
+                                if ((x0-x2) > 25) todo = 0;
+                                if ((y2-y0) > 25) todo = 0;
+                                if ((y0-y2) > 25) todo = 0;
                                 
-                                x0 = x2;        // prepare to additional vectors
+                                x0 = x2;        // prepare for additional vectors
                                 y0 = y2;                                
                                 mode = 5;
                                 break;
@@ -460,7 +458,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                             y0 += vDotsPerChar;
                                             break;
                                 case 13:    // return
-                                            mode = 0; todo = 0; x0 = leftmargin;
+                                            mode = 0; x0 = leftmargin;
                                             break;
                                 case 27:    // escape
                                             mode = 30;
