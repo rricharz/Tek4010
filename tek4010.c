@@ -363,7 +363,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                         if (DEBUG) printf("***** Moving to (%d,%d)\n",x0,y0);
                                 break;
                         case 5: if (ch == 29) mode = 1;
-                                else {
+                                else if (tag != 0) {
                                         yh = 32 * (ch & 31);          mode++;
                                 }
                                 break;
