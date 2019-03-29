@@ -5,14 +5,25 @@ for the Raspberry Pi.
 
 It attempts to emulate the storage tube display of the Tektronix 4010, including the bright
 drawing spot. At the moment, it only supports persistent drawing, but there are plans to
-emulate the Tektronix 4014 with its ability for fading objects.
+emulate the Tektronix 4014 "write through" mode to support a small number of non-persistent
+vectors for animations.
 
-It is currently in alpha-testing and updated daily.
+To the best of my knowledge this is the only Tektronix 4010 emulator, which makes an effort
+to emulate the storage tube behavior of the 4010. If the look and feel is not important, you can
+use ["xterm"](https://en.wikipedia.org/wiki/Xterm) instead. "xterm" does also not support the
+"write through" mode, but scales down 4014 graphics code to any window size.
+
+It is currently in beta-testing and updated frequently.
 
 It can be used to log into a historical Unix system such as
 [2.11 BSD](https://en.wikipedia.org/wiki/Berkeley_Software_Distribution) on the
 [pidp11](http://obsolescence.wixsite.com/obsolescence/pidp-11)
 or a real historical system.
+
+This tek4010 emulator does currently not support the crosshair cursor of some 4010 modules
+with its graphics input (GIN) mode. The tab character is implemented as a tab8 function
+instead of the single blank character of the original 4010 to make text better
+readable. Also, there is no hardcopy mode, but you can make screen snapshots using "scrot".
 
 Install the tek4010 emulator from this repo on a Raspberry Pi. I propose using
 
@@ -95,7 +106,7 @@ keys frequently to avoid to get a mess on the screen, as on a real Tektronix 401
 
 **Login in PiDP11 running on the same Raspberry Pi**
 
-This is really work in progress, but works amazingly well already. It is running
+This is work in progress, but works amazingly well already. It is running
 with a screen and keyboard attached to the Raspberry Pi, or almost equally well using
 VNC viewer from a laptop!
 
@@ -138,8 +149,8 @@ system and simh properly, before detaching the terminal emulator!
 
 **Reporting problems**
 
-As this software is still under development, there will be problems. I just do not have enough
-programs doing graphics to properly test the program.
+As this software is still in beta test, there will be problems. I just do not have enough
+programs doing graphics to properly test all possible aspects.
 
 If everything works properly for you, but your graphics application produces garbage on the
 tek4010 emulator, you could send me your data as follows: On a historical Unix system, type
@@ -148,7 +159,20 @@ tek4010 emulator, you could send me your data as follows: On a historical Unix s
 
 I don't know how this can be done on other operating systems. You can then mail your
 captured_data file together with a description of the problem to rricharz77@gmail.com.
-Pack it with zip or something else to make sure that the mailing program does not alter it.	 
+Pack it with zip or something else to make sure that the mailing program does not alter it.
+
+**Screen resolution**
+
+This tek4010 emulator creates a graphics window of 1024x768 points, which is the display size
+of the Tektronix 4010 terminal according to the manual from Tektronix. Some sources claim
+that actual terminals could display up to 780 points vertically. The Raspberry Pi can handle
+sufficiently high refresh rates at this resolution. This emulator makes an attempt to filter
+Tektronix 4014 graphics code with the enhanced graphics module installed, so that such
+graphics codes can be displayed using this terminal emulator, but the lowest two bits of
+each axis are not used in this case, as in the Tektronix 4014 without the enhanced graphics
+module. It would be easy to add the capability to support the 4K resolution of the 4014 with
+enhanced graphics module, but the current Raspberry Pi hardware cannot handlesuch a high
+resolution.
 
 **Compiling the tek4010 project**
 
