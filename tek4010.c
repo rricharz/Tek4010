@@ -206,8 +206,8 @@ int tek4010_on_timer_event()
         // if there is a char available on the imput stream
         // or there is still a bright spot, return 1 to ask for
         // one more redraw
-        
-        return (isBrightSpot || isInput);
+       
+        return (isBrightSpot || isInput());
 }
  
 int tek4010_clicked(int button, int x, int y)

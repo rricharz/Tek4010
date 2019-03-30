@@ -133,6 +133,8 @@ static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_da
                 else
                         ch = event->keyval & 0x1F;
         }
+        else if (event->keyval == 0xFF52) ch = 16;  // arrow up for history up
+        else if (event->keyval == 0xFF54) ch = 14;  // arrow down for history down
         
         // normal keys
         else if ((event->keyval >= 0x0020) && (event->keyval <= 0x007F))

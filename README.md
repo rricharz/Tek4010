@@ -10,17 +10,17 @@ vectors for animations.
 
 To the best of my knowledge this is the only Tektronix 4010 emulator, which makes an effort
 to emulate the storage tube behavior of the 4010. If the look and feel is not important, you can
-use ["xterm"](https://en.wikipedia.org/wiki/Xterm) instead. "xterm" does also not support the
-"write through" mode, but scales down 4014 graphics code to any window size.
+use ["xterm"](https://en.wikipedia.org/wiki/Xterm) instead. "xterm" does not support the
+"write through" mode.
 
-It is currently in beta-testing and updated frequently.
+This tek4010 emulator is currently in beta-testing and updated frequently.
 
 It can be used to log into a historical Unix system such as
 [2.11 BSD](https://en.wikipedia.org/wiki/Berkeley_Software_Distribution) on the
 [pidp11](http://obsolescence.wixsite.com/obsolescence/pidp-11)
 or a real historical system.
 
-This tek4010 emulator does currently not support the crosshair cursor of some 4010 modules
+It does currently not support the crosshair cursor of some 4010 terminals
 with its graphics input (GIN) mode. The tab character is implemented as a tab8 function
 instead of the single blank character of the original 4010 to make text better
 readable. Also, there is no hardcopy mode, but you can make screen snapshots using "scrot".
@@ -51,7 +51,7 @@ experiment with other commands. Let me know if you find anything which works and
 Because tek4010 pipes from stdout of that program and into stdin of that program, some
 programs will not work.
 
-The emulator can use "rsh" or "telnet", because historical Unix systems do not support
+The emulator does use "rsh" or "telnet", because historical Unix systems do not support
 the secure ssh protocol, and because ssh does not allow using a virtual emulator such as tek4010
 for security reasons. You need therefore to install rsh or telnet on the Raspberry Pi running
 the tek4010 emulator:
@@ -61,7 +61,7 @@ or
 
 	sudo apt-get install telnet
 
-**Login in a remote historical Unix system**
+**Login into a remote historical Unix system**
 
 This can either be a real historical computer, or a virtual system using simh such
 as the PiDP-11.
@@ -104,7 +104,7 @@ in the terminal emulator and clear the persistent screen:
 These keys emulate the "page" key of the Tektronix 4010. You need to use one of these
 keys frequently to avoid to get a mess on the screen, as on a real Tektronix 4010.
 
-**Login in PiDP11 running on the same Raspberry Pi**
+**Login into PiDP11 running on the same Raspberry Pi**
 
 This is work in progress, but works amazingly well already. It is running
 with a screen and keyboard attached to the Raspberry Pi, or almost equally well using
@@ -112,7 +112,7 @@ VNC viewer from a laptop!
 
 Expect a bit of slow down from time to time. In my test version the
 PiDP11 software and the tek4010 software are using all 4 cores of the Raspberry Pi 3B+ running
-at 60% CPU usage! It's amazing how powerful the Raspberry Pi 3B+ is!
+at up to 60% CPU usage! It's amazing how powerful the Raspberry Pi 3B+ is!
 
 You cannot use the tek4010 emulator running screens, as it is done in the standard setup
 of the PiDP using the console, because screens filters the output stream of simh and is
@@ -171,7 +171,7 @@ Tektronix 4014 graphics code with the enhanced graphics module installed, so tha
 graphics codes can be displayed using this terminal emulator, but the lowest two bits of
 each axis are not used in this case, as in the Tektronix 4014 without the enhanced graphics
 module. It would be easy to add the capability to support the 4K resolution of the 4014 with
-enhanced graphics module, but the current Raspberry Pi hardware cannot handlesuch a high
+enhanced graphics module, but the current Raspberry Pi hardware cannot handle such a high
 resolution.
 
 **Compiling the tek4010 project**
