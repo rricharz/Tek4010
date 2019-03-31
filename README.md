@@ -21,17 +21,19 @@ It can be used to log into a historical Unix system such as
 or a real historical system.
 
 This [video](https://youtu.be/361onpahuKw) was generated entirely on a Raspberry Pi. The Raspberry Pi was
-running the following software at the same time. Some slowdown was observed due to the screen recorder.
+running the following software at the same time. The graphics drawings were recorded at about 50% of
+the actual speed due to the screen recorder using up cpu cycles.
 
 - PiDP-11 software with simh, emulating 2.11 BSD Unix, executing graphics programs
 - tek4010 software using telnet to access the historical OS with a terminal multiplexer
 - [simplescreenrecorder](https://www.maartenbaert.be/simplescreenrecorder) to record the video
 - vnc to control everything from a Mac
 
-It does currently not support the crosshair cursor of some 4010 terminals
+This tek4010 emulator does currently not support the crosshair cursor of some 4010 terminals
 with its graphics input (GIN) mode. The tab character is implemented as a tab8 function
 instead of the single blank character of the original 4010 to make text better
-readable. Also, there is no hardcopy mode, but you can make screen snapshots using "scrot".
+readable. Also, there is no hardcopy mode, but you can make screen snapshots using "scrot",
+or screen videos using [simplescreenrecorder](https://www.maartenbaert.be/simplescreenrecorder).
 
 Install the tek4010 emulator from this repo on a Raspberry Pi. I propose using
 
@@ -68,6 +70,9 @@ the tek4010 emulator:
 or
 
 	sudo apt-get install telnet
+
+If you want to use this emulator together with 2.11 BSD Unix, look also at
+[Using the historical Unix 2.11 BSD operating system on the PiDP-11](https://github.com/rricharz/pidp11-2.11bsd.git)
 
 **Login directly into a remote historical Unix operating system**
 
@@ -118,7 +123,7 @@ keys frequently to avoid to get a mess on the screen, as on a real Tektronix 401
 **Login into the system running simh (same or different Raspberry Pi)**
 
 This makes sense, if you have set up a virtual DZ11 for multiple user login, opening a
-telnet port for multiplexed terminals. On the PiDP11 using 2.11 BSD, the distribution software has
+telnet port for multiplexed terminals. On the PiDP-11 using 2.11 BSD, the distribution software has
 already set up port 4000 for 8 multiuser terminals. First, you need to install and test
 telnet (2.11 BSD needs to be up and running in multiuser mode):
 
@@ -142,7 +147,7 @@ or
 
 	tek4010 localhost 4000	
 
-**Login into PiDP11 running on the same Raspberry Pi, using the console**
+**Login into PiDP-11 running on the same Raspberry Pi, using the console**
 
 This is the least preferred setup, only to be used if you cannot use one of the setups
 above. You cannot use the tek4010 emulator running screens, as it is done in the standard setup
@@ -172,9 +177,9 @@ The following will start the PiDP software without using screens:
 Everything should run as expected, and you should be able to use the tek4010 terminal emulator with any of
 the historical operating systems.
 
-One word of caution! If you run the PiDP11 software this way without using screens, you SHOULD
+One word of caution! If you run the PiDP-11 software this way without using screens, you SHOULD
 NOT detach or quit the terminal while your historical operating system is running, because
-this will kill the PiDP11 simh emulator right away. First run down your historical operating
+this will kill the PiDP-11 simh emulator right away. First run down your historical operating
 system and simh properly, before detaching the terminal emulator!
 
 **Reporting problems**
