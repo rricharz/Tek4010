@@ -31,6 +31,15 @@ int noexit = 0;
 int showCursor;
 int isBrightSpot = 0;
 
+struct tableEntry {
+        int x0;
+        int y0;
+        int x2;
+        int y2;
+        int linewidth;
+        double intensity;
+} vectorTable;
+
 int count = 0;
 static int x0,y0,x2,y2,xh,xl,yh,yl,xy4014;
 
@@ -198,7 +207,9 @@ void tek4010_init(int argc, char* argv[])
                 printf("Parent: Cannot open output stream\n");
                 exit(1);
         }
-        setbuf(putKeys,0);                
+        setbuf(putKeys,0);
+        
+        vectorTable.intensity = 0.0;                
 }
 
 int tek4010_on_timer_event()
@@ -280,8 +291,6 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
         cairo_set_operator(cr2, CAIRO_OPERATOR_SOURCE);
         cairo_paint(cr2);
         cairo_set_operator(cr2, CAIRO_OPERATOR_OVER);
-        cairo_set_line_width (cr2, 3);
-        cairo_set_source_rgb(cr2, 0.5, 1, 0.5);
         
         cairo_set_antialias(cr, CAIRO_ANTIALIAS_BEST);      
 	cairo_set_line_width (cr, 1);
@@ -296,6 +305,16 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
         
         do {
                 ch = getInputChar();
+                
+                // fade away last bright spot vector
+                if (vectorTable.intensity > 0.1) {
+                        cairo_set_line_width (cr2, vectorTable.linewidth);
+                        cairo_set_source_rgb(cr2, 0.25, 0.7, 0.25);
+                        cairo_move_to(cr2, vectorTable.x0, WINDOW_HEIGHT - vectorTable.y0);
+                        cairo_line_to(cr2, vectorTable.x2, WINDOW_HEIGHT - vectorTable.y2);
+                        cairo_stroke (cr2);
+                        vectorTable.intensity = 0.0;
+                }
 
                 if (ch == -1) {
                         if ((mode == 0) && showCursor) doCursor(cr2);
@@ -394,7 +413,10 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                 if (DEBUG) printf("tag=%d,***** Drawing vector to (%d,%d)\n",tag,x2,y2);
                                 cairo_move_to(cr, x0, WINDOW_HEIGHT - y0);
                                 cairo_line_to(cr, x2, WINDOW_HEIGHT - y2);
-                                cairo_stroke (cr);                        
+                                cairo_stroke (cr);
+                                
+                                cairo_set_line_width (cr2, 3);
+                                cairo_set_source_rgb(cr2, 0.5, 1, 0.5);                        
                                 cairo_move_to(cr2, x0, WINDOW_HEIGHT - y0);
                                 cairo_line_to(cr2, x2, WINDOW_HEIGHT - y2);
                                 cairo_stroke (cr2);
@@ -408,6 +430,16 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                 if ((x0-x2) > 25) todo = 0;
                                 if ((y2-y0) > 25) todo = 0;
                                 if ((y0-y2) > 25) todo = 0;
+                                
+                                // save bright spot vector for fading
+                                
+                                        vectorTable.x0 = x0;
+                                        vectorTable.x2 = x2;
+                                        vectorTable.y0 = y0;
+                                        vectorTable.y2 = y2;
+                                        vectorTable.linewidth = 2;
+                                        vectorTable.intensity = 0.8;
+                                
                                 
                                 x0 = x2;        // prepare for additional vectors
                                 y0 = y2;                                
@@ -497,6 +529,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                                 s[1] = 0;
                                                 cairo_move_to(cr, x0, WINDOW_HEIGHT - y0 + 4);
                                                 cairo_show_text(cr, s);
+                                                cairo_set_source_rgb(cr2, 0.5, 1, 0.5);
                                                 cairo_move_to(cr2, x0, WINDOW_HEIGHT - y0 + 4);
                                                 cairo_show_text(cr2, s);
                                                 x0 += hDotsPerChar;
