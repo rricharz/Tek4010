@@ -46,7 +46,7 @@ If you want to test text output, type for example
 
 Don't forget the LAST argument "-noexit", which tells
 tek4010 to stay alive after cat has finished so that you have a chance to look at the output.
-By the way, the "-noexit" as the LAST argument might also be helpful if you want to
+By the way, the "-noexit" as the last argument might also be helpful if you want to
 experiment with other commands. Let me know if you find anything which works and makes sense.
 Because tek4010 pipes from stdout of that program and into stdin of that program, some
 programs will not work.
@@ -61,7 +61,7 @@ or
 
 	sudo apt-get install telnet
 
-**Login into a remote historical Unix system**
+**Login directly into a remote historical Unix operating system**
 
 This can either be a real historical computer, or a virtual system using simh such
 as the PiDP-11.
@@ -74,15 +74,18 @@ or
 
 	telnet system
 
-where "user_name" is the name of the user on the historical Unix system, and "system" is the name
-of the system, for example
+where "user_name" is the name of the user on the historical operating system, and "system"
+is the hostname of this system. If the historical operating system is running using an
+emulator, this is NOT the hostname of the system, on which the emulator is running. See
+the chaptor below if you prefer to login into the system, on which the emulator is
+running. For example, type
 
 	rsh -l rene pdp11
 or
 
 	telnet pdp11
 
-If this works properly, you can use the tek4010 emulator. Call it as follows:
+If this works properly, you can use the tek4010 emulator as follows:
 
 	./tek4010 rsh -l user_name system
 or
@@ -90,7 +93,7 @@ or
 	./tek4010 telnet system
 
 If the terminal window is closed right away, there is a problem with your rsh or
-telnet call.
+telnet call. Test it first without tek4010.
 
 The following keys are not transmitted to the Unix system, but are executed locally
 in the terminal emulator and clear the persistent screen:
@@ -104,17 +107,37 @@ in the terminal emulator and clear the persistent screen:
 These keys emulate the "page" key of the Tektronix 4010. You need to use one of these
 keys frequently to avoid to get a mess on the screen, as on a real Tektronix 4010.
 
-**Login into PiDP11 running on the same Raspberry Pi**
+**Login into the system running simh (same or different Raspberry Pi)**
 
-This is work in progress, but works amazingly well already. It is running
-with a screen and keyboard attached to the Raspberry Pi, or almost equally well using
-VNC viewer from a laptop!
+This makes sense, if you have set up a virtual DZ11 for multiple user login, opening a
+telnet port at a port. On the PiDP11 using 2.11 BSD, the distribution software has
+already set up port 4000 for 8 multiuser terminals. First, you need to install and test
+telnet (2.11 BSD needs to be up and running in multiuser mode):
 
-Expect a bit of slow down from time to time. In my test version the
-PiDP11 software and the tek4010 software are using all 4 cores of the Raspberry Pi 3B+ running
-at up to 60% CPU usage! It's amazing how powerful the Raspberry Pi 3B+ is!
+	sudo apt-get install telnet
+	telnet raspi_hostname 4000
 
-You cannot use the tek4010 emulator running screens, as it is done in the standard setup
+or
+
+	telnet localhost 4000
+
+where "raspi_hostname" is the hostname of your system running simh. If you are using telnet
+and tek4010 on the same system as the system running simh, use "localhost" instead of
+"raspi_hostname". You can even use VNC viewer on your laptop in this case, instead of an
+attached keyboard and mouse.
+
+Once this works, you can start tek4010 as follows:
+
+	tek4010 raspi_hostname 4000
+
+or
+
+	tek4010 localhost 4000	
+
+**Login into PiDP11 running on the same Raspberry Pi, using the console**
+
+This is the least preferred setup, only to be used if you cannot use one of the setups
+above. You cannot use the tek4010 emulator running screens, as it is done in the standard setup
 of the PiDP using the console, because screens filters the output stream of simh and is
 therefore unsuitable for graphics terminals such as the tek4010 emulator. If you don't
 want to change the standard setup, use control-e to stop simh, and then "exit" to quit simh.
@@ -139,8 +162,7 @@ The following will start the PiDP software without using screens:
 	./pidp11.sh
 
 Everything should run as expected, and you should be able to use the tek4010 terminal emulator with any of
-the historical operating systems. It has not yet been tested on other systems than 2.11 BSD.
-Your feedback to rricharz77@gmail.com or the PiDP11 forum is therefore very much appreciated.
+the historical operating systems.
 
 One word of caution! If you run the PiDP11 software this way without using screens, you SHOULD
 NOT detach or quit the terminal while your historical operating system is running, because

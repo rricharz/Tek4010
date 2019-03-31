@@ -76,8 +76,11 @@ int isInput()
 int getInputChar()
 // get a char from getDataPipe, if available, otherwise return -1
 {
-        if (isInput())
-                return getc(getData);
+        if (isInput()) {
+                int c = getc(getData);
+                if (DEBUG) printf(">>%02X<<",c);
+                return c;
+        }
         else
                 return -1;
 }
@@ -239,6 +242,16 @@ int checkExitFromGraphics(int ch)
         else return 0;
 }
 
+void doCursor(cairo_t *cr2)
+{
+        cairo_set_source_rgb(cr2, 0, 0.8, 0);
+        cairo_set_line_width (cr2, 1);
+        cairo_rectangle(cr2, x0, WINDOW_HEIGHT - y0 - vDotsPerChar + 8,
+                                                hDotsPerChar - 3, vDotsPerChar - 3);
+        cairo_fill(cr2);
+        cairo_stroke (cr2);
+}
+
 
 void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
 // draw onto the main window using cairo
@@ -259,7 +272,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                 cairo_set_source_rgb(cr, 0, 0, 0);
                 cairo_paint(cr);
                 globalClearPersistent = 0;
-                 x0 = 0;
+                x0 = 0;
                 y0 = WINDOW_HEIGHT - vDotsPerChar;
                 leftmargin = 0;
         }
@@ -268,11 +281,11 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
         cairo_paint(cr2);
         cairo_set_operator(cr2, CAIRO_OPERATOR_OVER);
         cairo_set_line_width (cr2, 3);
-        cairo_set_source_rgb(cr2, 1, 1, 1);
+        cairo_set_source_rgb(cr2, 0.5, 1, 0.5);
         
         cairo_set_antialias(cr, CAIRO_ANTIALIAS_BEST);      
 	cairo_set_line_width (cr, 1);
-        cairo_set_source_rgb(cr, 0, 0.8, 0);
+        cairo_set_source_rgb(cr, 0, 0.7, 0);
         
         cairo_select_font_face(cr, "Monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
         cairo_set_font_size(cr, 18);
@@ -284,9 +297,12 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
         do {
                 ch = getInputChar();
 
-                if (ch == -1) todo--;         // no char available, need to allow for updates
+                if (ch == -1) {
+                        if ((mode == 0) && showCursor) doCursor(cr2);
+                        return;         // no char available, need to allow for updates
+                }
                 
-                if (DEBUG && (ch != -1)) {
+                if (DEBUG) {
                         printf("mode=%d, ch code %02X",mode,ch);
                         if ((ch>0x20)&&(ch<=0x7E)) printf(" (%c)",ch);
                         printf("\n");
@@ -408,6 +424,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                          x0 = 0;
                                          y0 = WINDOW_HEIGHT - vDotsPerChar;
                                          mode = 0;
+                                         leftmargin = 0;
                                          break;
                                     case '[': // a second escape code follows, do not reset mode
                                          break;
@@ -495,15 +512,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
         
         // display cursor
         
-        if (showCursor) {
-        
-                cairo_set_source_rgb(cr2, 0, 0.8, 0);
-                cairo_set_line_width (cr, 1);
-                cairo_rectangle(cr2, x0, WINDOW_HEIGHT - y0 - vDotsPerChar + 8,
-                                                hDotsPerChar - 3, vDotsPerChar - 3);
-                cairo_fill(cr2);
-                cairo_stroke (cr2);
-        }
+        if (showCursor) doCursor(cr2);
         
         // is child process still running?
         
