@@ -20,6 +20,14 @@ It can be used to log into a historical Unix system such as
 [pidp11](http://obsolescence.wixsite.com/obsolescence/pidp-11)
 or a real historical system.
 
+This [video](https://youtu.be/361onpahuKw) was generated entirely on a Raspberry Pi. The Raspberry Pi was
+running the following software at the same time. Some slowdown was observed due to the screen recorder.
+
+- PiDP-11 software with simh, emulating 2.11 BSD Unix, executing graphics programs
+- tek4010 software using telnet to access the historical OS with a terminal multiplexer
+- [simplescreenrecorder](https://www.maartenbaert.be/simplescreenrecorder) to record the video
+- vnc to control everything from a Mac
+
 It does currently not support the crosshair cursor of some 4010 terminals
 with its graphics input (GIN) mode. The tab character is implemented as a tab8 function
 instead of the single blank character of the original 4010 to make text better
@@ -110,7 +118,7 @@ keys frequently to avoid to get a mess on the screen, as on a real Tektronix 401
 **Login into the system running simh (same or different Raspberry Pi)**
 
 This makes sense, if you have set up a virtual DZ11 for multiple user login, opening a
-telnet port at a port. On the PiDP11 using 2.11 BSD, the distribution software has
+telnet port for multiplexed terminals. On the PiDP11 using 2.11 BSD, the distribution software has
 already set up port 4000 for 8 multiuser terminals. First, you need to install and test
 telnet (2.11 BSD needs to be up and running in multiuser mode):
 
