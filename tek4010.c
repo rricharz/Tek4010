@@ -3,8 +3,25 @@
  * 
  * A tek 4010 graphics emulator
  * 
- * Copyright 2016,2019  rricharz
+ * Copyright 2019  rricharz
  * 
+ * https://github.com/rricharz/Tek4010
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301, USA.
+ *
  */
  
 #define DEBUG 0         // print debug info
@@ -42,6 +59,7 @@ struct tableEntry {
 
 int count = 0;
 static int x0,y0,x2,y2,xh,xl,yh,yl,xy4014;
+static int plotPointMode = 0;
 
 // mode handles the current state of the emulator:
 //
@@ -60,6 +78,7 @@ static int x0,y0,x2,y2,xh,xl,yh,yl,xy4014;
 // mode 31      received in ANSI escape sequence, escape sequence continues if next char is digit
 //
 // mode 40      incremental plot (4104); is ignored until exit from incremental plot received
+// mode 50      special point plot mode; not yet implemented
 
 static int mode;
 
@@ -248,6 +267,7 @@ int checkExitFromGraphics(int ch)
                 if (DEBUG) printf("Leaving graphics mode\n");
                 showCursor = 0;
                 if (ch == 12) globalClearPersistent = 1;
+                plotPointMode = 0;
                 return 1;
         }
         else return 0;
@@ -261,6 +281,23 @@ void doCursor(cairo_t *cr2)
                                                 hDotsPerChar - 3, vDotsPerChar - 3);
         cairo_fill(cr2);
         cairo_stroke (cr2);
+}
+
+void clearPersistent(cairo_t *cr, cairo_t *cr2)
+// clear the persistant surface
+// flash using the second surface
+{
+        cairo_set_source_rgb(cr, 0, 0, 0);
+        cairo_paint(cr);
+        globalClearPersistent = 0;
+        x0 = 0;
+        y0 = WINDOW_HEIGHT - vDotsPerChar;
+        leftmargin = 0;
+        cairo_set_source_rgb(cr, 0, 0.7, 0);
+        cairo_set_source_rgb(cr2, 0.5, 1, 0.5);
+        cairo_paint(cr2);
+        isBrightSpot = 1;
+        plotPointMode = 0;
 }
 
 
@@ -278,19 +315,15 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
         showCursor = 1;
         isBrightSpot = 0;
         
-        // clear persistent surface, if necessary
-        if (globalClearPersistent) {
-                cairo_set_source_rgb(cr, 0, 0, 0);
-                cairo_paint(cr);
-                globalClearPersistent = 0;
-                x0 = 0;
-                y0 = WINDOW_HEIGHT - vDotsPerChar;
-                leftmargin = 0;
-        }
         cairo_set_source_rgba(cr2, 0, 0, 0, 0); // second surface is cleared each time
         cairo_set_operator(cr2, CAIRO_OPERATOR_SOURCE);
         cairo_paint(cr2);
         cairo_set_operator(cr2, CAIRO_OPERATOR_OVER);
+        
+        // clear persistent surface, if necessary
+        if (globalClearPersistent) {
+                clearPersistent(cr,cr2);
+        }
         
         cairo_set_antialias(cr, CAIRO_ANTIALIAS_BEST);      
 	cairo_set_line_width (cr, 1);
@@ -301,7 +334,8 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
         cairo_select_font_face(cr2, "Monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
         cairo_set_font_size(cr2, 18);
         
-        todo = TODO;
+        if (plotPointMode) todo = 5 * TODO;  // more dots before refresh in plot point mode
+        else todo = TODO;
         
         do {
                 ch = getInputChar();
@@ -314,6 +348,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                         cairo_line_to(cr2, vectorTable.x2, WINDOW_HEIGHT - vectorTable.y2);
                         cairo_stroke (cr2);
                         vectorTable.intensity = 0.0;
+                        isBrightSpot = 1;
                 }
 
                 if (ch == -1) {
@@ -360,11 +395,12 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                         
                         if (DEBUG) {
                                 if (mode & 1)
-                                        printf("mode=%d,tag=%d-H-val=%d\n",
+                                        printf("mode=%d,tag=%d-H-val=%d,",
                                                 mode,tag, 32 * (ch & 31));
                                 else
-                                        printf("mode=%d,tag=%d-L-val=%d\n",
+                                        printf("mode=%d,tag=%d-L-val=%d,",
                                                 mode,tag, ch & 31);
+                                printf("xh=%d,xl=%d,yh=%d,yl=%d\n",xh,xl,yh,yl);                
                         }
                         
                         if (tag != 0) {                        
@@ -387,8 +423,9 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                 
                 }
                 
-                 switch (mode) {                                
-                        case 1: yh = 32 * (ch & 31); mode++;
+                switch (mode) {                                
+                        case 1: plotPointMode= 0; // normal graphics mode, starting coordinates
+                                yh = 32 * (ch & 31); mode++;
                                 break;
                         case 2: yl = (ch & 31); y0 = yh + yl; mode++;
                                 break;
@@ -397,41 +434,61 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                         case 4: xl = (ch & 31); x0= xh + xl;  mode++; 
                                         if (DEBUG) printf("***** Moving to (%d,%d)\n",x0,y0);
                                 break;
-                        case 5: if (ch == 29) mode = 1;
-                                else if (tag != 0) {
-                                        yh = 32 * (ch & 31);          mode++;
+                        case 5: if (ch == 29) {
+                                        if (DEBUG) printf("setting mode to 1\n");
+                                        mode = 1;
                                 }
+                                else if (tag != 0) {
+                                        yh = 32 * (ch & 31);  mode++;
+                                }
+                                else printf("case 5: tag is 0\n");
+                                if (DEBUG) printf(">>>>>yh=%d\n",yh);
                                 break;
                         case 6: yl = (ch & 31);               mode++;
                                 break;
+                                if (DEBUG) printf(">>>>>yl=%d\n",yl);
                         case 7: xh = 32 * (ch & 31);          mode++;
                                 break;
+                                if (DEBUG) printf(">>>>>xh=%d\n",xh);
                         case 8: xl = (ch & 31);
                                 x2 = xh + xl;
                                 y2 = yh + yl;
+                                if (DEBUG) printf(">>>>>xl=%d\n",xl);
                                 
-                                if (DEBUG) printf("tag=%d,***** Drawing vector to (%d,%d)\n",tag,x2,y2);
-                                cairo_move_to(cr, x0, WINDOW_HEIGHT - y0);
-                                cairo_line_to(cr, x2, WINDOW_HEIGHT - y2);
-                                cairo_stroke (cr);
+                                if (plotPointMode>0.0) {
+                                        if (DEBUG) printf("plotting point at %d,%d,todo =%d\n",
+                                                        x2,y2,todo);
+                                        cairo_set_source_rgb(cr, 0, 1, 0);
+                                        cairo_move_to(cr, x2, WINDOW_HEIGHT - y2);
+                                        cairo_line_to(cr, x2+1, WINDOW_HEIGHT - y2);
+                                        cairo_stroke (cr);
+                                        cairo_set_source_rgb(cr, 0, 0.7, 0);
+                                        mode = 50;
+                                        todo--;
+                                }
                                 
-                                cairo_set_line_width (cr2, 3);
-                                cairo_set_source_rgb(cr2, 0.5, 1, 0.5);                        
-                                cairo_move_to(cr2, x0, WINDOW_HEIGHT - y0);
-                                cairo_line_to(cr2, x2, WINDOW_HEIGHT - y2);
-                                cairo_stroke (cr2);
-                                showCursor = 0;
-                                isBrightSpot = 1;
+                                else {
                                 
-                                // for speed reasons, do not update screen right away
-                                // if many very small vectors are drawn
-                                todo--;
-                                if ((x2-x0) > 25) todo = 0;
-                                if ((x0-x2) > 25) todo = 0;
-                                if ((y2-y0) > 25) todo = 0;
-                                if ((y0-y2) > 25) todo = 0;
+                                        if (DEBUG) printf("tag=%d,***** Drawing vector to (%d,%d)\n",tag,x2,y2);
+                                        cairo_move_to(cr, x0, WINDOW_HEIGHT - y0);
+                                        cairo_line_to(cr, x2, WINDOW_HEIGHT - y2);
+                                        cairo_stroke (cr);
                                 
-                                // save bright spot vector for fading
+                                        cairo_set_line_width (cr2, 3);
+                                        cairo_set_source_rgb(cr2, 0.5, 1, 0.5);                        
+                                        cairo_move_to(cr2, x0, WINDOW_HEIGHT - y0);
+                                        cairo_line_to(cr2, x2, WINDOW_HEIGHT - y2);
+                                        cairo_stroke (cr2);
+                                        isBrightSpot = 1;
+                                                // for speed reasons, do not update screen right away
+                                        // if many very small vectors are drawn
+                                        todo--;
+                                        if ((x2-x0) > 25) todo = 0;
+                                        if ((x0-x2) > 25) todo = 0;
+                                        if ((y2-y0) > 25) todo = 0;
+                                        if ((y0-y2) > 25) todo = 0;
+                                        
+                                        // save bright spot vector for fading
                                 
                                         vectorTable.x0 = x0;
                                         vectorTable.x2 = x2;
@@ -439,24 +496,22 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                         vectorTable.y2 = y2;
                                         vectorTable.linewidth = 2;
                                         vectorTable.intensity = 0.8;
+                                }
                                 
+                                showCursor = 0;
                                 
                                 x0 = x2;        // prepare for additional vectors
                                 y0 = y2;                                
                                 mode = 5;
+                                
                                 break;
                         case 30:                // handle escape sequencies
                                 if (DEBUG) printf("Escape mode, ch=%02X\n",ch);
                                 switch (ch) {
                                     case 12:
                                          if (DEBUG) printf("Form feed, clear screen\n");
-                                         cairo_set_source_rgb(cr, 0, 0.0, 0); // clear screen
-                                         cairo_paint(cr);
-                                         cairo_set_source_rgb(cr, 0, 0.8, 0);
-                                         x0 = 0;
-                                         y0 = WINDOW_HEIGHT - vDotsPerChar;
+                                         clearPersistent(cr,cr2);
                                          mode = 0;
-                                         leftmargin = 0;
                                          break;
                                     case '[': // a second escape code follows, do not reset mode
                                          break;
@@ -512,6 +567,11 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                 case 27:    // escape
                                             mode = 30;
                                             // printf("Starting escape mode\n");
+                                            break;
+                                case 28:    // file separator
+                                            if (DEBUG) printf("Point plot mode\n");
+                                            mode = 5;
+                                            plotPointMode= 1;
                                             break;
                                 case 29:    // group separator
                                             mode = 1;
