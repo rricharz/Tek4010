@@ -25,6 +25,7 @@
  */
  
 #define DEBUG 0         // print debug info
+#define DEBUGMAX 9200    // maximum number of bytes to process in debug mode
 
 #define TODO  8         // for speed reasons, draw multiple objects until screen updates
 
@@ -60,6 +61,7 @@ struct tableEntry {
 int count = 0;
 static int x0,y0,x2,y2,xh,xl,yh,yl,xy4014;
 static int plotPointMode = 0;
+static int debugCount = 0;
 
 // mode handles the current state of the emulator:
 //
@@ -98,6 +100,10 @@ int isInput()
 {
         int bytesWaiting;
         ioctl(getDataPipe[0], FIONREAD, &bytesWaiting);
+        if (DEBUG) {
+                debugCount++;
+                if (debugCount > DEBUGMAX) return 0;
+        }
         return bytesWaiting;
 }
 
@@ -377,16 +383,10 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                         // this cannot be done in switch(mode) below, because multiple bytes
                         // can be switched and the current byte must be executed after a mode change
                         
-                        if ((mode == 3) && (tag == 3)) {
-                                // this overwrites the extra data byte of the 4014 for the
-                                // first dark mode coordinates and stores it for further use
-                                mode = 2;
-                                xy4014 = yl;
-                                if (DEBUG) printf("4014 coordinates, overwrite last value\n");
-                        }
-                        
                         if ((mode == 5) && (ch == 29)) {
-                                mode = 1; return;
+                                if (DEBUG) printf("group separator\n");
+                                mode = 1;
+                                return;
                         }
                         if (ch == 30) {
                                 if (DEBUG) printf("Starting incremental plot mode (4014)\n");
@@ -403,7 +403,25 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                 printf("xh=%d,xl=%d,yh=%d,yl=%d\n",xh,xl,yh,yl);                
                         }
                         
-                        if (tag != 0) {                        
+                        if (tag != 0) {
+                                
+                                ////////////////////////
+                                
+                                if ((mode == 1) && (tag != 1)) mode = 2;
+                                
+                                if ((mode == 3) && (tag == 3)) {
+                                        // this overwrites the extra data byte of the 4014 for the
+                                        // persistent mode ccordinates and stores it for further use
+                                        mode = 2;
+                                        xy4014 = yl;
+                                        if (DEBUG)
+                                                printf("4014 coordinates, overwrite last value\n");
+                                }
+                                
+                                if ((mode == 2) && (tag != 3)) mode = 3;
+                                if ((mode == 3) && (tag != 1)) mode = 4;
+                                
+                                /////////////////////////                       
                                                
                                 if ((mode == 5) && (tag != 1)) mode = 6;                                
 
@@ -416,23 +434,27 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                                 printf("4014 coordinates, overwrite last value\n");
                                 }
                                                               
-                                if ((mode == 6) && (tag != 3)) mode = 7;
-                                                        
+                                if ((mode == 6) && (tag != 3)) mode = 7;                                                        
                                 if ((mode == 7) && (tag != 1)) mode = 8;
                         }
+                        else return;
                                 
                 }
                 
                 switch (mode) {                                
-                        case 1: plotPointMode= 0; // normal graphics mode, starting coordinates
+                        case 1: plotPointMode = 0; // normal graphics mode, starting coordinates
                                 yh = 32 * (ch & 31); mode++;
+                                if (DEBUG) printf("setting yh to %d\n", yh);
                                 break;
                         case 2: yl = (ch & 31); y0 = yh + yl; mode++;
+                                if (DEBUG) printf("setting yl to %d\n", yl);
                                 break;
-                        case 3: xh = 32 * (ch & 31);          mode++;
+                        case 3: if (tag == 1) xh = 32 * (ch & 31); mode++;
+                                if (DEBUG) printf("setting xh to %d\n", xh);
                                 break;
-                        case 4: xl = (ch & 31); x0= xh + xl;  mode++; 
-                                        if (DEBUG) printf("***** Moving to (%d,%d)\n",x0,y0);
+                        case 4: xl = (ch & 31); x0= xh + xl;  mode++;
+                                if (DEBUG) printf("setting xl to %d\n", xl);
+                                        if (DEBUG) printf("******************************************** Moving to (%d,%d)\n",x0,y0);
                                 break;
                         case 5: if (ch == 29) {
                                         if (DEBUG) printf("setting mode to 1\n");
@@ -456,7 +478,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                 if (DEBUG) printf(">>>>>xl=%d\n",xl);
                                 
                                 if (plotPointMode>0.0) {
-                                        if (DEBUG) printf("plotting point at %d,%d,todo =%d\n",
+                                        if (DEBUG) printf("********************************************** plotting point at %d,%d,todo =%d\n",
                                                         x2,y2,todo);
                                         cairo_set_source_rgb(cr, 0, 1, 0);
                                         cairo_move_to(cr, x2, WINDOW_HEIGHT - y2);
@@ -475,7 +497,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                 
                                 else {
                                 
-                                        if (DEBUG) printf("tag=%d,***** Drawing vector to (%d,%d)\n",tag,x2,y2);
+                                        if (DEBUG) printf("tag=%d,**************************************** Drawing vector to (%d,%d)\n",tag,x2,y2);
                                         cairo_move_to(cr, x0, WINDOW_HEIGHT - y0);
                                         cairo_line_to(cr, x2, WINDOW_HEIGHT - y2);
                                         cairo_stroke (cr);
@@ -500,8 +522,8 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                         vectorTable.x2 = x2;
                                         vectorTable.y0 = y0;
                                         vectorTable.y2 = y2;
-                                        vectorTable.linewidth = 2;
-                                        vectorTable.intensity = 0.8;
+                                        vectorTable.linewidth = 3;
+                                        vectorTable.intensity = 0.85;
                                 }
                                 
                                 showCursor = 0;
