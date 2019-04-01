@@ -26,7 +26,7 @@
  
 #define DEBUG 0         // print debug info
 
-#define TODO  8         // for speed reasons, draw multiple objects until screen updates
+#define TODO  99999         // for speed reasons, draw multiple objects until screen updates
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -105,7 +105,7 @@ int getInputChar()
 // get a char from getDataPipe, if available, otherwise return -1
 {
         if (isInput()) {
-                int c = getc(getData);
+                int c = getc(getData) & 0x7F;
                 if (DEBUG) printf(">>%02X<<",c);
                 return c;
         }
@@ -367,7 +367,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                         if ((ch>='0') && (ch<='9')) mode = 30;
                 }
                 
-                int tag = ch >> 5;
+                int tag = (ch >> 5) & 3;
                                 
                 if ((mode >= 1) && (mode <= 8)) {
                         
@@ -582,8 +582,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                 case 31:    // US, leave graphics mode
                                             mode = 0;
                                             break;
-                                default:
-                                            if ((ch >= 32) && (ch <=127)) { // printable character
+                                default:    if ((ch >= 32) && (ch <=127)) { // printable character
                                                 if (y0 < 8) y0 = 8;
                                                 s[0] = ch;
                                                 s[1] = 0;
