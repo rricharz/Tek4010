@@ -26,7 +26,7 @@
  
 #define DEBUG 0         // print debug info
 
-#define TODO  99999         // for speed reasons, draw multiple objects until screen updates
+#define TODO  8         // for speed reasons, draw multiple objects until screen updates
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -463,6 +463,12 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                         cairo_line_to(cr, x2+1, WINDOW_HEIGHT - y2);
                                         cairo_stroke (cr);
                                         cairo_set_source_rgb(cr, 0, 0.7, 0);
+                                        cairo_set_line_width (cr2, 3);
+                                        cairo_set_source_rgb(cr2, 0.5, 1, 0.5);                        
+                                        cairo_move_to(cr2, x2, WINDOW_HEIGHT - y2);
+                                        cairo_line_to(cr2, x2+1, WINDOW_HEIGHT - y2+1);
+                                        cairo_stroke (cr2);
+                                        isBrightSpot = 1;
                                         mode = 50;
                                         todo--;
                                 }
