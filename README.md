@@ -3,6 +3,8 @@
 This is a [Tektronix 4010](https://en.wikipedia.org/wiki/Tektronix_4010) terminal emulator
 for the Raspberry Pi.
 
+![screen_shot](teklogo.png?raw=true "Tektronix logo in tek4010 window")
+
 It attempts to emulate the storage tube display of the Tektronix 4010, including the bright
 drawing spot. At the moment, it only supports persistent drawing, but there are plans to
 emulate the Tektronix 4014 "write through" mode to support a small number of non-persistent
