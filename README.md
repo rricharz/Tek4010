@@ -20,7 +20,7 @@ It can be used to log into a historical Unix system such as
 [pidp11](http://obsolescence.wixsite.com/obsolescence/pidp-11)
 or a real historical system.
 
-This [video](https://youtu.be/361onpahuKw) was generated entirely on a Raspberry Pi. The Raspberry Pi was
+This [video](https://youtu.be/tmy7dx_8fAM) was generated entirely on a Raspberry Pi. The Raspberry Pi was
 running the following software at the same time. The graphics drawings were recorded at about 50% of
 the actual speed due to the screen recorder using up cpu cycles.
 
