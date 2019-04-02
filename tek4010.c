@@ -246,6 +246,15 @@ int tek4010_on_timer_event()
         // or there is still a bright spot, return 1 to ask for
         // one more redraw
        
+        // is child process still running?
+        
+        int status;
+        if ((!noexit) && (isInput() == 0) && (waitpid(-1, &status, WNOHANG))) {
+                tek4010_quit();
+                gtk_main_quit();
+                printf("Process has been terminated\n");
+                exit(0);
+        }
         return (isBrightSpot || isInput());
 }
  
@@ -306,6 +315,15 @@ void clearPersistent(cairo_t *cr, cairo_t *cr2)
         plotPointMode = 0;
 }
 
+void clearSecond(cairo_t *cr2)
+// clear second surface
+{
+        cairo_set_source_rgba(cr2, 0, 0, 0, 0);
+        cairo_set_operator(cr2, CAIRO_OPERATOR_SOURCE);
+        cairo_paint(cr2);
+        cairo_set_operator(cr2, CAIRO_OPERATOR_OVER);
+}
+
 
 void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
 // draw onto the main window using cairo
@@ -321,10 +339,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
         showCursor = 1;
         isBrightSpot = 0;
         
-        cairo_set_source_rgba(cr2, 0, 0, 0, 0); // second surface is cleared each time
-        cairo_set_operator(cr2, CAIRO_OPERATOR_SOURCE);
-        cairo_paint(cr2);
-        cairo_set_operator(cr2, CAIRO_OPERATOR_OVER);
+        clearSecond(cr2);
         
         // clear persistent surface, if necessary
         if (globalClearPersistent) {
@@ -345,14 +360,15 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
         
         do {
                 ch = getInputChar();
+                if (isInput() == 0) todo = 0;
                 
                 // fade away last bright spot vector
                 if (vectorTable.intensity > 0.1) {
                         cairo_set_line_width (cr2, vectorTable.linewidth);
-                        cairo_set_source_rgb(cr2, 0.25, 0.7, 0.25);
+                        cairo_set_source_rgb(cr2, 0.45, 0.8, 0.45);
                         cairo_move_to(cr2, vectorTable.x0, WINDOW_HEIGHT - vectorTable.y0);
                         cairo_line_to(cr2, vectorTable.x2, WINDOW_HEIGHT - vectorTable.y2);
-                        cairo_stroke (cr2);
+                        cairo_stroke(cr2);
                         vectorTable.intensity = 0.0;
                         isBrightSpot = 1;
                 }
@@ -569,7 +585,13 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                 break;
                         default: switch (ch) {
                                 case 0:     break;
-                                case EOF:   break;
+                                case 7:     // bell function, delay 0.1 sec
+                                            // cannot delay if bright spot is on, needs to be turned off first
+                                            clearSecond(cr2);
+                                            usleep(50000);
+                                            showCursor=0;
+                                            todo = 0;
+                                            break;
                                 case 8:     // backspace
                                             x0 -= hDotsPerChar;
                                             if (x0<leftmargin) x0 = leftmargin;
@@ -633,14 +655,4 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
         // display cursor
         
         if (showCursor) doCursor(cr2);
-        
-        // is child process still running?
-        
-        int status;
-        if ((! noexit) && (waitpid(-1, &status, WNOHANG))) {    // Is child process terminated?
-                tek4010_quit();
-                gtk_main_quit();
-                printf("Child process has been terminated\n");
-                exit(0);
-        }
 }

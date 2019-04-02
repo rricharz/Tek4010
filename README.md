@@ -1,4 +1,4 @@
-# Tektronix 4010 Emulator
+# Tektronix 4010 Terminal Emulator
 
 This is a [Tektronix 4010](https://en.wikipedia.org/wiki/Tektronix_4010) terminal emulator
 for the Raspberry Pi.
@@ -54,12 +54,12 @@ If you want to test text output, type for example
 
 	./tek4010 head -n 32 tek4010.c -noexit
 
-Don't forget the LAST argument "-noexit", which tells
-tek4010 to stay alive after cat has finished so that you have a chance to look at the output.
-By the way, the "-noexit" as the last argument might also be helpful if you want to
-experiment with other commands. Let me know if you find anything which works and makes sense.
-Because tek4010 pipes from stdout of that program and into stdin of that program, some
-programs will not work.
+Don't forget the LAST argument "-noexit", which tells tek4010 to stay alive after cat or
+head has finished so that you have a chance to look at the output.
+
+If you want to see a demo of historical Tektronix 4014 plot files, type
+
+	./tek4010 ./demo.sh
 
 The emulator does use "rsh" or "telnet", because historical Unix systems do not support
 the secure ssh protocol, and because ssh does not allow using a virtual emulator such as tek4010
@@ -198,9 +198,9 @@ Pack it with zip or something else to make sure that the mailing program does no
 
 **Screen resolution**
 
-This tek4010 emulator creates a graphics window of 1024x768 points, which is the display size
-of the Tektronix 4010 terminal according to the manual from Tektronix. Some sources claim
-that actual terminals could display up to 780 points vertically. The Raspberry Pi can handle
+This tek4010 emulator creates a graphics window of 1024x780 points, which is the display size
+of the Tektronix 4010 terminaland the Tektronix 4014 terminal without enhanced graphics module.
+The Raspberry Pi can handle
 sufficiently high refresh rates at this resolution. This emulator makes an attempt to filter
 Tektronix 4014 graphics code with the enhanced graphics module installed, so that such
 graphics codes can be displayed using this terminal emulator, but the lowest two bits of
