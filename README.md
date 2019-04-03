@@ -1,7 +1,8 @@
 # Tektronix 4010 Terminal Emulator
 
 This is a [Tektronix 4010](https://en.wikipedia.org/wiki/Tektronix_4010) terminal emulator
-for the Raspberry Pi.
+for the Raspberry Pi and other Linux systems. It can also be used on Windows an Macintosh systems
+with [Virtualbox](https://www.virtualbox.org/) and [Ubuntu](https://www.ubuntu.com/).
 
 ![screen_shot](teklogo.png?raw=true "Tektronix logo in tek4010 window")
 
@@ -22,14 +23,8 @@ It can be used to log into a historical Unix system such as
 [pidp11](http://obsolescence.wixsite.com/obsolescence/pidp-11)
 or a real historical system.
 
-This [video](https://youtu.be/tmy7dx_8fAM) was generated entirely on a Raspberry Pi. The Raspberry Pi was
-running the following software at the same time. The graphics drawings were recorded at about 50% of
-the actual speed due to the screen recorder using up cpu cycles.
-
-- PiDP-11 software with simh, emulating 2.11 BSD Unix, executing graphics programs
-- tek4010 software using telnet to access the historical OS with a terminal multiplexer
-- [simplescreenrecorder](https://www.maartenbaert.be/simplescreenrecorder) to record the video
-- vnc to control everything from a Mac
+This [video of a tek4010 demo](https://youtu.be/tmy7dx_8fAM) was generated using
+[simplescreenrecorder](https://www.maartenbaert.be/simplescreenrecorder).
 
 This tek4010 emulator does currently not support the crosshair cursor of some 4010 terminals
 with its graphics input (GIN) mode. The tab character is implemented as a tab8 function
@@ -37,8 +32,15 @@ instead of the single blank character of the original 4010 to make text better
 readable. Also, there is no hardcopy mode, but you can make screen snapshots using "scrot",
 or screen videos using [simplescreenrecorder](https://www.maartenbaert.be/simplescreenrecorder).
 
-Install the tek4010 emulator from this repo on a Raspberry Pi. I propose using
+If you want to make an installation on a PC or a Macintosh, first install Virtualbox and Ubuntu on
+your system. There is for example guides for the
+[Macintosh](https://www.dev2qa.com/how-to-install-ubuntu-on-virtualbox-mac/)
+and the [PC](https://itsfoss.com/install-linux-in-virtualbox/). Once you are running in
+virtual Ubuntu you can proceed.
 
+Install the tek4010 emulator from this repo on a Raspberry Pi or Ubuntu. I propose using
+
+        sudo apt-get install git
 	git clone git://github.com/rricharz/Tek4010
 	cd Tek4010
 
@@ -46,6 +48,18 @@ This allows you to get updates later easily as follows:
 
 	cd Tek4010
 	git pull
+        
+The built tek4010 file is for a Raspberry Pi. If you are on Ubuntu, do the follwing to recompile
+the program. On the Raspberry Pi you can skip this step.
+
+        sudo apt-get install libgtk-3-dev
+        rm tek4010
+        make
+        
+Thanks to Lars Brinkhoff (lars@nocrew.org) to pointing out how easy it is to compile tek4010
+on Ubuntu. He also helped me to fix some bugs and proposed many nice features. Don't forget to
+recompile the program each time you update from the repository if you are using Ubuntu. I have
+tested this on my Macintosh with Virtualbox and Ubunto, and it works very well!
 
 There is a file "captured_data" in the repo, which you can use to test the tek4010 emulator.
 "captured_data" was produced in 2.11 BSD using my program "dodekagon". Type
@@ -189,7 +203,7 @@ system and simh properly, before detaching the terminal emulator!
 
 Call the command tek4010 using the following syntax:
 
-	tek4010 [options of 4010] command [options of command]
+	tek4010 [options of tek4010] command [options of command]
 
 "command" is a mandatory command to be run by tek4010, such as telnet, rsh or cat.
 
@@ -197,7 +211,7 @@ tek4010 has the following options:
 
 	-noexit		do not close window after completion of "command"
 
-	-raw		do not execute an automatic CR (carriage return) after a LF (line feed).
+	-raw		do not execute an automatic CR (carriage return) after a LF (line feed)
 
 	-tab1		execute a blank	instead of a tab to the next 8-character column
 
