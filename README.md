@@ -33,20 +33,20 @@ readable. Also, there is no hardcopy mode, but you can make screen snapshots usi
 or screen videos using [simplescreenrecorder](https://www.maartenbaert.be/simplescreenrecorder).
 
 If you want to make an installation on a PC or a Macintosh, first install Virtualbox and Ubuntu on
-your system. There is for example guides for the
+your system. There are examples of guides for the
 [Macintosh](https://www.dev2qa.com/how-to-install-ubuntu-on-virtualbox-mac/)
-and the [PC](https://itsfoss.com/install-linux-in-virtualbox/). Once you are running in
+and [Windows](https://itsfoss.com/install-linux-in-virtualbox/). Once you are running in
 virtual Ubuntu you can proceed.
 
 Install the tek4010 emulator from this repo on a Raspberry Pi or Ubuntu. I propose using
 
 	sudo apt-get install git
-       	git clone git://github.com/rricharz/Tek4010
+	git clone git://github.com/rricharz/Tek4010
 	cd Tek4010
 
 This allows you to get updates later easily as follows:
 
-      	cd Tek4010
+	cd Tek4010
 	git pull
         
 The built tek4010 file is for a Raspberry Pi. If you are on Ubuntu, do the follwing to recompile
@@ -80,8 +80,8 @@ If you want to see a demo of historical Tektronix 4014 plot files, type
 
 The emulator does use "rsh" or "telnet", because historical Unix systems do not support
 the secure ssh protocol, and because ssh does not allow using a virtual emulator such as tek4010
-for security reasons. You need therefore to install rsh or telnet on the Raspberry Pi running
-the tek4010 emulator:
+for security reasons. You need therefore to install rsh or telnet on the Raspberry Pi
+or Ubuntu running the tek4010 emulator:
 
 	sudo apt-get install rsh-client
 or
@@ -221,7 +221,7 @@ tek4010 has the following options:
 			of 9600 baud. With the small baud rates you can emulate 1970s 
 			style modem performance. Early modems had a baud rate of 300.
 
-	-full		in thos mode the tek4010 emulator creates the largest possible window
+	-full		in this mode the tek4010 emulator creates the largest possible window
 			with 4x3 aspect ratio, and uses the full resolution of the 4014 with
 			enhanced graphics module installed, scaled down to the actual window
 			size. This mode is not recommended on the Raspberry Pi because of the
