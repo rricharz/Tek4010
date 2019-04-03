@@ -48,11 +48,14 @@
 
 extern void gtk_main_quit();
 extern int globalClearPersistent;
+extern int windowWidth;
+extern int windowHeight;
 
 int argNoexit = 0;
 int argRaw = 0;
 int argBaud = 19200;
 int argTab1 = 0;
+int argFull = 0;
 
 int showCursor;
 int isBrightSpot = 0;
@@ -70,6 +73,7 @@ int count = 0;
 static int x0,y0,x2,y2,xh,xl,yh,yl,xy4014;
 static int plotPointMode = 0;
 static int debugCount = 0;
+static double efactor = 0.0;
 
 static long refreshCount = 0;
 static long charCount = 0;
@@ -189,7 +193,7 @@ void tek4010_init(int argc, char* argv[])
                 exit(1);
         }
         
-        // this stays here for compatability with early versions of tek4010
+        // this stays here for compatibility with early versions of tek4010
         if (strcmp(argv[argc-1],"-noexit") == 0) {
                 argNoexit = 1;
                 argc--;
@@ -214,6 +218,8 @@ void tek4010_init(int argc, char* argv[])
                         argBaud = 300;
                 else if (strcmp(argv[firstArg],"-tab1") == 0)
                         argTab1 = 1;
+                else if (strcmp(argv[firstArg],"-full") == 0)
+                        argFull = 1;
                 else {
                         printf("tek4010: unknown argument %s\n", argv[firstArg]);
                         exit(1);
@@ -257,8 +263,6 @@ void tek4010_init(int argc, char* argv[])
         
         if (DEBUG) printf("character_interval = %0.1f msec\n",(double)characterInterval/10.0);
                 
-        hDotsPerChar  = WINDOW_WIDTH / 74;
-        vDotsPerChar  = WINDOW_HEIGHT / 35;
         globalClearPersistent = 1;
                 
         // create pipes for communication between parent and child
@@ -407,7 +411,7 @@ void doCursor(cairo_t *cr2)
 {
         cairo_set_source_rgb(cr2, 0, 0.8, 0);
         cairo_set_line_width (cr2, 1);
-        cairo_rectangle(cr2, x0, WINDOW_HEIGHT - y0 - vDotsPerChar + 8,
+        cairo_rectangle(cr2, x0, windowHeight - y0 - vDotsPerChar + 8,
                                                 hDotsPerChar - 3, vDotsPerChar - 3);
         cairo_fill(cr2);
         cairo_stroke (cr2);
@@ -421,7 +425,7 @@ void clearPersistent(cairo_t *cr, cairo_t *cr2)
         cairo_paint(cr);
         globalClearPersistent = 0;
         x0 = 0;
-        y0 = WINDOW_HEIGHT - vDotsPerChar;
+        y0 = windowHeight - vDotsPerChar;
         leftmargin = 0;
         cairo_set_source_rgb(cr, 0, 0.7, 0);
         cairo_set_source_rgb(cr2, 0.8, 1, 0.8);
@@ -440,20 +444,31 @@ void clearSecond(cairo_t *cr2)
 }
 
 
-void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
+void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
 // draw onto the main window using cairo
 // width is the actual width of the main window
 // height is the actual height of the main window
 // cr is used for persistent drawing, cr2 for temporary drawing 
 
-{		
+{	
         int ch;
         int todo;
         char s[2];
         
         refreshCount++;
         
-        long startPaintTime = mSeconds(); // start to meausure time for this draw operation
+        if (first) {
+        
+                hDotsPerChar  = windowWidth / 74;
+                vDotsPerChar  = windowHeight / 35;
+                first = 0;
+                
+                if (windowWidth == 1024) efactor = 0.0;
+                else efactor = windowWidth / 1024.0;
+                
+        }
+        
+        long startPaintTime = mSeconds(); // start to measure time for this draw operation
 
         showCursor = 1;
         isBrightSpot = 0;
@@ -470,10 +485,17 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
         cairo_set_source_rgb(cr, 0, 0.7, 0);
         
         cairo_select_font_face(cr, "Monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-        cairo_set_font_size(cr, 18);
         cairo_select_font_face(cr2, "Monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-        cairo_set_font_size(cr2, 18);
         
+        if (efactor > 0.0) {
+                cairo_set_font_size(cr, (int)(efactor * 18));
+                cairo_set_font_size(cr2, (int)(efactor *18));
+        }
+        else {
+                cairo_set_font_size(cr, 18);
+                cairo_set_font_size(cr2, 18);
+        }
+                
         if (plotPointMode) todo = 5 * TODO;  // more dots before refresh in plot point mode
         else todo = TODO;
         
@@ -486,8 +508,8 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                         cairo_set_line_width (cr2, vectorTable.linewidth);
                         cairo_set_source_rgb(cr2, vectorTable.intensity/2.0,
                                         vectorTable.intensity, vectorTable.intensity/2.0);
-                        cairo_move_to(cr2, vectorTable.x0, WINDOW_HEIGHT - vectorTable.y0);
-                        cairo_line_to(cr2, vectorTable.x2, WINDOW_HEIGHT - vectorTable.y2);
+                        cairo_move_to(cr2, vectorTable.x0, windowHeight - vectorTable.y0);
+                        cairo_line_to(cr2, vectorTable.x2, windowHeight - vectorTable.y2);
                         cairo_stroke(cr2);
                         vectorTable.intensity = 0.0;
                         isBrightSpot = 1;
@@ -540,9 +562,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                         }
                         
                         if (tag != 0) {
-                                
-                                ////////////////////////
-                                
+ 
                                 if ((mode == 1) && (tag != 1)) mode = 2;
                                 
                                 if ((mode == 3) && (tag == 3)) {
@@ -557,8 +577,6 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                 if ((mode == 2) && (tag != 3)) mode = 3;
                                 if ((mode == 3) && (tag != 1)) mode = 4;
                                 
-                                /////////////////////////                       
-                                               
                                 if ((mode == 5) && (tag != 1)) mode = 6;                                
 
                                 if ((mode == 7) && (tag == 3)) {
@@ -582,13 +600,25 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                 yh = 32 * (ch & 31); mode++;
                                 if (DEBUG) printf("setting yh to %d\n", yh);
                                 break;
-                        case 2: yl = (ch & 31); y0 = yh + yl; mode++;
+                        case 2: yl = (ch & 31);
+                                if (efactor > 0.0) {
+                                        int yb = (xy4014 >> 2) & 3;
+                                        y0 = (int)(efactor * (double)(((yh+yl) << 2) + yb) / 4.0);
+                                }
+                                else y0 = yh + yl;
+                                mode++;
                                 if (DEBUG) printf("setting yl to %d\n", yl);
                                 break;
                         case 3: if (tag == 1) xh = 32 * (ch & 31); mode++;
                                 if (DEBUG) printf("setting xh to %d\n", xh);
                                 break;
-                        case 4: xl = (ch & 31); x0= xh + xl;  mode++;
+                        case 4: xl = (ch & 31);
+                                if (efactor > 0.0) {
+                                        int xb = xy4014 & 3;
+                                        x0 = (int)(efactor * (double)(((xh+xl) << 2) + xb) / 4.0);
+                                }
+                                else x0 = xh + xl;
+                                mode++;
                                 if (DEBUG) printf("setting xl to %d\n", xl);
                                         if (DEBUG) printf("******************************************** Moving to (%d,%d)\n",x0,y0);
                                 break;
@@ -609,22 +639,30 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                 break;
                                 if (DEBUG) printf(">>>>>xh=%d\n",xh);
                         case 8: xl = (ch & 31);
-                                x2 = xh + xl;
-                                y2 = yh + yl;
+                                if (efactor > 0.0) {
+                                        int xb = xy4014 & 3;
+                                        x2 = (int)(efactor * (double)(((xh+xl) << 2) + xb) / 4.0);
+                                        int yb = (xy4014 >> 2) & 3;
+                                        y2 = (int)(efactor * (double)(((yh+yl) << 2) + yb) / 4.0);
+                                }
+                                else {
+                                        x2 = xh + xl;
+                                        y2 = yh + yl;
+                                }
                                 if (DEBUG) printf(">>>>>xl=%d\n",xl);
                                 
                                 if (plotPointMode>0.0) {
                                         if (DEBUG) printf("********************************************** plotting point at %d,%d,todo =%d\n",
                                                         x2,y2,todo);
                                         cairo_set_source_rgb(cr, 0, 1, 0);
-                                        cairo_move_to(cr, x2, WINDOW_HEIGHT - y2);
-                                        cairo_line_to(cr, x2+1, WINDOW_HEIGHT - y2);
+                                        cairo_move_to(cr, x2, windowHeight - y2);
+                                        cairo_line_to(cr, x2+1, windowHeight - y2);
                                         cairo_stroke (cr);
                                         cairo_set_source_rgb(cr, 0, 0.7, 0);
                                         cairo_set_line_width (cr2, 3);
                                         cairo_set_source_rgb(cr2, 0.5, 1, 0.5);                        
-                                        cairo_move_to(cr2, x2, WINDOW_HEIGHT - y2);
-                                        cairo_line_to(cr2, x2+1, WINDOW_HEIGHT - y2+1);
+                                        cairo_move_to(cr2, x2, windowHeight - y2);
+                                        cairo_line_to(cr2, x2+1, windowHeight - y2+1);
                                         cairo_stroke (cr2);
                                         isBrightSpot = 1;
                                         mode = 50;
@@ -634,14 +672,14 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                 else {
                                 
                                         if (DEBUG) printf("tag=%d,**************************************** Drawing vector to (%d,%d)\n",tag,x2,y2);
-                                        cairo_move_to(cr, x0, WINDOW_HEIGHT - y0);
-                                        cairo_line_to(cr, x2, WINDOW_HEIGHT - y2);
+                                        cairo_move_to(cr, x0, windowHeight - y0);
+                                        cairo_line_to(cr, x2, windowHeight - y2);
                                         cairo_stroke (cr);
                                 
                                         cairo_set_line_width (cr2, 3);
                                         cairo_set_source_rgb(cr2, 0.5, 1, 0.5);                        
-                                        cairo_move_to(cr2, x0, WINDOW_HEIGHT - y0);
-                                        cairo_line_to(cr2, x2, WINDOW_HEIGHT - y2);
+                                        cairo_move_to(cr2, x0, windowHeight - y0);
+                                        cairo_line_to(cr2, x2, windowHeight - y2);
                                         cairo_stroke (cr2);
                                         isBrightSpot = 1;
                                         
@@ -728,9 +766,9 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                 case 10:    // new line
                                             y0 -= vDotsPerChar;
                                             if (y0 < 4) {
-                                                y0 = WINDOW_HEIGHT - vDotsPerChar;
+                                                y0 = windowHeight - vDotsPerChar;
                                                 if (leftmargin) leftmargin = 0;
-                                                else leftmargin = WINDOW_WIDTH / 2;
+                                                else leftmargin = windowHeight / 2;
                                             }
                                             if (!argRaw) x0 = leftmargin;
                                             break;
@@ -762,10 +800,10 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int width, int height, int first)
                                                 if (y0 < 8) y0 = 8;
                                                 s[0] = ch;
                                                 s[1] = 0;
-                                                cairo_move_to(cr, x0, WINDOW_HEIGHT - y0 + 4);
+                                                cairo_move_to(cr, x0, windowHeight - y0 + 4);
                                                 cairo_show_text(cr, s);
                                                 cairo_set_source_rgb(cr2, 0.5, 1, 0.5);
-                                                cairo_move_to(cr2, x0, WINDOW_HEIGHT - y0 + 4);
+                                                cairo_move_to(cr2, x0, windowHeight - y0 + 4);
                                                 cairo_show_text(cr2, s);
                                                 x0 += hDotsPerChar;
                                                 isBrightSpot = 1;

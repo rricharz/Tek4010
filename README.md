@@ -40,13 +40,13 @@ virtual Ubuntu you can proceed.
 
 Install the tek4010 emulator from this repo on a Raspberry Pi or Ubuntu. I propose using
 
-        sudo apt-get install git
-	git clone git://github.com/rricharz/Tek4010
+	sudo apt-get install git
+       	git clone git://github.com/rricharz/Tek4010
 	cd Tek4010
 
 This allows you to get updates later easily as follows:
 
-	cd Tek4010
+      	cd Tek4010
 	git pull
         
 The built tek4010 file is for a Raspberry Pi. If you are on Ubuntu, do the follwing to recompile
@@ -219,7 +219,13 @@ tek4010 has the following options:
 			Emulate a baud rate. Without one of these arguments, the baud rate
 			is 19200 baud. The original Tektronix 4010 had a maximal baud rate
 			of 9600 baud. With the small baud rates you can emulate 1970s 
-			style modem performance. Early modems had a baud rate of 300.	
+			style modem performance. Early modems had a baud rate of 300.
+
+	-full		in thos mode the tek4010 emulator creates the largest possible window
+			with 4x3 aspect ratio, and uses the full resolution of the 4014 with
+			enhanced graphics module installed, scaled down to the actual window
+			size. This mode is not recommended on the Raspberry Pi because of the
+			heavy workload on the GPU.			
 
 **Reporting problems**
 
@@ -249,6 +255,11 @@ each axis are not used in this case, as in the Tektronix 4014 without the enhanc
 module. It would be easy to add the capability to support the 4K resolution of the 4014 with
 enhanced graphics module, but the current Raspberry Pi hardware cannot handle such a high
 resolution.
+
+If called with the -full option, the tek4010 emulator creates the largest possible window
+with 4x3 aspect ratio, and uses the full resolution of the 4014 with enhanced graphics
+module installed, scaled down to the actual window size. This mode is not recommended on
+the Raspberry Pi because of the heavy workload on the GPU.
 
 **Compiling the tek4010 project**
 

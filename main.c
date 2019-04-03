@@ -33,6 +33,8 @@
  * 
  * 
  */
+ 
+#define GDK_DISABLE_DEPRECATION_WARNINGS
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -46,6 +48,10 @@
 extern FILE *putKeys;
 
 static int global_firstcall;
+extern int argFull;
+
+int windowWidth;
+int windowHeight;
 
 int globalClearPersistent;
 
@@ -81,21 +87,18 @@ static void on_quit_event()
 
 static void do_drawing(cairo_t *cr, GtkWidget *widget)
 {
-	int width = WINDOW_WIDTH;	// we do not use actual window size here
-	int height = WINDOW_HEIGHT;     // because surfaces does not change size
-        
         static cairo_surface_t *permanent_surface, *temporary_surface;
 	
 	if (global_firstcall) {
 		permanent_surface = cairo_surface_create_similar(cairo_get_target(cr),
-			CAIRO_CONTENT_COLOR_ALPHA, width, height);
+			CAIRO_CONTENT_COLOR_ALPHA, windowWidth, windowHeight);
                 temporary_surface = cairo_surface_create_similar(cairo_get_target(cr),
-			CAIRO_CONTENT_COLOR_ALPHA, width, height);
+			CAIRO_CONTENT_COLOR_ALPHA, windowWidth, windowHeight);
 	}
 	
 	cairo_t *permanent_cr = cairo_create(permanent_surface);
         cairo_t *temporary_cr = cairo_create(temporary_surface);
-	tek4010_draw(permanent_cr, temporary_cr, width, height, global_firstcall);
+	tek4010_draw(permanent_cr, temporary_cr, global_firstcall);
 	global_firstcall = FALSE;
 
 	cairo_set_source_surface(cr, permanent_surface, 0, 0);
@@ -151,6 +154,16 @@ int main (int argc, char *argv[])
 {
 	GtkWidget *darea;
 	GtkWidget *window;
+        
+        int askWindowWidth = A_WINDOW_WIDTH;
+        int askWindowHeight = A_WINDOW_HEIGHT;
+        
+        tek4010_init(argc, argv);
+        
+        if (argFull) {
+                askWindowWidth = 4096;
+                askWindowHeight = 3072;
+        }
           
 	gtk_init(&argc, &argv);
 	
@@ -168,6 +181,29 @@ int main (int argc, char *argv[])
 	g_signal_connect(G_OBJECT(window), "button-press-event", G_CALLBACK(clicked), NULL);
         g_signal_connect(G_OBJECT(window), "key_press_event", G_CALLBACK(on_key_press), NULL);
         
+        GdkScreen *screen = gtk_window_get_screen(GTK_WINDOW(window));
+	int screenWidth = gdk_screen_get_width(screen);
+	int screenHeight = gdk_screen_get_height(screen);
+	printf("Screen dimensions: %d x %d\n", screenWidth, screenHeight);
+        
+        if (argFull && (screenWidth<askWindowWidth+8) && (screenHeight<(askWindowHeight+72))) {        
+                askWindowWidth = screenWidth - 8;
+                askWindowHeight = screenHeight - 72;
+                if (askWindowWidth > 4*askWindowHeight/3)
+                        askWindowWidth = 4*askWindowHeight/3;
+                if (askWindowHeight > 3*askWindowWidth/4)
+                        askWindowHeight = 3*askWindowWidth/4;
+        }
+ 
+        // DISPLAY DECORATED WINDOW
+        gtk_window_set_decorated(GTK_WINDOW(window), TRUE);
+        gtk_window_set_default_size(GTK_WINDOW(window),
+			askWindowWidth, askWindowHeight);
+        windowWidth  = askWindowWidth;
+        windowHeight = askWindowHeight;
+ 
+        printf("Window dimensions: %d x %d\n", windowWidth, windowHeight);
+        
   
         if (TIME_INTERVAL > 0) {
 		// Add timer event
@@ -176,14 +212,11 @@ int main (int argc, char *argv[])
 		g_timeout_add(TIME_INTERVAL, (GSourceFunc) on_timer_event, (gpointer) window);
 	}
 
-	gtk_window_set_default_size(GTK_WINDOW(window), WINDOW_WIDTH, WINDOW_HEIGHT); 
 	gtk_window_set_title(GTK_WINDOW(window), WINDOW_NAME);
 	
 	if (strlen(ICON_NAME) > 0) {
 		gtk_window_set_icon_from_file(GTK_WINDOW(window), ICON_NAME, NULL);	
 	}
-	
-	tek4010_init(argc, argv);
 
 	gtk_widget_show_all(window);
 
