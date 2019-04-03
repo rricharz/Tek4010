@@ -50,14 +50,15 @@ This allows you to get updates later easily as follows:
 There is a file "captured_data" in the repo, which you can use to test the tek4010 emulator.
 "captured_data" was produced in 2.11 BSD using my program "dodekagon". Type
 
-	./tek4010 cat captured_data -noexit
+	./tek4010 -noexit cat captured_data
 
 If you want to test text output, type for example
 
-	./tek4010 head -n 32 tek4010.c -noexit
+	./tek4010 -noexit head -n 32 tek4010.c
 
-Don't forget the LAST argument "-noexit", which tells tek4010 to stay alive after cat or
-head has finished so that you have a chance to look at the output.
+Don't forget the option "-noexit", which tells tek4010 to stay alive after cat or
+head has finished so that you have a chance to look at the output. For a list of
+all possible options, see the chapter "Options of the command tek4010" below.
 
 If you want to see a demo of historical Tektronix 4014 plot files, type
 
@@ -92,7 +93,7 @@ or
 where "user_name" is the name of the user on the historical operating system, and "system"
 is the hostname of this system. If the historical operating system is running using an
 emulator, this is NOT the hostname of the system, on which the emulator is running. See
-the chaptor below if you prefer to login into the system, on which the emulator is
+the chapter below if you prefer to login into the system, on which the emulator is
 running. For example, type
 
 	rsh -l rene pdp11
@@ -184,6 +185,28 @@ NOT detach or quit the terminal while your historical operating system is runnin
 this will kill the PiDP-11 simh emulator right away. First run down your historical operating
 system and simh properly, before detaching the terminal emulator!
 
+**Options of the command tek4010**
+
+Call the command tek4010 using the following syntax:
+
+	tek4010 [options of 4010] command [options of command]
+
+"command" is a mandatory command to be run by tek4010, such as telnet, rsh or cat.
+
+tek4010 has the following options:
+
+	-noexit		do not close window after completion of "command"
+
+	-raw		do not execute an automatic CR (carriage return) after a LF (line feed).
+
+	-tab1		execute a blank	instead of a tab to the next 8-character column
+
+	-b9600, -b4800, -b2400, -b1200, -b600, -b300
+			Emulate a baud rate. Without one of these arguments, the baud rate
+			is 19200 baud. The original Tektronix 4010 had a maximal baud rate
+			of 9600 baud. With the small baud rates you can emulate 1970s 
+			style modem performance. Early modems had a baud rate of 300.	
+
 **Reporting problems**
 
 As this software is still in beta test, there will be problems. I just do not have enough
@@ -197,6 +220,8 @@ tek4010 emulator, you could send me your data as follows: On a historical Unix s
 I don't know how this can be done on other operating systems. You can then mail your
 captured_data file together with a description of the problem to rricharz77@gmail.com.
 Pack it with zip or something else to make sure that the mailing program does not alter it.
+
+If you are registered on github, you can also open an issue.
 
 **Screen resolution**
 
