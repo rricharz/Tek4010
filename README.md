@@ -7,9 +7,7 @@ with [Virtualbox](https://www.virtualbox.org/) and [Ubuntu](https://www.ubuntu.c
 ![screen_shot](teklogo.png?raw=true "Tektronix logo in tek4010 window")
 
 It attempts to emulate the storage tube display of the Tektronix 4010, including the bright
-drawing spot. At the moment, it only supports persistent drawing, but there are plans to
-emulate the Tektronix 4014 "write through" mode to support a small number of non-persistent
-vectors for animations.
+drawing spot.
 
 To the best of my knowledge this is the only Tektronix 4010 emulator, which makes an effort
 to emulate the storage tube behavior of the 4010. If the look and feel is not important, you can
@@ -26,15 +24,12 @@ or a real historical system.
 This [video of a tek4010 demo](https://youtu.be/tmy7dx_8fAM) was generated using
 [simplescreenrecorder](https://www.maartenbaert.be/simplescreenrecorder).
 
-This tek4010 emulator does currently not support the crosshair cursor of some 4010 terminals
-with its graphics input (GIN) mode. The tab character is implemented as a tab8 function
-instead of the single blank character of the original 4010 to make text better
-readable. Also, there is no hardcopy mode, but you can make screen snapshots using "scrot",
+There is no hardcopy mode, but you can make screen snapshots using "scrot",
 or screen videos using [simplescreenrecorder](https://www.maartenbaert.be/simplescreenrecorder).
 
-If you want to make an installation on a PC or a Macintosh, first install Virtualbox and Ubuntu on
-your system. There are examples of guides for the
-[Macintosh](https://www.dev2qa.com/how-to-install-ubuntu-on-virtualbox-mac/)
+If you want to make an installation on Windows or OSX, first install Virtualbox and Ubuntu on
+your system. Here are examples of guides for
+[OSX](https://www.dev2qa.com/how-to-install-ubuntu-on-virtualbox-mac/)
 and [Windows](https://itsfoss.com/install-linux-in-virtualbox/). Once you are running in
 virtual Ubuntu you can proceed.
 
@@ -229,11 +224,10 @@ tek4010 has the following options:
 
 **Reporting problems**
 
-As this software is still in beta test, there will be problems. I just do not have enough
-programs doing graphics to properly test all possible aspects.
+As this software is still in beta test, there will be problems.
 
 If everything works properly for you, but your graphics application produces garbage on the
-tek4010 emulator, you could send me your data as follows: On a historical Unix system, type
+tek4010 emulator, you can send me your data as follows: On a historical Unix system, type
 
 	your_graphics_program > captured_data
 
@@ -246,15 +240,13 @@ If you are registered on github, you can also open an issue.
 **Screen resolution**
 
 This tek4010 emulator creates a graphics window of 1024x780 points, which is the display size
-of the Tektronix 4010 terminaland the Tektronix 4014 terminal without enhanced graphics module.
+of the Tektronix 4010 terminal and the Tektronix 4014 terminal without enhanced graphics module.
 The Raspberry Pi can handle
 sufficiently high refresh rates at this resolution. This emulator makes an attempt to filter
 Tektronix 4014 graphics code with the enhanced graphics module installed, so that such
 graphics codes can be displayed using this terminal emulator, but the lowest two bits of
 each axis are not used in this case, as in the Tektronix 4014 without the enhanced graphics
-module. It would be easy to add the capability to support the 4K resolution of the 4014 with
-enhanced graphics module, but the current Raspberry Pi hardware cannot handle such a high
-resolution.
+module.
 
 If called with the -full option, the tek4010 emulator creates the largest possible window
 with 4x3 aspect ratio, and uses the full resolution of the 4014 with enhanced graphics
