@@ -25,7 +25,7 @@
  */
  
 #define DEBUG 0                 // print debug info
-#define DEBUGMAX 9200           // maximum number of bytes to process in debug mode
+#define DEBUGMAX 32767          // maximum number of bytes to process in debug mode
 
 #define REFRESH_INTERVAL 30     // time in msec between refresh events
 
@@ -61,15 +61,6 @@ int argFull = 0;
 
 int showCursor;
 int isBrightSpot = 0;
-
-struct tableEntry {
-        int x0;
-        int y0;
-        int x2;
-        int y2;
-        int linewidth;
-        double intensity;
-} vectorTable;
 
 int count = 0;
 static int x0,y0,x2,y2,xh,xl,yh,yl,xy4014;
@@ -158,7 +149,6 @@ int isInput()
         if (bytesWaiting == 0) {
                 // reset the baud rate counter
                 // without this, baud rate goal would not work after waiting for chars
-                if (DEBUG) printf("resetting the baud rate counter\n");
                 u100ResetSeconds(1);
         }
         return bytesWaiting;
@@ -346,8 +336,6 @@ void tek4010_init(int argc, char* argv[])
                 exit(1);
         }
         setbuf(putKeys,0);
-        
-        vectorTable.intensity = 0.0;
         
         mSeconds();             // initialize the timer
         u100ResetSeconds(1);                
@@ -537,25 +525,8 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
         
         do {
                 ch = getInputChar();
-                if (isInput() == 0) todo = 0;
                 
-                // fade away last bright spot vector
-                /*if (vectorTable.intensity > 0.1) {
-                        cairo_set_line_width (cr2, vectorTable.linewidth);
-                        cairo_set_source_rgb(cr2, vectorTable.intensity*0.3,
-                                        vectorTable.intensity*0.5, vectorTable.intensity*0.3);
-                        cairo_move_to(cr2, vectorTable.x0, windowHeight - vectorTable.y0);
-                        cairo_line_to(cr2, vectorTable.x2, windowHeight - vectorTable.y2);
-                        cairo_stroke(cr2);
-                        cairo_set_line_width (cr2, vectorTable.linewidth-2);
-                        cairo_set_source_rgb(cr2, vectorTable.intensity*0.6,
-                                        vectorTable.intensity, vectorTable.intensity*0.6);
-                        cairo_move_to(cr2, vectorTable.x0, windowHeight - vectorTable.y0);
-                        cairo_line_to(cr2, vectorTable.x2, windowHeight - vectorTable.y2);
-                        cairo_stroke(cr2);
-                        vectorTable.intensity = 0.0;
-                        isBrightSpot = 1;
-                }*/
+                if (isInput() == 0) todo = 0;
 
                 if (ch == -1) {
                         if ((mode == 0) && showCursor) doCursor(cr2);
@@ -637,7 +608,11 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 if ((mode == 6) && (tag != 3)) mode = 7;                                                        
                                 if ((mode == 7) && (tag != 1)) mode = 8;
                         }
-                        else return;
+                        else {
+                                if (ch == 29) mode = 1; // group separator
+                                else if (DEBUG) printf("Plot mode, unknown char %d, plotPointMode = %d\n",ch,plotPointMode);
+                                return;
+                        }
                                 
                 }
                 
@@ -741,16 +716,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                         cairo_set_source_rgb(cr, 0, 0.7, 0);
                                         drawVector(cr,cr2,x0,y0,x2,y2);
                                         
-                                        todo--;
-                                        
-                                        // save bright spot vector for fading
-                                
-                                        //vectorTable.x0 = x0;
-                                        //vectorTable.x2 = x2;
-                                        //vectorTable.y0 = y0;
-                                        //vectorTable.y2 = y2;
-                                        //vectorTable.linewidth = 5;
-                                        //vectorTable.intensity = 0.7;
+                                        todo--;                                        
                                 }
                                 
                                 showCursor = 0;
@@ -786,7 +752,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                     case 'm': mode = 0; break;
 // end of ignoring ANSI escape sequencies
                                     default: 
-                                         if (DEBUG) printf("Ignore\n");
+                                         if (DEBUG) printf("Escape code %d not implemented\n",ch);
                                          mode = 0;
                                          break;                                               
                                 }
@@ -846,7 +812,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 case 31:    // US, leave graphics mode
                                             mode = 0;
                                             break;
-                                default:    if ((ch >= 32) && (ch <=127)) { // printable character
+                                default:    if ((ch >= 32) && (ch <127)) { // printable character
                                                 if (y0 < 8) y0 = 8;
                                                 s[0] = ch;
                                                 s[1] = 0;
