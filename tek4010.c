@@ -29,8 +29,10 @@
 
 #define REFRESH_INTERVAL 30     // time in msec between refresh events
 
-#define TODO  16                // draw multiple objects until screen updates
+#define TODO  8                 // draw multiple objects until screen updates
                                 // if this value is too large, drawing will become choppy
+                                
+#define PI2 6.283185307
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -441,7 +443,7 @@ void clearSecond(cairo_t *cr2)
         cairo_set_source_rgba(cr2, 0, 0, 0, 0);
         cairo_set_operator(cr2, CAIRO_OPERATOR_SOURCE);
         cairo_paint(cr2);
-        cairo_set_operator(cr2, CAIRO_OPERATOR_OVER);
+        cairo_set_operator(cr2, CAIRO_OPERATOR_ADD);
 }
 
 void drawVector(cairo_t *cr, cairo_t *cr2,int x0,int y0,int x2,int y2)
@@ -449,17 +451,28 @@ void drawVector(cairo_t *cr, cairo_t *cr2,int x0,int y0,int x2,int y2)
         cairo_move_to(cr, x0, windowHeight - y0);
         cairo_line_to(cr, x2, windowHeight - y2);
         cairo_stroke (cr);
-                                
+        
+        //draw the bright spot, lower intensity
+        cairo_set_line_width (cr2, 9);
+        cairo_set_source_rgb(cr2, 0.1, 0.3, 0.1);                        
+        cairo_move_to(cr2, x0, windowHeight - y0);
+        cairo_line_to(cr2, x2, windowHeight - y2);
+        cairo_stroke (cr2);
+                                        
+        //draw the bright spot, medium intensity
         cairo_set_line_width (cr2, 6);
-        cairo_set_source_rgb(cr2, 0.4, 0.6, 0.6);                        
+        cairo_set_source_rgb(cr2, 0.3, 0.6, 0.3);                        
         cairo_move_to(cr2, x0, windowHeight - y0);
         cairo_line_to(cr2, x2, windowHeight - y2);
         cairo_stroke (cr2);
-        cairo_set_line_width (cr2, 3);
-        cairo_set_source_rgb(cr2, 0.8, 1, 0.8);                        
+                                        
+        // draw the bright spot, higher intensity
+        cairo_set_line_width (cr2, 4);
+        cairo_set_source_rgb(cr2, 1, 1, 1);                        
         cairo_move_to(cr2, x0, windowHeight - y0);
         cairo_line_to(cr2, x2, windowHeight - y2);
-        cairo_stroke (cr2);
+        cairo_stroke(cr2);
+
         isBrightSpot = 1;
 }
 
@@ -475,6 +488,9 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
         char s[2];
         
         refreshCount++;
+        
+        int xlast = 0;
+        int ylast = 0;
         
         if (first) {
         
@@ -492,6 +508,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
         showCursor = 1;
         isBrightSpot = 0;
         
+        // clear the second surface
         clearSecond(cr2);
         
         // clear persistent surface, if necessary
@@ -514,15 +531,16 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                 cairo_set_font_size(cr, 18);
                 cairo_set_font_size(cr2, 18);
         }
-                
-        todo = TODO;
+        
+        if (plotPointMode) todo = 4 * TODO;
+        else todo = TODO;
         
         do {
                 ch = getInputChar();
                 if (isInput() == 0) todo = 0;
                 
                 // fade away last bright spot vector
-                if (vectorTable.intensity > 0.1) {
+                /*if (vectorTable.intensity > 0.1) {
                         cairo_set_line_width (cr2, vectorTable.linewidth);
                         cairo_set_source_rgb(cr2, vectorTable.intensity*0.3,
                                         vectorTable.intensity*0.5, vectorTable.intensity*0.3);
@@ -537,7 +555,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                         cairo_stroke(cr2);
                         vectorTable.intensity = 0.0;
                         isBrightSpot = 1;
-                }
+                }*/
 
                 if (ch == -1) {
                         if ((mode == 0) && showCursor) doCursor(cr2);
@@ -559,7 +577,11 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 
                 if ((mode >= 1) && (mode <= 8)) {
                         
-                        checkExitFromGraphics(ch);
+                        if (checkExitFromGraphics(ch)) {
+                                todo = todo - 4;
+                                if (todo < 0) todo = 0;
+                                goto endDo;
+                        }
                         
                         // handle skipped coordinate bytes
                         // this cannot be done in switch(mode) below, because multiple bytes
@@ -676,41 +698,59 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 if (DEBUG) printf(">>>>>xl=%d\n",xl);
                                 
                                 if (plotPointMode>0.0) {
-                                        cairo_set_source_rgb(cr, 0, 1, 0);
+                                        
+                                        // draw the point
+                                        cairo_set_source_rgb(cr, 0, 7, 0);
                                         cairo_move_to(cr, x2, windowHeight - y2);
                                         cairo_line_to(cr, x2+1, windowHeight - y2);
                                         cairo_stroke (cr);
-                                        cairo_set_source_rgb(cr, 0, 0.7, 0);
-                                        cairo_set_line_width (cr2, 8);
-                                        cairo_set_source_rgb(cr2, 0.2, 0.5, 0.2);                        
-                                        cairo_move_to(cr2, x2-3, windowHeight - y2-3);
-                                        cairo_line_to(cr2, x2+3, windowHeight - y2+3);
-                                        cairo_stroke (cr2);
-                                        cairo_set_source_rgb(cr, 0, 0.7, 0);
-                                        cairo_set_line_width (cr2, 4);
-                                        cairo_set_source_rgb(cr2, 0.8, 1, 0.8);                        
-                                        cairo_move_to(cr2, x2+1, windowHeight - y2-1);
-                                        cairo_line_to(cr2, x2-1, windowHeight - y2+1);
-                                        cairo_stroke (cr2);
+                                        
+                                        // speed is a problem here
+                                        // do not draw adjacent bright spots
+                                        
+                                        if (((x2 - xlast) > 2) || ((xlast - x2) > 2) ||
+                                                ((y2 - ylast) > 2) || ((ylast - y2) > 2))  {
+                                        
+                                                //draw the bright spot, lower intensity
+                                                cairo_set_line_width (cr2, 2);
+                                                cairo_set_source_rgb(cr2, 0.1, 0.3, 0.1);                        
+                                                cairo_arc(cr2, x2, windowHeight - y2, 6, 0, PI2);
+                                                cairo_stroke(cr2);
+                                        
+                                                //draw the bright spot, medium intensity
+                                                cairo_set_source_rgb(cr2, 0.3, 0.6, 0.3);                        
+                                                cairo_arc(cr2, x2, windowHeight - y2, 4, 0, PI2);
+                                                cairo_stroke(cr2);
+                                        
+                                                // draw the bright spot, higher intensity
+                                                cairo_set_line_width (cr2, 0.1);
+                                                cairo_set_source_rgb(cr2, 1, 1, 1);                        
+                                                cairo_arc(cr2, x2, windowHeight - y2, 3, 0, PI2);
+                                                cairo_fill(cr2);
+                                                
+                                                xlast = x2;
+                                                ylast = y2;
+                                        }
+                                        
                                         isBrightSpot = 1;
                                         mode = 50;
                                         todo--;
                                 }
                                 
                                 else {
-                                        
-                                        drawVector(cr, cr2,x0,y0,x2,y2);
+                                        cairo_set_source_rgb(cr, 0, 0.7, 0);
+                                        drawVector(cr,cr2,x0,y0,x2,y2);
                                         
                                         todo--;
                                         
                                         // save bright spot vector for fading
                                 
-                                        vectorTable.x0 = x0;
-                                        vectorTable.x2 = x2;
-                                        vectorTable.y0 = y0;
-                                        vectorTable.y2 = y2;
-                                        vectorTable.linewidth = 5;
-                                        vectorTable.intensity = 0.7;
+                                        //vectorTable.x0 = x0;
+                                        //vectorTable.x2 = x2;
+                                        //vectorTable.y0 = y0;
+                                        //vectorTable.y2 = y2;
+                                        //vectorTable.linewidth = 5;
+                                        //vectorTable.intensity = 0.7;
                                 }
                                 
                                 showCursor = 0;
@@ -810,11 +850,17 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                                 if (y0 < 8) y0 = 8;
                                                 s[0] = ch;
                                                 s[1] = 0;
+                                                
+                                                // draw the character
+                                                cairo_set_source_rgb(cr, 0, 0.7, 0);
                                                 cairo_move_to(cr, x0, windowHeight - y0 + 4);
                                                 cairo_show_text(cr, s);
+                                                
+                                                // draw the bright spot
                                                 cairo_set_source_rgb(cr2, 0.7, 1, 0.7);
                                                 cairo_move_to(cr2, x0, windowHeight - y0 + 4);
                                                 cairo_show_text(cr2, s);
+                                                
                                                 x0 += hDotsPerChar;
                                                 isBrightSpot = 1;
                                                 todo--;
