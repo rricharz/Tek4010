@@ -25,7 +25,7 @@
  */
  
 #define DEBUG 0                 // print debug info
-#define DEBUGMAX 32767          // maximum number of bytes to process in debug mode
+#define DEBUGMAX 100          // maximum number of bytes to process in debug mode
 
 #define REFRESH_INTERVAL 30     // time in msec between refresh events
 
@@ -53,22 +53,24 @@ extern int globalClearPersistent;
 extern int windowWidth;
 extern int windowHeight;
 
-int argNoexit = 0;
+int argNoexit = 0;              // options
 int argRaw = 0;
 int argBaud = 19200;
 int argTab1 = 0;
 int argFull = 0;
 
-int showCursor;
-int isBrightSpot = 0;
+int showCursor;                         // set of cursor is shown (not set in graphics mode)
+int isBrightSpot = 0;                   // set if there is currently a bright spot on the screen
 
 int count = 0;
 static int x0,y0,x2,y2,xh,xl,yh,yl,xy4014;
-static int plotPointMode = 0;
+
+static int plotPointMode = 0;           // plot point mode
+static int writeThroughMode = 0;        // write through mode
 static int debugCount = 0;
 static double efactor = 0.0;
 
-static long refreshCount = 0;
+static long refreshCount = 0;           // variables for baud rate and refresh rate measurements
 static long charCount = 0;
 static long charResetCount = 0;
 static long characterInterval = 0;
@@ -91,7 +93,7 @@ static long characterInterval = 0;
 //
 // mode 40      incremental plot (4104); is ignored until exit from incremental plot received
 // mode 50      special point plot mode; not yet implemented
-// mode 100     draw pieces of a long vector
+// mode 101     ignore until group separator, not yet implemented
 
 static int mode;
 
@@ -431,37 +433,48 @@ void clearSecond(cairo_t *cr2)
         cairo_set_source_rgba(cr2, 0, 0, 0, 0);
         cairo_set_operator(cr2, CAIRO_OPERATOR_SOURCE);
         cairo_paint(cr2);
-        cairo_set_operator(cr2, CAIRO_OPERATOR_ADD);
+        cairo_set_operator(cr2, CAIRO_OPERATOR_OVER);
 }
 
 void drawVector(cairo_t *cr, cairo_t *cr2,int x0,int y0,int x2,int y2)
 {
-        cairo_move_to(cr, x0, windowHeight - y0);
-        cairo_line_to(cr, x2, windowHeight - y2);
-        cairo_stroke (cr);
+        // printf("write-through-mode=%d\n", writeThroughMode);
+        if (writeThroughMode) {
+                cairo_set_line_width (cr2, 1);
+                cairo_set_source_rgb(cr2, 0.0, 1.0, 0.0);
+                cairo_move_to(cr2, x0, windowHeight - y0);
+                cairo_line_to(cr2, x2, windowHeight - y2);
+                cairo_stroke (cr2);
+        }
         
-        //draw the bright spot, lower intensity
-        cairo_set_line_width (cr2, 9);
-        cairo_set_source_rgb(cr2, 0.1, 0.3, 0.1);                        
-        cairo_move_to(cr2, x0, windowHeight - y0);
-        cairo_line_to(cr2, x2, windowHeight - y2);
-        cairo_stroke (cr2);
+        else {
+                cairo_move_to(cr, x0, windowHeight - y0);
+                cairo_line_to(cr, x2, windowHeight - y2);
+                cairo_stroke (cr);
+        
+                //draw the bright spot, lower intensity
+                cairo_set_line_width (cr2, 9);
+                cairo_set_source_rgb(cr2, 0.1, 0.3, 0.1);                        
+                cairo_move_to(cr2, x0, windowHeight - y0);
+                cairo_line_to(cr2, x2, windowHeight - y2);
+                cairo_stroke (cr2);
                                         
-        //draw the bright spot, medium intensity
-        cairo_set_line_width (cr2, 6);
-        cairo_set_source_rgb(cr2, 0.3, 0.6, 0.3);                        
-        cairo_move_to(cr2, x0, windowHeight - y0);
-        cairo_line_to(cr2, x2, windowHeight - y2);
-        cairo_stroke (cr2);
+                //draw the bright spot, medium intensity
+                cairo_set_line_width (cr2, 6);
+                cairo_set_source_rgb(cr2, 0.3, 0.6, 0.3);                        
+                cairo_move_to(cr2, x0, windowHeight - y0);
+                cairo_line_to(cr2, x2, windowHeight - y2);
+                cairo_stroke (cr2);
                                         
-        // draw the bright spot, higher intensity
-        cairo_set_line_width (cr2, 4);
-        cairo_set_source_rgb(cr2, 1, 1, 1);                        
-        cairo_move_to(cr2, x0, windowHeight - y0);
-        cairo_line_to(cr2, x2, windowHeight - y2);
-        cairo_stroke(cr2);
+                // draw the bright spot, higher intensity
+                cairo_set_line_width (cr2, 4);
+                cairo_set_source_rgb(cr2, 1, 1, 1);                        
+                cairo_move_to(cr2, x0, windowHeight - y0);
+                cairo_line_to(cr2, x2, windowHeight - y2);
+                cairo_stroke(cr2);
+        }
 
-        isBrightSpot = 1;
+        isBrightSpot = 1; // also to be set if writeThroughMode
 }
 
 void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
@@ -513,7 +526,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
         
         if (efactor > 0.0) {
                 cairo_set_font_size(cr, (int)(efactor * 18));
-                cairo_set_font_size(cr2, (int)(efactor *18));
+                cairo_set_font_size(cr2,(int)(efactor * 18));
         }
         else {
                 cairo_set_font_size(cr, 18);
@@ -559,7 +572,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                         // can be switched and the current byte must be executed after a mode change
                         
                         if ((mode == 5) && (ch == 29)) {
-                                if (DEBUG) printf("group separator\n");
+                                if (DEBUG) printf("group separator, go from mode 5 to mode 1\n");
                                 mode = 1;
                                 goto endDo; // goto end of do loop
                         }
@@ -736,6 +749,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                          break;
                                     case '[': // a second escape code follows, do not reset mode
                                          break;
+                                         
 // start of ignoring ANSI escape sequencies, could be improved (but the Tek4010 couldn't do this either!)
                                     case '0':
                                     case '1':
@@ -751,6 +765,29 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                     case ']': break;
                                     case 'm': mode = 0; break;
 // end of ignoring ANSI escape sequencies
+
+                                    case '`':
+                                    case 'a':
+                                    case 'b':
+                                    case 'c':
+                                    case 'd':
+                                    case 'e':
+                                    case 'f':
+                                    case 'h': writeThroughMode = 0;
+                                              if (DEBUG) printf("normal-mode activated\n");
+                                              break;
+                                    
+                                    case 'p':
+                                    case 'q':
+                                    case 'r':
+                                    case 's':
+                                    case 't':
+                                    case 'u':
+                                    case 'v':
+                                    case 'w': writeThroughMode = 1;
+                                              if (DEBUG) printf("write-through-mode activated\n");
+                                              mode = 101;  // ignore until group separator, not yet implemented
+                                              break;
                                     default: 
                                          if (DEBUG) printf("Escape code %d not implemented\n",ch);
                                          mode = 0;
@@ -759,6 +796,9 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 break;
                         case 40: // used to ignore certain 4014 sequencies
                                 if (ch == 31) mode = 0;  // leave this mode
+                                break;
+                        case 101: if (DEBUG) printf("Ignore until group separator, ch = %02x\n", ch);
+                                if (ch == 29) mode = 1;
                                 break;
                         default: switch (ch) {
                                 case 0:     break;
@@ -817,15 +857,23 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                                 s[0] = ch;
                                                 s[1] = 0;
                                                 
-                                                // draw the character
-                                                cairo_set_source_rgb(cr, 0, 0.7, 0);
-                                                cairo_move_to(cr, x0, windowHeight - y0 + 4);
-                                                cairo_show_text(cr, s);
+                                                if (writeThroughMode) {  // draw the write-trough character
+                                                        cairo_set_source_rgb(cr2, 0, 0.7, 0);
+                                                        cairo_move_to(cr2, x0, windowHeight - y0 + 4);
+                                                        cairo_show_text(cr2, s);
+                                                }
                                                 
-                                                // draw the bright spot
-                                                cairo_set_source_rgb(cr2, 0.7, 1, 0.7);
-                                                cairo_move_to(cr2, x0, windowHeight - y0 + 4);
-                                                cairo_show_text(cr2, s);
+                                                else {
+                                                        // draw the character
+                                                        cairo_set_source_rgb(cr, 0, 0.7, 0);
+                                                        cairo_move_to(cr, x0, windowHeight - y0 + 4);
+                                                        cairo_show_text(cr, s);
+                                                
+                                                        // draw the bright spot
+                                                        cairo_set_source_rgb(cr2, 1, 1, 1);
+                                                        cairo_move_to(cr2, x0, windowHeight - y0 + 4);
+                                                        cairo_show_text(cr2, s);                                                
+                                                }
                                                 
                                                 x0 += hDotsPerChar;
                                                 isBrightSpot = 1;
