@@ -24,7 +24,7 @@
  *
  */
  
-#define DEBUG 0                 // print debug info
+#define DEBUG    0              // print debug info
 #define DEBUGMAX 0              // exit after DEBUGMAX chars, 0 means no exit
 
 #define REFRESH_INTERVAL 30     // time in msec between refresh events
@@ -95,11 +95,11 @@ static long characterInterval = 0;
 // mode 30      expecting escape sequence, escape code received
 // mode 31      received in ANSI escape sequence, escape sequence continues if next char is digit
 //
-// mode 40      incremental plot (4104); is ignored until exit from incremental plot received
+// mode 40      incremental plot mode; is ignored until exit from incremental plot received
 // mode 50      special point plot mode; not yet implemented
 // mode 101     ignore until group separator, not yet implemented
 
-static int mode;
+static int mode, savemode;
 
 int leftmargin;
 
@@ -472,9 +472,10 @@ void tek4010_line_type(cairo_t *cr, cairo_t *cr2, enum LineType ln)
     cairo_set_dash (cr2,&dashset[ndx],ndash,ofs);
 }
 
-void drawVector(cairo_t *cr, cairo_t *cr2,int x0,int y0,int x2,int y2)
+void drawVector(cairo_t *cr, cairo_t *cr2)
 {
         if (DEBUG) printf("******************************************** Drawing to (%d,%d)\n",x2,y2);
+        if ((x2 == x0) && (y2 == y0)) x0++; // cairo cannot draw a dot
         if (writeThroughMode) {
                 cairo_set_line_width (cr2, 1);
                 cairo_set_source_rgb(cr2, 0.0, 1.0, 0.0);
@@ -528,6 +529,16 @@ int escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int todo, int ch)
                 case '[':   
                         // a second escape code follows, do not reset mode
                         break;
+                        
+                case 14: // SO  activate alternative char set, not implemented
+                case 15: // SI  deactivate alternative char set
+                        mode = 0;
+                        break;
+                        
+                case 28: // file separator  >> point plot mode
+                        mode = 5;
+                        plotPointMode= 1;
+                        break;
                                          
                 // start of ignoring ANSI escape sequencies, could be improved (but the Tek4010 couldn't do this either!)
                 case '0':
@@ -566,12 +577,30 @@ int escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int todo, int ch)
                 case 'w': ltype = SOLID;    writeThroughMode = 1; mode = 101; showCursor = 0; todo = 0; break; 
                         
                 default: 
-                        printf("Escape code %02X not implemented\n",ch);
+                        printf("Escape code %02X not implemented, mode = %d\n",ch, savemode);
                         mode = 0;
                         break;                                               
         } 
-        return todo;   
+        return todo;           
+}
+
+void checkLimits()
+/* check whether char is in visibel space */
+{
+        /* don't check here for leftmargin, graphics needs to write characters to the whole screen */
+        if (x0 < 0) x0 = 0;
         
+        if (x0 > windowWidth - hDotsPerChar) {
+                x0 = leftmargin; y0 -= vDotsPerChar;
+        }
+        if (y0 < 4) {
+                y0 = windowHeight - vDotsPerChar;
+                if (leftmargin) leftmargin = 0;
+                else leftmargin = windowWidth / 2;
+                /* check here for leftmargin */
+                if (x0 < leftmargin) x0 = leftmargin;
+        }
+        if (y0 > (windowHeight - vDotsPerChar)) y0 = windowHeight - vDotsPerChar;
 }
 
 void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
@@ -650,12 +679,18 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                 }
                 
                 if (mode == 31) {
-                        // printf("ANSI escape mode 31, ch=%02x\n",ch);
-                        if ((ch>='0') && (ch<='9')) mode = 30;
+                        printf("ANSI escape mode 31, ch=%02x\n",ch);
+                        if ((ch>='0') && (ch<='9')) { savemode = mode; mode = 30; }
                 }
                 
                 if (ch == 27) {  // escape code
+                        savemode = mode;
                         mode = 30; return; 
+                }
+                
+                if (ch == 30) {
+                        printf("Incremental plot mode not implemented\n");
+                        mode = 40; return;
                 }
                 
                 int tag = (ch >> 5) & 3;
@@ -676,10 +711,6 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 if (DEBUG) printf("group separator, go from mode 5 to mode 1\n");
                                 mode = 1;
                                 goto endDo; // goto end of do loop
-                        }
-                        if (ch == 30) {
-                                if (DEBUG) printf("Starting incremental plot mode (4014)\n");
-                                mode = 40; return;
                         }
                         
                         if (DEBUG) {
@@ -828,7 +859,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 
                                 else {
                                         cairo_set_source_rgb(cr, 0, 0.7, 0);
-                                        drawVector(cr,cr2,x0,y0,x2,y2);
+                                        drawVector(cr,cr2);
                                         
                                         todo--;                                        
                                 }
@@ -843,7 +874,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                         case 30: 
                                 todo = escapeCodeHandler(cr, cr2, todo, ch);
                                 break;               
-                        case 40: // used to ignore certain 4014 sequencies
+                        case 40: // incremental plot mode, wait for end mark
                                 if (ch == 31) mode = 0;  // leave this mode
                                 break;
                         case 101: 
@@ -862,35 +893,28 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                             break;
                                 case 8:     // backspace
                                             x0 -= hDotsPerChar;
-                                            if (x0<leftmargin) x0 = leftmargin;
+                                            checkLimits();
                                             break;
                                 case 9:     // tab
                                             if (argTab1)
                                                 x0 += hDotsPerChar;
                                             else
                                                 x0 = x0 - (x0 % (8 * hDotsPerChar)) + 8 * hDotsPerChar;
+                                            checkLimits();
                                             break;
                                 case 10:    // new line
                                             y0 -= vDotsPerChar;
-                                            if (y0 < 4) {
-                                                y0 = windowHeight - vDotsPerChar;
-                                                if (leftmargin) leftmargin = 0;
-                                                else leftmargin = windowWidth / 2;
-                                            }
                                             if (!argRaw) x0 = leftmargin;
+                                            checkLimits();
                                             break;
                                 case 11:    // VT, move one line up
                                             y0 += vDotsPerChar;
+                                            checkLimits();
                                             break;
                                 case 13:    // return
                                             mode = 0; x0 = leftmargin;
                                             break;
-//                                case 27:    // escape
-//                                            mode = 30;
-//                                            // printf("Starting escape mode\n");
-//                                            break;
-                                case 28:    // file separator
-                                            if (DEBUG) printf("Point plot mode\n");
+                                case 28:    // file separator  >> point plot mode
                                             mode = 5;
                                             plotPointMode= 1;
                                             break;
@@ -904,11 +928,11 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                             mode = 0;
                                             break;
                                 default:    if ((ch >= 32) && (ch <127)) { // printable character
-                                                if (y0 < 8) y0 = 8;
+                                                checkLimits();
                                                 s[0] = ch;
                                                 s[1] = 0;
                                                 
-                                                if (writeThroughMode) {  // draw the write-trough character
+                                                if (writeThroughMode) {  // draw the write-through character
                                                         cairo_set_source_rgb(cr2, 0, 0.7, 0);
                                                         cairo_move_to(cr2, x0, windowHeight - y0 + 4);
                                                         cairo_show_text(cr2, s);
