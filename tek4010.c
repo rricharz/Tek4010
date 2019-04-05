@@ -535,6 +535,8 @@ int escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int todo, int ch)
                         mode = 0;
                         break;
                         
+                case 23: system("scrot --focussed"); mode= 0; break;
+                        
                 case 28: // file separator  >> point plot mode
                         mode = 5;
                         plotPointMode= 1;

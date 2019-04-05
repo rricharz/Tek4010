@@ -1,10 +1,10 @@
-# Tektronix 4010 Terminal Emulator
+# Tektronix 4010 and 4014 Terminal Emulator
 
-This is a [Tektronix 4010](https://en.wikipedia.org/wiki/Tektronix_4010) terminal emulator
+This is a [Tektronix 4010 und 4014](https://en.wikipedia.org/wiki/Tektronix_4010) terminal emulator
 for the Raspberry Pi and other Linux systems. It can also be used on Windows an Macintosh systems
 with [Virtualbox](https://www.virtualbox.org/) and [Ubuntu](https://www.ubuntu.com/).
 
-![screen_shot](teklogo.png?raw=true "Tektronix logo in tek4010 window")
+![screen_shot](screendump.png?raw=true "tek4010 screendump")
 
 It attempts to emulate the storage tube display of the Tektronix 4010, including the bright
 drawing spot.
@@ -126,11 +126,15 @@ in the terminal emulator and clear the persistent screen:
 	home
 	page up
 	page down
-	control arrow up
-	control arrow left
+	<control> arrow up
+	<control> arrow left
 
 These keys emulate the "page" key of the Tektronix 4010. You need to use one of these
 keys frequently to avoid to get a mess on the screen, as on a real Tektronix 4010.
+
+The hardcopy function on the Tektronix 4010 is emulated with a screen dump.
+
+	<control> w	Make a screen dump in current directory using scrot
 
 **Login into the system running simh (same or different Raspberry Pi)**
 

@@ -113,7 +113,7 @@ static void do_drawing(cairo_t *cr, GtkWidget *widget)
 static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
 {
         int ch;
-        // printf("key pressed, state =%04X, keyval=%04X\r\n", event->state, event->keyval);
+        //printf("key pressed, state =%04X, keyval=%04X\r\n", event->state, event->keyval);
         
         if ((event->keyval == 0xFF50) ||        // "home" key
                 (event->keyval == 0xFF55) ||    // "page up" key
@@ -132,6 +132,10 @@ static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_da
                     (event->keyval == 0xFF52)) {    // "<ctrl>up arrow" key
                         globalClearPersistent = 1;
                         gtk_widget_queue_draw(widget);
+                        return;
+                }
+                else if (event->keyval == 0x0077) { // "ctrl>w" makes screendump
+                        system("scrot --focussed");
                         return;
                 }
                 else
