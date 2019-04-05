@@ -25,7 +25,7 @@
  */
  
 #define DEBUG 0                 // print debug info
-#define DEBUGMAX 100          // maximum number of bytes to process in debug mode
+#define DEBUGMAX 0              // exit after DEBUGMAX chars, 0 means no exit
 
 #define REFRESH_INTERVAL 30     // time in msec between refresh events
 
@@ -64,6 +64,10 @@ int isBrightSpot = 0;                   // set if there is currently a bright sp
 
 int count = 0;
 static int x0,y0,x2,y2,xh,xl,yh,yl,xy4014;
+
+enum LineType {SOLID,DOTTED,DOTDASH,SHORTDASH,LONGDASH};
+enum LineType ltype;
+double dashset[] = {2,6,2,2,6,3,3,3,6,6};
 
 static int plotPointMode = 0;           // plot point mode
 static int writeThroughMode = 0;        // write through mode
@@ -146,7 +150,7 @@ int isInput()
         ioctl(getDataPipe[0], FIONREAD, &bytesWaiting);
         if (DEBUG) {
                 debugCount++;
-                if (debugCount > DEBUGMAX) return 0;
+                if (DEBUGMAX && (debugCount > DEBUGMAX)) return 0;
         }
         if (bytesWaiting == 0) {
                 // reset the baud rate counter
@@ -340,7 +344,7 @@ void tek4010_init(int argc, char* argv[])
         setbuf(putKeys,0);
         
         mSeconds();             // initialize the timer
-        u100ResetSeconds(1);                
+        u100ResetSeconds(1);                        
 }
 
 int tek4010_on_timer_event()
@@ -425,6 +429,7 @@ void clearPersistent(cairo_t *cr, cairo_t *cr2)
         cairo_paint(cr2);
         isBrightSpot = 1;
         plotPointMode = 0;
+        ltype = SOLID;  
 }
 
 void clearSecond(cairo_t *cr2)
@@ -436,9 +441,40 @@ void clearSecond(cairo_t *cr2)
         cairo_set_operator(cr2, CAIRO_OPERATOR_OVER);
 }
 
+void tek4010_line_type(cairo_t *cr, cairo_t *cr2, enum LineType ln)
+{
+    int ndash,ndx;
+    double ofs = 0.5;
+
+    switch (ln) {
+    case SOLID:
+        ndx = 0;
+        ndash = 0;
+        break;
+    case DOTTED:
+        ndx = 0;
+        ndash = 2;
+        break;
+    case DOTDASH:
+        ndx = 2;
+        ndash = 4;
+        break;
+    case LONGDASH:
+        ndx = 8;
+        ndash = 2;
+        break;
+    case SHORTDASH:
+        ndx = 6;
+        ndash = 2;
+        break;
+    }
+    cairo_set_dash (cr,&dashset[ndx],ndash,ofs);
+    cairo_set_dash (cr2,&dashset[ndx],ndash,ofs);
+}
+
 void drawVector(cairo_t *cr, cairo_t *cr2,int x0,int y0,int x2,int y2)
 {
-        // printf("write-through-mode=%d\n", writeThroughMode);
+        if (DEBUG) printf("******************************************** Drawing to (%d,%d)\n",x2,y2);
         if (writeThroughMode) {
                 cairo_set_line_width (cr2, 1);
                 cairo_set_source_rgb(cr2, 0.0, 1.0, 0.0);
@@ -448,6 +484,7 @@ void drawVector(cairo_t *cr, cairo_t *cr2,int x0,int y0,int x2,int y2)
         }
         
         else {
+                tek4010_line_type(cr, cr2, ltype);
                 cairo_move_to(cr, x0, windowHeight - y0);
                 cairo_line_to(cr, x2, windowHeight - y2);
                 cairo_stroke (cr);
@@ -477,6 +514,66 @@ void drawVector(cairo_t *cr, cairo_t *cr2,int x0,int y0,int x2,int y2)
         isBrightSpot = 1; // also to be set if writeThroughMode
 }
 
+int escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int todo, int ch)
+// handle escape sequencies
+// returns todo to allow changes to todo
+{
+        if (DEBUG) printf("Escape mode, ch=%02X\n",ch);
+        switch (ch) {
+                case 12:
+                        if (DEBUG) printf("Form feed, clear screen\n");
+                        clearPersistent(cr,cr2);
+                        mode = 0;
+                        break;
+                case '[':   
+                        // a second escape code follows, do not reset mode
+                        break;
+                                         
+                // start of ignoring ANSI escape sequencies, could be improved (but the Tek4010 couldn't do this either!)
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':       break;
+                case ';':       mode = 31; break;
+                case ']':       break;
+                case 'm':       mode = 0; break;
+                
+                // end of ignoring ANSI escape sequencies
+
+                case '`': ltype = SOLID;    writeThroughMode = 0; mode = 0; break;
+                case 'a': ltype = DOTTED;   writeThroughMode = 0; mode = 0; break;
+                case 'b': ltype = DOTDASH;  writeThroughMode = 0; mode = 0; break;
+                case 'c': ltype = SHORTDASH;writeThroughMode = 0; mode = 0; break;
+                case 'd': ltype = LONGDASH; writeThroughMode = 0; mode = 0; break;
+                case 'e': ltype = SOLID;    writeThroughMode = 0; mode = 0; break;
+                case 'f': ltype = SOLID;    writeThroughMode = 0; mode = 0; break;
+                case 'h': ltype = SOLID;    writeThroughMode = 0; mode = 0; break; 
+                                    
+                // todo is set here to zero to achieve some synchronization with screen refresh cycle
+                case 'p': ltype = SOLID;    writeThroughMode = 1; mode = 101; showCursor = 0; todo = 0; break;
+                case 'q': ltype = DOTTED;   writeThroughMode = 1; mode = 101; showCursor = 0; todo = 0; break;
+                case 'r': ltype = DOTDASH;  writeThroughMode = 1; mode = 101; showCursor = 0; todo = 0; break;
+                case 's': ltype = SHORTDASH;writeThroughMode = 1; mode = 101; showCursor = 0; todo = 0; break;
+                case 't': ltype = LONGDASH; writeThroughMode = 1; mode = 101; showCursor = 0; todo = 0; break;
+                case 'u': ltype = SOLID;    writeThroughMode = 1; mode = 101; showCursor = 0; todo = 0; break;
+                case 'v': ltype = SOLID;    writeThroughMode = 1; mode = 101; showCursor = 0; todo = 0; break;
+                case 'w': ltype = SOLID;    writeThroughMode = 1; mode = 101; showCursor = 0; todo = 0; break; 
+                        
+                default: 
+                        printf("Escape code %02X not implemented\n",ch);
+                        mode = 0;
+                        break;                                               
+        } 
+        return todo;   
+        
+}
+
 void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
 // draw onto the main window using cairo
 // width is the actual width of the main window
@@ -500,8 +597,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                 first = 0;
                 
                 if (windowWidth == 1024) efactor = 0.0;
-                else efactor = windowWidth / 1024.0;
-                
+                else efactor = windowWidth / 1024.0;              
         }
         
         long startPaintTime = mSeconds(); // start to measure time for this draw operation
@@ -534,6 +630,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
         }
         
         if (plotPointMode) todo = 4 * TODO;
+        else if (writeThroughMode) todo = 8 * todo;
         else todo = TODO;
         
         do {
@@ -555,6 +652,10 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                 if (mode == 31) {
                         // printf("ANSI escape mode 31, ch=%02x\n",ch);
                         if ((ch>='0') && (ch<='9')) mode = 30;
+                }
+                
+                if (ch == 27) {  // escape code
+                        mode = 30; return; 
                 }
                 
                 int tag = (ch >> 5) & 3;
@@ -623,7 +724,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                         }
                         else {
                                 if (ch == 29) mode = 1; // group separator
-                                else if (DEBUG) printf("Plot mode, unknown char %d, plotPointMode = %d\n",ch,plotPointMode);
+                                else printf("Plot mode, unknown char %d, plotPointMode = %d\n",ch,plotPointMode);
                                 return;
                         }
                                 
@@ -739,68 +840,18 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 mode = 5;
                                 
                                 break;
-                        case 30:                // handle escape sequencies
-                                if (DEBUG) printf("Escape mode, ch=%02X\n",ch);
-                                switch (ch) {
-                                    case 12:
-                                         if (DEBUG) printf("Form feed, clear screen\n");
-                                         clearPersistent(cr,cr2);
-                                         mode = 0;
-                                         break;
-                                    case '[': // a second escape code follows, do not reset mode
-                                         break;
-                                         
-// start of ignoring ANSI escape sequencies, could be improved (but the Tek4010 couldn't do this either!)
-                                    case '0':
-                                    case '1':
-                                    case '2':
-                                    case '3':
-                                    case '4':
-                                    case '5':
-                                    case '6':
-                                    case '7':
-                                    case '8':
-                                    case '9': break;
-                                    case ';': mode = 31; break;
-                                    case ']': break;
-                                    case 'm': mode = 0; break;
-// end of ignoring ANSI escape sequencies
-
-                                    case '`':
-                                    case 'a':
-                                    case 'b':
-                                    case 'c':
-                                    case 'd':
-                                    case 'e':
-                                    case 'f':
-                                    case 'h': writeThroughMode = 0;
-                                              if (DEBUG) printf("normal-mode activated\n");
-                                              break;
-                                    
-                                    case 'p':
-                                    case 'q':
-                                    case 'r':
-                                    case 's':
-                                    case 't':
-                                    case 'u':
-                                    case 'v':
-                                    case 'w': writeThroughMode = 1;
-                                              if (DEBUG) printf("write-through-mode activated\n");
-                                              mode = 101;  // ignore until group separator, not yet implemented
-                                              break;
-                                    default: 
-                                         if (DEBUG) printf("Escape code %d not implemented\n",ch);
-                                         mode = 0;
-                                         break;                                               
-                                }
-                                break;
+                        case 30: 
+                                todo = escapeCodeHandler(cr, cr2, todo, ch);
+                                break;               
                         case 40: // used to ignore certain 4014 sequencies
                                 if (ch == 31) mode = 0;  // leave this mode
                                 break;
-                        case 101: if (DEBUG) printf("Ignore until group separator, ch = %02x\n", ch);
+                        case 101: 
+                                if (DEBUG) printf("Ignore until group separator, ch = %02x\n", ch);
                                 if (ch == 29) mode = 1;
                                 break;
-                        default: switch (ch) {
+                        default: 
+                                switch (ch) {
                                 case 0:     break;
                                 case 7:     // bell function, delay 0.1 sec
                                             // cannot delay if bright spot is on, needs to be turned off first
@@ -824,7 +875,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                             if (y0 < 4) {
                                                 y0 = windowHeight - vDotsPerChar;
                                                 if (leftmargin) leftmargin = 0;
-                                                else leftmargin = windowHeight / 2;
+                                                else leftmargin = windowWidth / 2;
                                             }
                                             if (!argRaw) x0 = leftmargin;
                                             break;
@@ -834,10 +885,10 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 case 13:    // return
                                             mode = 0; x0 = leftmargin;
                                             break;
-                                case 27:    // escape
-                                            mode = 30;
-                                            // printf("Starting escape mode\n");
-                                            break;
+//                                case 27:    // escape
+//                                            mode = 30;
+//                                            // printf("Starting escape mode\n");
+//                                            break;
                                 case 28:    // file separator
                                             if (DEBUG) printf("Point plot mode\n");
                                             mode = 5;
