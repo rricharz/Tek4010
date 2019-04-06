@@ -4,5 +4,5 @@
 #define WINDOW_NAME     "Tektronix 4010/4014"    // name of main window
 #define ICON_NAME       ""                  // path to icon for window
 
-#define TIME_INTERVAL   30                  // time interval for timer function in msec
+#define TIME_INTERVAL       30              // time interval for timer function in msec
                                             // 0 means no timer function

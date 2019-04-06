@@ -27,10 +27,7 @@
 #define DEBUG    0              // print debug info
 #define DEBUGMAX 0              // exit after DEBUGMAX chars, 0 means no exit
 
-#define REFRESH_INTERVAL 30     // time in msec between refresh events
-
-#define TODO  8                 // draw multiple objects until screen updates
-                                // if this value is too large, drawing will become choppy
+#define TODO  (long)(8.0 * efactor * efactor)   // draw multiple objects until screen updates
                                 
 #define PI2 6.283185307
 
@@ -59,10 +56,13 @@ int argBaud = 19200;
 int argTab1 = 0;
 int argFull = 0;
 
-int showCursor;                         // set of cursor is shown (not set in graphics mode)
-int isBrightSpot = 0;                   // set if there is currently a bright spot on the screen
+int refresh_interval;           // after this time in msec next refresh is done
+
+int showCursor;                 // set of cursor is shown (not set in graphics mode)
+int isBrightSpot = 0;           // set if there is currently a bright spot on the screen
 
 int count = 0;
+long todo;
 static int x0,y0,x2,y2,xh,xl,yh,yl,xy4014;
 
 enum LineType {SOLID,DOTTED,DOTDASH,SHORTDASH,LONGDASH};
@@ -72,7 +72,8 @@ double dashset[] = {2,6,2,2,6,3,3,3,6,6};
 static int plotPointMode = 0;           // plot point mode
 static int writeThroughMode = 0;        // write through mode
 static int debugCount = 0;
-static double efactor = 0.0;
+static double efactor;
+static int eoffx;
 
 static long refreshCount = 0;           // variables for baud rate and refresh rate measurements
 static long charCount = 0;
@@ -408,7 +409,7 @@ void doCursor(cairo_t *cr2)
 {
         cairo_set_source_rgb(cr2, 0, 0.8, 0);
         cairo_set_line_width (cr2, 1);
-        cairo_rectangle(cr2, x0, windowHeight - y0 - vDotsPerChar + 8,
+        cairo_rectangle(cr2, x0 + eoffx, windowHeight - y0 - vDotsPerChar + 8,
                                                 hDotsPerChar - 3, vDotsPerChar - 3);
         cairo_fill(cr2);
         cairo_stroke (cr2);
@@ -425,7 +426,7 @@ void clearPersistent(cairo_t *cr, cairo_t *cr2)
         y0 = windowHeight - vDotsPerChar;
         leftmargin = 0;
         cairo_set_source_rgb(cr, 0, 0.7, 0);
-        cairo_set_source_rgb(cr2, 0.8, 1, 0.8);
+        cairo_set_source_rgb(cr2, 0.1, 1, 0.1);
         cairo_paint(cr2);
         isBrightSpot = 1;
         plotPointMode = 0;
@@ -479,43 +480,43 @@ void drawVector(cairo_t *cr, cairo_t *cr2)
         if (writeThroughMode) {
                 cairo_set_line_width (cr2, 1);
                 cairo_set_source_rgb(cr2, 0.0, 1.0, 0.0);
-                cairo_move_to(cr2, x0, windowHeight - y0);
-                cairo_line_to(cr2, x2, windowHeight - y2);
+                cairo_move_to(cr2, x0 + eoffx, windowHeight - y0);
+                cairo_line_to(cr2, x2 + eoffx, windowHeight - y2);
                 cairo_stroke (cr2);
         }
         
         else {
                 tek4010_line_type(cr, cr2, ltype);
-                cairo_move_to(cr, x0, windowHeight - y0);
-                cairo_line_to(cr, x2, windowHeight - y2);
+                cairo_move_to(cr, x0 + eoffx, windowHeight - y0);
+                cairo_line_to(cr, x2 + eoffx, windowHeight - y2);
                 cairo_stroke (cr);
         
                 //draw the bright spot, lower intensity
                 cairo_set_line_width (cr2, 9);
                 cairo_set_source_rgb(cr2, 0.1, 0.3, 0.1);                        
-                cairo_move_to(cr2, x0, windowHeight - y0);
-                cairo_line_to(cr2, x2, windowHeight - y2);
+                cairo_move_to(cr2, x0 + eoffx, windowHeight - y0);
+                cairo_line_to(cr2, x2 + eoffx, windowHeight - y2);
                 cairo_stroke (cr2);
                                         
                 //draw the bright spot, medium intensity
                 cairo_set_line_width (cr2, 6);
                 cairo_set_source_rgb(cr2, 0.3, 0.6, 0.3);                        
-                cairo_move_to(cr2, x0, windowHeight - y0);
-                cairo_line_to(cr2, x2, windowHeight - y2);
+                cairo_move_to(cr2, x0 + eoffx, windowHeight - y0);
+                cairo_line_to(cr2, x2 + eoffx, windowHeight - y2);
                 cairo_stroke (cr2);
                                         
                 // draw the bright spot, higher intensity
                 cairo_set_line_width (cr2, 4);
                 cairo_set_source_rgb(cr2, 1, 1, 1);                        
-                cairo_move_to(cr2, x0, windowHeight - y0);
-                cairo_line_to(cr2, x2, windowHeight - y2);
+                cairo_move_to(cr2, x0 + eoffx, windowHeight - y0);
+                cairo_line_to(cr2, x2 + eoffx, windowHeight - y2);
                 cairo_stroke(cr2);
         }
 
         isBrightSpot = 1; // also to be set if writeThroughMode
 }
 
-int escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int todo, int ch)
+void escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
 // handle escape sequencies
 // returns todo to allow changes to todo
 {
@@ -582,8 +583,7 @@ int escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int todo, int ch)
                         printf("Escape code %02X not implemented, mode = %d\n",ch, savemode);
                         mode = 0;
                         break;                                               
-        } 
-        return todo;           
+        }         
 }
 
 void checkLimits()
@@ -613,7 +613,6 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
 
 {	
         int ch;
-        int todo;
         char s[2];
         
         refreshCount++;
@@ -622,13 +621,26 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
         int ylast = 0;
         
         if (first) {
-        
-                hDotsPerChar  = windowWidth / 74;
-                vDotsPerChar  = windowHeight / 35;
                 first = 0;
-                
-                if (windowWidth == 1024) efactor = 0.0;
-                else efactor = windowWidth / 1024.0;              
+                int actualWidth;                
+                if (argFull) {
+                        efactor = windowHeight / 780.0;
+                        actualWidth = (int)(efactor * 1024.0);
+                        eoffx = (windowWidth - actualWidth) / 2;
+                        refresh_interval = (int)(30.0 * efactor * efactor);
+                }
+                else {
+                        efactor = 1.0;
+                        actualWidth = windowWidth;
+                        eoffx = 0;
+                        refresh_interval = 30;   
+                }
+                hDotsPerChar  = actualWidth / 74;
+                vDotsPerChar  = windowHeight / 35;
+                windowWidth = actualWidth;
+                // printf("Scaling: %0.2f\n", efactor);
+                // printf("Offset: %d\n",eoffx);
+                // printf("Refresh interval: %d\n",refresh_interval);
         }
         
         long startPaintTime = mSeconds(); // start to measure time for this draw operation
@@ -651,7 +663,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
         cairo_select_font_face(cr, "Monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
         cairo_select_font_face(cr2, "Monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
         
-        if (efactor > 0.0) {
+        if (argFull > 0.0) {
                 cairo_set_font_size(cr, (int)(efactor * 18));
                 cairo_set_font_size(cr2,(int)(efactor * 18));
         }
@@ -660,14 +672,19 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                 cairo_set_font_size(cr2, 18);
         }
         
-        if (plotPointMode) todo = 4 * TODO;
-        else if (writeThroughMode) todo = 8 * todo;
-        else todo = TODO;
+        if (plotPointMode)
+                todo = 16 * TODO;
+        else if (writeThroughMode)
+                todo = 8 * TODO;
+        else
+                todo = TODO;
         
         do {
                 ch = getInputChar();
                 
-                if (isInput() == 0) todo = 0;
+                if (isInput() == 0) {
+                        todo = 0;
+                }
 
                 if (ch == -1) {
                         if ((mode == 0) && showCursor) doCursor(cr2);
@@ -701,7 +718,6 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                         
                         if (checkExitFromGraphics(ch)) {
                                 todo = todo - 4;
-                                if (todo < 0) todo = 0;
                                 goto endDo;
                         }
                         
@@ -769,7 +785,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 if (DEBUG) printf("setting yh to %d\n", yh);
                                 break;
                         case 2: yl = (ch & 31);
-                                if (efactor > 0.0) {
+                                if (argFull) {
                                         int yb = (xy4014 >> 2) & 3;
                                         y0 = (int)(efactor * (double)(((yh+yl) << 2) + yb) / 4.0);
                                 }
@@ -781,7 +797,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 if (DEBUG) printf("setting xh to %d\n", xh);
                                 break;
                         case 4: xl = (ch & 31);
-                                if (efactor > 0.0) {
+                                if (argFull) {
                                         int xb = xy4014 & 3;
                                         x0 = (int)(efactor * (double)(((xh+xl) << 2) + xb) / 4.0);
                                 }
@@ -807,7 +823,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 break;
                                 if (DEBUG) printf(">>>>>xh=%d\n",xh);
                         case 8: xl = (ch & 31);
-                                if (efactor > 0.0) {
+                                if (argFull) {
                                         int xb = xy4014 & 3;
                                         x2 = (int)(efactor * (double)(((xh+xl) << 2) + xb) / 4.0);
                                         int yb = (xy4014 >> 2) & 3;
@@ -823,8 +839,8 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                         
                                         // draw the point
                                         cairo_set_source_rgb(cr, 0, 7, 0);
-                                        cairo_move_to(cr, x2, windowHeight - y2);
-                                        cairo_line_to(cr, x2+1, windowHeight - y2);
+                                        cairo_move_to(cr, x2 + eoffx, windowHeight - y2);
+                                        cairo_line_to(cr, x2 + 1 + eoffx, windowHeight - y2);
                                         cairo_stroke (cr);
                                         
                                         // speed is a problem here
@@ -833,21 +849,10 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                         if (((x2 - xlast) > 2) || ((xlast - x2) > 2) ||
                                                 ((y2 - ylast) > 2) || ((ylast - y2) > 2))  {
                                         
-                                                //draw the bright spot, lower intensity
-                                                cairo_set_line_width (cr2, 2);
-                                                cairo_set_source_rgb(cr2, 0.1, 0.3, 0.1);                        
-                                                cairo_arc(cr2, x2, windowHeight - y2, 6, 0, PI2);
-                                                cairo_stroke(cr2);
-                                        
-                                                //draw the bright spot, medium intensity
-                                                cairo_set_source_rgb(cr2, 0.3, 0.6, 0.3);                        
-                                                cairo_arc(cr2, x2, windowHeight - y2, 4, 0, PI2);
-                                                cairo_stroke(cr2);
-                                        
                                                 // draw the bright spot, higher intensity
                                                 cairo_set_line_width (cr2, 0.1);
                                                 cairo_set_source_rgb(cr2, 1, 1, 1);                        
-                                                cairo_arc(cr2, x2, windowHeight - y2, 3, 0, PI2);
+                                                cairo_arc(cr2, x2 + eoffx, windowHeight - y2, 2, 0, PI2);
                                                 cairo_fill(cr2);
                                                 
                                                 xlast = x2;
@@ -874,7 +879,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 
                                 break;
                         case 30: 
-                                todo = escapeCodeHandler(cr, cr2, todo, ch);
+                                escapeCodeHandler(cr, cr2, ch);
                                 break;               
                         case 40: // incremental plot mode, wait for end mark
                                 if (ch == 31) mode = 0;  // leave this mode
@@ -936,25 +941,28 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                                 
                                                 if (writeThroughMode) {  // draw the write-through character
                                                         cairo_set_source_rgb(cr2, 0, 0.7, 0);
-                                                        cairo_move_to(cr2, x0, windowHeight - y0 + 4);
+                                                        cairo_move_to(cr2, x0 + eoffx, windowHeight - y0 + 4);
                                                         cairo_show_text(cr2, s);
                                                 }
                                                 
                                                 else {
                                                         // draw the character
                                                         cairo_set_source_rgb(cr, 0, 0.7, 0);
-                                                        cairo_move_to(cr, x0, windowHeight - y0 + 4);
+                                                        cairo_move_to(cr, x0 + eoffx, windowHeight - y0 + 4);
                                                         cairo_show_text(cr, s);
                                                 
                                                         // draw the bright spot
-                                                        cairo_set_source_rgb(cr2, 1, 1, 1);
-                                                        cairo_move_to(cr2, x0, windowHeight - y0 + 4);
-                                                        cairo_show_text(cr2, s);                                                
+                                                        // only draw the last 3 chars before refresh
+                                                        if (todo < 6) {
+                                                                cairo_set_source_rgb(cr2, 1, 1, 1);
+                                                                cairo_move_to(cr2, x0 + eoffx, windowHeight - y0 + 4);
+                                                                cairo_show_text(cr2, s);
+                                                        }                                               
                                                 }
                                                 
                                                 x0 += hDotsPerChar;
                                                 isBrightSpot = 1;
-                                                todo--;
+                                                todo-= 2;
                                             }
                                             break;
                                 }
@@ -962,9 +970,9 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                 }
                 endDo:;
         }
-        while (todo && ((mSeconds() - startPaintTime) < REFRESH_INTERVAL));
+        while ((todo > 0) && ((mSeconds() - startPaintTime) < refresh_interval));
         
         // display cursor
         
-        if (showCursor) doCursor(cr2);
+        if (showCursor && (isInput() == 0)) doCursor(cr2);
 }

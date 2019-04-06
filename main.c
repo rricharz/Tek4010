@@ -98,6 +98,10 @@ static void do_drawing(cairo_t *cr, GtkWidget *widget)
 	
 	cairo_t *permanent_cr = cairo_create(permanent_surface);
         cairo_t *temporary_cr = cairo_create(temporary_surface);
+        if ((permanent_cr == NULL) || (temporary_cr == NULL)) {
+                printf("Cannot create drawing surfaces\n");
+                exit(1);
+        }
 	tek4010_draw(permanent_cr, temporary_cr, global_firstcall);
 	global_firstcall = FALSE;
 
@@ -190,21 +194,22 @@ int main (int argc, char *argv[])
 	int screenHeight = gdk_screen_get_height(screen);
 	printf("Screen dimensions: %d x %d\n", screenWidth, screenHeight);
         
-        if (argFull && (screenWidth<askWindowWidth+8) && (screenHeight<(askWindowHeight+72))) {        
-                askWindowWidth = screenWidth - 8;
-                askWindowHeight = screenHeight - 72;
-                if (askWindowWidth > 4*askWindowHeight/3)
-                        askWindowWidth = 4*askWindowHeight/3;
-                if (askWindowHeight > 3*askWindowWidth/4)
-                        askWindowHeight = 3*askWindowWidth/4;
+        if (argFull) {        
+                // DISPLAY UNDECORATED FULL SCREEN WINDOW
+		gtk_window_set_decorated(GTK_WINDOW(window), FALSE);
+		gtk_window_fullscreen(GTK_WINDOW(window));
+		gtk_window_set_keep_above(GTK_WINDOW(window), FALSE);
+		windowWidth  = screenWidth;
+		windowHeight = screenHeight;
         }
  
-        // DISPLAY DECORATED WINDOW
-        gtk_window_set_decorated(GTK_WINDOW(window), TRUE);
-        gtk_window_set_default_size(GTK_WINDOW(window),
-			askWindowWidth, askWindowHeight);
-        windowWidth  = askWindowWidth;
-        windowHeight = askWindowHeight;
+        else {
+                // DISPLAY DECORATED WINDOW
+                gtk_window_set_decorated(GTK_WINDOW(window), TRUE);
+                gtk_window_set_default_size(GTK_WINDOW(window), askWindowWidth, askWindowHeight);
+                windowWidth  = askWindowWidth;
+                windowHeight = askWindowHeight;                
+        }
  
         printf("Window dimensions: %d x %d\n", windowWidth, windowHeight);
         

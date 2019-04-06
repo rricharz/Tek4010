@@ -24,9 +24,6 @@ or a real historical system.
 This [video of a tek4010 demo](https://youtu.be/tmy7dx_8fAM) was generated using
 [simplescreenrecorder](https://www.maartenbaert.be/simplescreenrecorder).
 
-There is no hardcopy mode, but you can make screen snapshots using "scrot",
-or screen videos using [simplescreenrecorder](https://www.maartenbaert.be/simplescreenrecorder).
-
 If you want to make an installation on Windows or OSX, first install Virtualbox and Ubuntu on
 your system. Here are examples of guides for
 [OSX](https://www.dev2qa.com/how-to-install-ubuntu-on-virtualbox-mac/)
@@ -134,7 +131,7 @@ keys frequently to avoid to get a mess on the screen, as on a real Tektronix 401
 
 The hardcopy function on the Tektronix 4010 is emulated with a screen dump.
 
-	<control> w	Make a screen dump in current directory using scrot
+	<control>w	Make a screen dump in current directory using scrot
 
 **Login into the system running simh (same or different Raspberry Pi)**
 
@@ -220,11 +217,10 @@ tek4010 has the following options:
 			of 9600 baud. With the small baud rates you can emulate 1970s 
 			style modem performance. Early modems had a baud rate of 300.
 
-	-full		in this mode the tek4010 emulator creates the largest possible window
-			with 4x3 aspect ratio, and uses the full resolution of the 4014 with
+	-full		in this mode the tek4010 emulator creates a full screen window, and uses the full resolution of the 4014 with
 			enhanced graphics module installed, scaled down to the actual window
-			size. This mode is not recommended on the Raspberry Pi because of the
-			heavy workload on the GPU.			
+			size. Use <alt>tab to switch windows or <alt>space to close this
+			full screen window.			
 
 **Reporting problems**
 
@@ -252,10 +248,10 @@ graphics codes can be displayed using this terminal emulator, but the lowest two
 each axis are not used in this case, as in the Tektronix 4014 without the enhanced graphics
 module.
 
-If called with the -full option, the tek4010 emulator creates the largest possible window
-with 4x3 aspect ratio, and uses the full resolution of the 4014 with enhanced graphics
-module installed, scaled down to the actual window size. This mode is not recommended on
-the Raspberry Pi because of the heavy workload on the GPU.
+If called with the -full option, the tek4010 emulator creates creates a full screen window,
+and uses the full resolution of the 4014 with enhanced graphics
+module installed, scaled down to the actual window size.
+Use <alt>tab to switch windows or <alt>space to close this full screen window.
 
 **Compiling the tek4010 project**
 
