@@ -217,10 +217,10 @@ tek4010 has the following options:
 			of 9600 baud. With the small baud rates you can emulate 1970s 
 			style modem performance. Early modems had a baud rate of 300.
 
-	-full		in this mode the tek4010 emulator creates a full screen window, and uses the full resolution of the 4014 with
-			enhanced graphics module installed, scaled down to the actual window
-			size. Use <alt>tab to switch windows or <alt>space to close this
-			full screen window.			
+	-full		in this mode the tek4010 emulator creates a full screen window, and
+			uses the full resolution of the 4014 with the enhanced graphics module
+			installed, scaled down to the actual window size. Use <ctrl>q to
+			close the tek4010 window. This option is experimental.			
 
 **Reporting problems**
 
@@ -251,7 +251,7 @@ module.
 If called with the -full option, the tek4010 emulator creates creates a full screen window,
 and uses the full resolution of the 4014 with enhanced graphics
 module installed, scaled down to the actual window size.
-Use <alt>tab to switch windows or <alt>space to close this full screen window.
+Use <ctrl>q close the tek4010 window. This option is experimental.
 
 **Compiling the tek4010 project**
 

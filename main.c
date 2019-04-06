@@ -138,8 +138,12 @@ static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_da
                         gtk_widget_queue_draw(widget);
                         return;
                 }
-                else if (event->keyval == 0x0077) { // "ctrl>w" makes screendump
+                else if (event->keyval == 0x0077) { // "<ctrl>w" makes screendump
                         system("scrot --focussed");
+                        return;
+                }
+                else if (event->keyval == 0x0071) { // "<ctrl>q" makes screendump
+                        on_quit_event();
                         return;
                 }
                 else
