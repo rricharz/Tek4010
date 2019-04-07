@@ -16,6 +16,6 @@ recorded 9600 bps data with a reasonable error rate.
 
 Many of the .plt files in this directory were copied from 
 cassette tapes recorded in the 70s.  Some have errors ("line hits")
-in them.  The 2010.plt and many other "green scale" files are newer.
+in them.
 
 

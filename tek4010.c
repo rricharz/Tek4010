@@ -98,7 +98,7 @@ static long characterInterval = 0;
 //
 // mode 40      incremental plot mode; is ignored until exit from incremental plot received
 // mode 50      special point plot mode; not yet implemented
-// mode 101     ignore until group separator, not yet implemented
+// mode 101     ignore until group separator
 
 static int mode, savemode;
 
@@ -478,7 +478,7 @@ void drawVector(cairo_t *cr, cairo_t *cr2)
         if (DEBUG) printf("******************************************** Drawing to (%d,%d)\n",x2,y2);
         if ((x2 == x0) && (y2 == y0)) x0++; // cairo cannot draw a dot
         if (writeThroughMode) {
-                cairo_set_line_width (cr2, 1);
+                cairo_set_line_width (cr2, 2);
                 cairo_set_source_rgb(cr2, 0.0, 1.0, 0.0);
                 cairo_move_to(cr2, x0 + eoffx, windowHeight - y0);
                 cairo_line_to(cr2, x2 + eoffx, windowHeight - y2);
@@ -486,6 +486,7 @@ void drawVector(cairo_t *cr, cairo_t *cr2)
         }
         
         else {
+                cairo_set_line_width (cr2, 1);
                 tek4010_line_type(cr, cr2, ltype);
                 cairo_move_to(cr, x0 + eoffx, windowHeight - y0);
                 cairo_line_to(cr, x2 + eoffx, windowHeight - y2);
@@ -518,10 +519,13 @@ void drawVector(cairo_t *cr, cairo_t *cr2)
 
 void escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
 // handle escape sequencies
-// returns todo to allow changes to todo
 {
         if (DEBUG) printf("Escape mode, ch=%02X\n",ch);
         switch (ch) {
+                case 5: // ENQ: ask for status and position
+                        // not yet implemented, needs to send 7 bytes
+                        printf("ENQ not implemented\n");
+                        break;
                 case 12:
                         if (DEBUG) printf("Form feed, clear screen\n");
                         clearPersistent(cr,cr2);
@@ -569,15 +573,14 @@ void escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
                 case 'f': ltype = SOLID;    writeThroughMode = 0; mode = 0; break;
                 case 'h': ltype = SOLID;    writeThroughMode = 0; mode = 0; break; 
                                     
-                // todo is set here to zero to achieve some synchronization with screen refresh cycle
-                case 'p': ltype = SOLID;    writeThroughMode = 1; mode = 101; showCursor = 0; todo = 0; break;
-                case 'q': ltype = DOTTED;   writeThroughMode = 1; mode = 101; showCursor = 0; todo = 0; break;
-                case 'r': ltype = DOTDASH;  writeThroughMode = 1; mode = 101; showCursor = 0; todo = 0; break;
-                case 's': ltype = SHORTDASH;writeThroughMode = 1; mode = 101; showCursor = 0; todo = 0; break;
-                case 't': ltype = LONGDASH; writeThroughMode = 1; mode = 101; showCursor = 0; todo = 0; break;
-                case 'u': ltype = SOLID;    writeThroughMode = 1; mode = 101; showCursor = 0; todo = 0; break;
-                case 'v': ltype = SOLID;    writeThroughMode = 1; mode = 101; showCursor = 0; todo = 0; break;
-                case 'w': ltype = SOLID;    writeThroughMode = 1; mode = 101; showCursor = 0; todo = 0; break; 
+                case 'p': ltype = SOLID;    writeThroughMode = 1; mode = 101; showCursor = 0; break;
+                case 'q': ltype = DOTTED;   writeThroughMode = 1; mode = 101; showCursor = 0; break;
+                case 'r': ltype = DOTDASH;  writeThroughMode = 1; mode = 101; showCursor = 0; break;
+                case 's': ltype = SHORTDASH;writeThroughMode = 1; mode = 101; showCursor = 0; break;
+                case 't': ltype = LONGDASH; writeThroughMode = 1; mode = 101; showCursor = 0; break;
+                case 'u': ltype = SOLID;    writeThroughMode = 1; mode = 101; showCursor = 0; break;
+                case 'v': ltype = SOLID;    writeThroughMode = 1; mode = 101; showCursor = 0; break;
+                case 'w': ltype = SOLID;    writeThroughMode = 1; mode = 101; showCursor = 0; break; 
                         
                 default: 
                         printf("Escape code %02X not implemented, mode = %d\n",ch, savemode);
@@ -676,6 +679,8 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                 todo = 16 * TODO;
         else if (writeThroughMode)
                 todo = 8 * TODO;
+        else if (mode == 0)
+                todo = 4 * TODO;      // for text speed
         else
                 todo = TODO;
         
@@ -952,12 +957,9 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                                         cairo_show_text(cr, s);
                                                 
                                                         // draw the bright spot
-                                                        // only draw the last 3 chars before refresh
-                                                        if (todo < 6) {
-                                                                cairo_set_source_rgb(cr2, 1, 1, 1);
-                                                                cairo_move_to(cr2, x0 + eoffx, windowHeight - y0 + 4);
-                                                                cairo_show_text(cr2, s);
-                                                        }                                               
+                                                        cairo_set_source_rgb(cr2, 1, 1, 1);
+                                                        cairo_move_to(cr2, x0 + eoffx, windowHeight - y0 + 4);
+                                                        cairo_show_text(cr2, s);                        
                                                 }
                                                 
                                                 x0 += hDotsPerChar;
