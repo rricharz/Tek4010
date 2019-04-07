@@ -1,7 +1,7 @@
 # Tektronix 4010 and 4014 Terminal Emulator
 
-This is a [Tektronix 4010 und 4014](https://en.wikipedia.org/wiki/Tektronix_4010) terminal emulator
-for the Raspberry Pi and other Linux systems. It can also be used on Windows an Macintosh systems
+This is a [Tektronix 4010 and 4014](https://en.wikipedia.org/wiki/Tektronix_4010) terminal emulator
+for the Raspberry Pi and other Linux systems. It can also be used on Windows and Macintosh systems
 with [Virtualbox](https://www.virtualbox.org/) and [Ubuntu](https://www.ubuntu.com/).
 
 ![screen_shot](screendump.png?raw=true "tek4010 screendump")
@@ -154,11 +154,11 @@ attached keyboard and mouse.
 
 Once this works, you can start tek4010 as follows:
 
-	tek4010 raspi_hostname 4000
+	tek4010 telnet raspi_hostname 4000
 
 or
 
-	tek4010 localhost 4000	
+	tek4010 telnet localhost 4000	
 
 **Login into PiDP-11 running on the same Raspberry Pi, using the console**
 
