@@ -123,15 +123,19 @@ in the terminal emulator and clear the persistent screen:
 	home
 	page up
 	page down
-	<control> arrow up
-	<control> arrow left
+	control arrow up
+	control arrow left
 
 These keys emulate the "page" key of the Tektronix 4010. You need to use one of these
 keys frequently to avoid to get a mess on the screen, as on a real Tektronix 4010.
 
 The hardcopy function on the Tektronix 4010 is emulated with a screen dump.
 
-	<control>w	Make a screen dump in current directory using scrot
+	control-w	Make a screen dump in current directory using scrot
+
+You can also use the following control key function to close tek4010:
+
+	control-q	Close tek4010 window and quit tek4010
 
 **Login into the system running simh (same or different Raspberry Pi)**
 
@@ -219,7 +223,7 @@ tek4010 has the following options:
 
 	-full		in this mode the tek4010 emulator creates a full screen window, and
 			uses the full resolution of the 4014 with the enhanced graphics module
-			installed, scaled down to the actual window size. Use <ctrl>q to
+			installed, scaled down to the actual window size. Use control-q to
 			close the tek4010 window. This option is experimental.			
 
 **Reporting problems**
@@ -249,9 +253,9 @@ each axis are not used in this case, as in the Tektronix 4014 without the enhanc
 module.
 
 If called with the -full option, the tek4010 emulator creates creates a full screen window,
-and uses the full resolution of the 4014 with enhanced graphics
+and uses the full 4K resolution of the 4014 with enhanced graphics
 module installed, scaled down to the actual window size.
-Use <ctrl>q close the tek4010 window. This option is experimental.
+Use control-q close the tek4010 window. This option is experimental.
 
 **Compiling the tek4010 project**
 
