@@ -21,8 +21,9 @@ It can be used to log into a historical Unix system such as
 [pidp11](http://obsolescence.wixsite.com/obsolescence/pidp-11)
 or a real historical system.
 
-This [video of a tek4010 demo](https://youtu.be/tmy7dx_8fAM) was generated using
-[simplescreenrecorder](https://www.maartenbaert.be/simplescreenrecorder).
+This [video of a tek4010 demo](https://youtu.be/ioYiu6oUT88) was generated using
+[simplescreenrecorder](https://www.maartenbaert.be/simplescreenrecorder). There is also a
+video of a an [animation using the tek4010](https://youtu.be/7FMewaoEOmk).
 
 If you want to make an installation on Windows or OSX, first install Virtualbox and Ubuntu on
 your system. Here are examples of guides for
@@ -53,8 +54,8 @@ on Ubuntu. He also helped me to fix some bugs and proposed many nice features. D
 recompile the program each time you update from the repository if you are using Ubuntu. I have
 tested this on my Macintosh with Virtualbox and Ubunto, and it works very well!
 
-There is a file "captured_data" in the repo, which you can use to test the tek4010 emulator.
-"captured_data" was produced in 2.11 BSD using my program "dodekagon". Type
+There is a file "dodekagon.plt" in the repo, which you can use to test the tek4010 emulator.
+"dodekagon.plt" was produced in 2.11 BSD using my program "dodekagon". Type
 
 	./tek4010 -noexit cat dodekagon.plt
 
