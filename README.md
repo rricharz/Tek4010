@@ -56,11 +56,15 @@ tested this on my Macintosh with Virtualbox and Ubunto, and it works very well!
 There is a file "captured_data" in the repo, which you can use to test the tek4010 emulator.
 "captured_data" was produced in 2.11 BSD using my program "dodekagon". Type
 
-	./tek4010 -noexit cat captured_data
+	./tek4010 -noexit cat dodekagon.plt
 
 If you want to test text output, type for example
 
 	./tek4010 -noexit head -n 32 tek4010.c
+
+If you want to test an animation, type
+
+	./tek4010 cat animation.plt
 
 Don't forget the option "-noexit", which tells tek4010 to stay alive after cat or
 head has finished so that you have a chance to look at the output. For a list of
