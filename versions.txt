@@ -1,0 +1,12 @@
+Version 1.01 April 9, 2019
+==========================
+Phase: beta test
+New features:
+- Baud rate emulation accounts for 1 start and 1 stop bit
+- Deflection time emulation added
+- Reduced intensity of write-through mode
+- Added dark green background caused by flood gun
+- Added version number on console
+- Added versions.txt
+Bug fixes:
+- fixed demo.sh to display dodekagon.plt instead of captured_data

@@ -20,7 +20,7 @@ cat pltfiles/00README.txt
 wait5s
 wait5s
 
-cat captured_data
+cat dodekagon.plt
 
 wait5s
 

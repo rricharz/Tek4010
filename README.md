@@ -238,7 +238,7 @@ As this software is still in beta test, there will be problems.
 If everything works properly for you, but your graphics application produces garbage on the
 tek4010 emulator, you can send me your data as follows: On a historical Unix system, type
 
-	your_graphics_program > captured_data
+	your_graphics_program > captured_data.plt
 
 I don't know how this can be done on other operating systems. You can then mail your
 captured_data file together with a description of the problem to rricharz77@gmail.com.
@@ -269,5 +269,8 @@ If you want to compile the project, you need to install "libgtk-3-dev":
 	sudo apt-get install libgtk-3-dev
 
 There is a make file in the repo.
+
+**Version**
+See [versions.txt](versions.txt)
 
 
