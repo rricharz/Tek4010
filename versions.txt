@@ -1,5 +1,18 @@
-Version 1.01 April 9, 2019
-==========================
+Version 1.0.2 April 10, 2019
+============================
+Phase: beta test
+New features:
+- added install and uninstall scripts
+Bug fixes:
+- ignore 0 in ESC mode
+- ESC GS: alternative way to go to graphics mode
+- ignore 0 in graphics mode
+Appearance:
+- increased normal intensity slighly
+- reduced write-through intensity slighly
+
+Version 1.0.1 April 9, 2019
+===========================
 Phase: beta test
 New features:
 - Baud rate emulation accounts for 1 start and 1 stop bit

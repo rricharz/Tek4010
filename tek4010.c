@@ -27,8 +27,8 @@
 #define DEBUG    0              // print debug info
 #define DEBUGMAX 0              // exit after DEBUGMAX chars, 0 means no exit
 
-#define WRITE_TROUGH_INTENSITY  0.6             // green only
-#define NORMAL_INTENSITY        0.7
+#define WRITE_TROUGH_INTENSITY  0.5             // green only
+#define NORMAL_INTENSITY        0.8
 #define CURSOR_INTENSITY        0.8
 #define BRIGHT_SPOT_COLOR       1.0,1.0,1.0
 #define BRIGHT_SPOT_COLOR_HALF  0.3,0.6,0.3
@@ -196,7 +196,7 @@ void tek4010_init(int argc, char* argv[])
         char *argv2[20];
         size_t bufsize = 127;
         int firstArg = 1;
-        printf("tek4010 version 1.01\n");
+        printf("tek4010 version 1.0.2\n");
         if ((argc<2) || (argc>19)) {
                 printf("Error:number of arguments\n");
                 exit(1);
@@ -325,7 +325,7 @@ void tek4010_init(int argc, char* argv[])
         // parent process
         
         free(str);
-                
+        
         close(getDataPipe[1]); // not used
         close(putKeysPipe[0]); // not used
                 
@@ -527,6 +527,7 @@ void escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
 {
         if (DEBUG) printf("Escape mode, ch=%02X\n",ch);
         switch (ch) {
+                case 0: break;
                 case 5: // ENQ: ask for status and position
                         // not yet implemented, needs to send 7 bytes
                         printf("ENQ not implemented\n");
@@ -550,6 +551,11 @@ void escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
                 case 28: // file separator  >> point plot mode
                         mode = 5;
                         plotPointMode= 1;
+                        break;
+                        
+                case 29: // group separator >> graphics mode
+                        mode = 1;               
+                        plotPointMode = 0;
                         break;
                                          
                 // start of ignoring ANSI escape sequencies, could be improved (but the Tek4010 couldn't do this either!)
@@ -700,7 +706,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                 todo = 4 * TODO;      // for text speed
         else
                 todo = TODO;
-        
+                
         do {
                 ch = getInputChar();
                 
@@ -794,7 +800,9 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 if ((mode == 7) && (tag != 1)) mode = 8;
                         }
                         else {
+                                if (ch ==  0) return;
                                 if (ch == 29) mode = 1; // group separator
+                                else if (ch == 28) { plotPointMode = 1; todo = 16 * todo; }
                                 else printf("Plot mode, unknown char %d, plotPointMode = %d\n",ch,plotPointMode);
                                 return;
                         }
@@ -905,7 +913,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                         case 30: 
                                 escapeCodeHandler(cr, cr2, ch);
                                 break;               
-                        case 40: // incremental plot mode, wait for end mark
+                        case 40: // incremental plot mode, not implemented
                                 if (ch == 31) mode = 0;  // leave this mode
                                 break;
                         case 101: 
@@ -996,4 +1004,5 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
         // display cursor
         
         if (showCursor && (isInput() == 0)) doCursor(cr2);
+        
 }

@@ -1,0 +1,7 @@
+# uninstall tek4010 in ~/bin
+
+# remove file from /home/pi/bin
+rm ~/bin/tek4010
+
+echo "tek4010 uninstalled"
+

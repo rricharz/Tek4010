@@ -8,4 +8,4 @@ tek4010: main.c tek4010.c tek4010.h main.h
 	gcc -o tek4010 main.c tek4010.c tek4010.h main.h $(LIBS) $(CFLAGS)
 
 install:
-	cp tek4010 ~/bin
+	./install

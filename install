@@ -1,0 +1,10 @@
+# install tek4010 in ~/bin
+
+# create ~/bin directory, if it does not exist
+[ ! -d ~/bin  ] && mkdir ~/bin
+
+# copy the file to ~/bin, make it executable
+cp tek4010 ~/bin
+chmod +x ~/bin/tek4010
+
+echo "tek4010 installed"
