@@ -38,6 +38,8 @@
                                 
 #define PI2 6.283185307
 
+#define _GNU_SOURCE
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h> 
