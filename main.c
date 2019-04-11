@@ -47,8 +47,12 @@
 
 extern FILE *putKeys;
 
+char *windowName;
+
 static int global_firstcall;
+
 extern int argFull;
+extern int argARDS;
 
 int windowWidth;
 int windowHeight;
@@ -102,7 +106,10 @@ static void do_drawing(cairo_t *cr, GtkWidget *widget)
                 printf("Cannot create drawing surfaces\n");
                 exit(1);
         }
-	tek4010_draw(permanent_cr, temporary_cr, global_firstcall);
+        if (argARDS)
+                ards_draw(permanent_cr, temporary_cr, global_firstcall);
+        else
+                tek4010_draw(permanent_cr, temporary_cr, global_firstcall);
 	global_firstcall = FALSE;
 
 	cairo_set_source_surface(cr, permanent_surface, 0, 0);
@@ -225,7 +232,7 @@ int main (int argc, char *argv[])
 		g_timeout_add(TIME_INTERVAL, (GSourceFunc) on_timer_event, (gpointer) window);
 	}
 
-	gtk_window_set_title(GTK_WINDOW(window), WINDOW_NAME);
+	gtk_window_set_title(GTK_WINDOW(window), windowName);
 	
 	if (strlen(ICON_NAME) > 0) {
 		gtk_window_set_icon_from_file(GTK_WINDOW(window), ICON_NAME, NULL);	

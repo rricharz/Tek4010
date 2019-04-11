@@ -1,3 +1,12 @@
+Version 1.0.3 April 11, 2019
+============================
+Phase: beta test
+New features:
+- added skeleton for ARDS emulation
+Bug fixes:
+- fixed make install
+Appearance:
+
 Version 1.0.2 April 10, 2019
 ============================
 Phase: beta test

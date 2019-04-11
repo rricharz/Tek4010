@@ -1,7 +1,7 @@
 /*
  * tek4010.c
  * 
- * A tek 4010 graphics emulator
+ * A tek4010/4014 graphics emulator
  * 
  * Copyright 2019  rricharz
  * 
@@ -56,12 +56,14 @@ extern void gtk_main_quit();
 extern int globalClearPersistent;
 extern int windowWidth;
 extern int windowHeight;
+extern char *windowName;
 
 int argNoexit = 0;              // options
 int argRaw = 0;
 int argBaud = 19200;
 int argTab1 = 0;
 int argFull = 0;
+int argARDS = 0;
 
 int refresh_interval;           // after this time in msec next refresh is done
 
@@ -79,14 +81,17 @@ double dashset[] = {2,6,2,2,6,3,3,3,6,6};
 static int plotPointMode = 0;           // plot point mode
 static int writeThroughMode = 0;        // write through mode
 static int debugCount = 0;
-static double efactor;
-static int eoffx;
 
-static long refreshCount = 0;           // variables for baud rate and refresh rate measurements
+double efactor;
+int eoffx;
+
+long refreshCount = 0;           // variables for baud rate and refresh rate measurements
+
 static long charCount = 0;
 static long charResetCount = 0;
 static long characterInterval = 0;
-static long startPaintTime;
+
+long startPaintTime;
 
 // mode handles the current state of the emulator:
 //
@@ -196,7 +201,8 @@ void tek4010_init(int argc, char* argv[])
         char *argv2[20];
         size_t bufsize = 127;
         int firstArg = 1;
-        printf("tek4010 version 1.0.2\n");
+        printf("tek4010 version 1.0.3\n");
+        windowName = "Tektronix 4010/4014 emulator";
         if ((argc<2) || (argc>19)) {
                 printf("Error:number of arguments\n");
                 exit(1);
@@ -229,6 +235,10 @@ void tek4010_init(int argc, char* argv[])
                         argTab1 = 1;
                 else if (strcmp(argv[firstArg],"-full") == 0)
                         argFull = 1;
+                else if (strcmp(argv[firstArg],"-ARDS") == 0) {
+                        argARDS = 1;
+                        windowName = "ARDS emulator";
+                }
                 else {
                         printf("tek4010: unknown argument %s\n", argv[firstArg]);
                         exit(1);
@@ -633,8 +643,6 @@ void emulateDeflectionTime()
 
 void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
 // draw onto the main window using cairo
-// width is the actual width of the main window
-// height is the actual height of the main window
 // cr is used for persistent drawing, cr2 for temporary drawing 
 
 {	
