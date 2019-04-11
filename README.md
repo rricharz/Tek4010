@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/rricharz/Tek4010.svg?branch=master)](https://travis-ci.org/rricharz/Tek4010)
+
 # Tektronix 4010 and 4014 Terminal Emulator
 
 This is a [Tektronix 4010 and 4014](https://en.wikipedia.org/wiki/Tektronix_4010) terminal emulator
@@ -137,10 +139,11 @@ keys frequently to avoid to get a mess on the screen, as on a real Tektronix 401
 The hardcopy function on the Tektronix 4010 is emulated with a screen dump.
 
 	control-w	Make a screen dump in current directory using scrot
+                        Can be typed on the keyboard or sent by the computer during alpha mode
 
 You can also use the following control key function to close tek4010:
 
-	control-q	Close tek4010 window and quit tek4010
+	control-q	Close tek4010 window and quit tek4010.
 
 **Login into the system running simh (same or different Raspberry Pi)**
 

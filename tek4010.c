@@ -963,6 +963,9 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 case 13:    // return
                                             mode = 0; x0 = leftmargin;
                                             break;
+                                case 23:    // ctrl-w  screen dump
+                                            system("scrot --focussed");
+                                            break;
                                 case 28:    // file separator  >> point plot mode
                                             mode = 5;
                                             plotPointMode= 1;

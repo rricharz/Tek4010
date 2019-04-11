@@ -149,7 +149,7 @@ static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_da
                         system("scrot --focussed");
                         return;
                 }
-                else if (event->keyval == 0x0071) { // "<ctrl>q" makes screendump
+                else if (event->keyval == 0x0071) { // "<ctrl>q" quits tek4010
                         on_quit_event();
                         return;
                 }
