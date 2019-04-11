@@ -1,6 +1,6 @@
 LIBS = `pkg-config --libs gtk+-3.0`
 
-CFLAGS = `pkg-config --cflags gtk+-3.0`
+CFLAGS = -std=c99 `pkg-config --cflags gtk+-3.0`
 
 all: tek4010
 
