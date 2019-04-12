@@ -25,21 +25,13 @@
  */
  
 #define DEBUG    0              // print debug info
-#define DEBUGMAX 0              // exit after DEBUGMAX chars, 0 means no exit
+ 
 
-#define WRITE_TROUGH_INTENSITY  0.5             // green only
-#define NORMAL_INTENSITY        0.8
-#define CURSOR_INTENSITY        0.8
-#define BRIGHT_SPOT_COLOR       1.0,1.0,1.0
-#define BRIGHT_SPOT_COLOR_HALF  0.3,0.6,0.3
-#define BLACK_COLOR             0.0,0.08,0.0    // effect of flood gun
 
 #define TODO  (long)(8.0 * efactor * efactor)   // draw multiple objects until screen updates
-                                
-#define PI2 6.283185307
 
 #define _GNU_SOURCE
-
+ 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h> 
@@ -52,489 +44,35 @@
 #include <sys/time.h>
 
 #include "main.h"
-#include "tek4010.h"
+#include "tube.h"
 
-extern void gtk_main_quit();
-extern int globalClearPersistent;
-extern int windowWidth;
-extern int windowHeight;
-extern char *windowName;
+extern int mode, savemode;
+extern int leftmargin;
 
-int argNoexit = 0;              // options
-int argRaw = 0;
-int argBaud = 19200;
-int argTab1 = 0;
-int argFull = 0;
-int argARDS = 0;
+static long startPaintTime;
+static int xh,xl,yh,yl,xy4014;
+static long todo;
 
-int refresh_interval;           // after this time in msec next refresh is done
-
-int showCursor;                 // set of cursor is shown (not set in graphics mode)
-int isBrightSpot = 0;           // set if there is currently a bright spot on the screen
-
-int count = 0;
-long todo;
-static int x0,y0,x2,y2,xh,xl,yh,yl,xy4014;
-
-enum LineType {SOLID,DOTTED,DOTDASH,SHORTDASH,LONGDASH};
-enum LineType ltype;
-double dashset[] = {2,6,2,2,6,3,3,3,6,6};
-
-static int plotPointMode = 0;           // plot point mode
-static int writeThroughMode = 0;        // write through mode
-static int debugCount = 0;
-
-double efactor;
-int eoffx;
-
-long refreshCount = 0;           // variables for baud rate and refresh rate measurements
-
-static long charCount = 0;
-static long charResetCount = 0;
-static long characterInterval = 0;
-
-long startPaintTime;
-
-// mode handles the current state of the emulator:
-//
-// mode 0       alpha mode
-//
-// mode 1       expecting address byte of dark mode (move to) address
-// mode 2       expecting second byte of dark mode (move to) address
-// mode 3       expecting third byte of dark mode (move to) address
-// mode 4       expecting fourth byte of dark mode (move to) address
-// mode 5       expecting first byte of persistent vector end point address
-// mode 6       expecting second byte of persistent vector end point address
-// mode 7       expecting third byte of persistent vector end point address
-// mode 8       expecting fourth byte of persistent vector end point address
-//
-// mode 30      expecting escape sequence, escape code received
-// mode 31      received in ANSI escape sequence, escape sequence continues if next char is digit
-//
-// mode 40      incremental plot mode; is ignored until exit from incremental plot received
-// mode 50      special point plot mode; not yet implemented
-// mode 101     ignore until group separator
-
-static int mode, savemode;
-
-int leftmargin;
-
-int hDotsPerChar;
-int vDotsPerChar;
-
-FILE *getData;
-int getDataPipe[2];
-
-FILE *putKeys;
-int putKeysPipe[2];
-
-long mSeconds()
-// return time in msec since start of program
+void tek4010_checkLimits()
+/* check whether char is in visibel space */
 {
-        static int initialized = 0;
-        static long startTime;
-        struct timeval tv;
-        gettimeofday(&tv,NULL);
-        long t = (1000 * tv.tv_sec)  + (tv.tv_usec/1000);
-        if (!initialized) startTime = t;
-        initialized = 1;
-        t = t - startTime;
-        if (t < 0) t += 86400000;        
-        return t;
-}
-
-long u100ResetSeconds(int reset)
-// returns time in 100 usec since last reset
-{
-        static long startTime;
-        struct timeval tv;
-        gettimeofday(&tv,NULL);
-        long t = (10000 * tv.tv_sec)  + (tv.tv_usec/100);
-        if (reset) {
-                startTime = t;
-                charResetCount = 0;
-        }
-        t = t - startTime;
-        if (t < 0) t += 864000000;       
-        return t;
-}
-
-int isInput()
-// is char available on getDataPipe?
-{
-        int bytesWaiting;
-        ioctl(getDataPipe[0], FIONREAD, &bytesWaiting);
-        if (DEBUG) {
-                debugCount++;
-                if (DEBUGMAX && (debugCount > DEBUGMAX)) return 0;
-        }
-        if (bytesWaiting == 0) {
-                // reset the baud rate counter
-                // without this, baud rate goal would not work after waiting for chars
-                u100ResetSeconds(1);
-        }
-        return bytesWaiting;
-}
-
-int getInputChar()
-// get a char from getDataPipe, if available, otherwise return -1
-{
-        static long lastTime = 0;
+        /* don't check here for leftmargin, graphics needs to write characters to the whole screen */
+        if (tube_x0 < 0) tube_x0 = 0;
         
-        long t = u100ResetSeconds(0);
-        if (isInput()) {
-                // handle baud rate since last no input available
-                if (t < charResetCount * characterInterval)
-                        return -1; // there is time to refresh the screen
-                int c = getc(getData) & 0x7F;
-                if (DEBUG) printf(">>%02X<<",c);
-                charCount++;
-                charResetCount++;
-                lastTime = t;
-                return c;
+        if (tube_x0 > windowWidth - hDotsPerChar) {
+                tube_x0 = leftmargin; tube_y0 -= vDotsPerChar;
         }
-        else
-                return -1;
+        if (tube_y0 < 4) {
+                tube_y0 = windowHeight - vDotsPerChar;
+                if (leftmargin) leftmargin = 0;
+                else leftmargin = windowWidth / 2;
+                /* check here for leftmargin */
+                if (tube_x0 < leftmargin) tube_x0 = leftmargin;
+        }
+        if (tube_y0 > (windowHeight - vDotsPerChar)) tube_y0 = windowHeight - vDotsPerChar;
 }
 
-void tek4010_init(int argc, char* argv[])
-// put any code here to initialize the tek4010
-{
-        char *argv2[20];
-        size_t bufsize = 127;
-        int firstArg = 1;
-        printf("tek4010 version 1.1\n");
-        windowName = "Tektronix 4010/4014 emulator";
-        if ((argc<2) || (argc>19)) {
-                printf("Error:number of arguments\n");
-                exit(1);
-        }
-        
-        // this stays here for compatibility with early versions of tek4010
-        if (strcmp(argv[argc-1],"-noexit") == 0) {
-                argNoexit = 1;
-                argc--;
-        }
-        
-        while ((argv[firstArg][0] == '-') && firstArg < argc-1) {
-                if (strcmp(argv[firstArg],"-raw") == 0)
-                        argRaw = 1;
-                else if (strcmp(argv[firstArg],"-noexit") == 0)
-                        argNoexit = 1;
-                else if (strcmp(argv[firstArg],"-b9600") == 0)
-                        argBaud = 9600;
-                else if (strcmp(argv[firstArg],"-b4800") == 0)
-                        argBaud = 4800;
-                else if (strcmp(argv[firstArg],"-b2400") == 0)
-                        argBaud = 2400;
-                else if (strcmp(argv[firstArg],"-b1200") == 0)
-                        argBaud = 1200;
-                else if (strcmp(argv[firstArg],"-b600") == 0)
-                        argBaud = 600;
-                else if (strcmp(argv[firstArg],"-b300") == 0)
-                        argBaud = 300;
-                else if (strcmp(argv[firstArg],"-tab1") == 0)
-                        argTab1 = 1;
-                else if (strcmp(argv[firstArg],"-full") == 0)
-                        argFull = 1;
-                // else if (strcmp(argv[firstArg],"-ARDS") == 0) {
-                //        argARDS = 1;
-                //        windowName = "ARDS emulator";
-                // }
-                else {
-                        printf("tek4010: unknown argument %s\n", argv[firstArg]);
-                        exit(1);
-                }
-                firstArg++;
-                
-        }
-                
-        // A child process for rsh is forked and communication
-        // between parent and child are established
-        
-        // expand argv[firstArg] to full path and check, whether it exists
-        char *str = (char *) malloc(bufsize * sizeof(char));
-        if (str == NULL) {
-               printf("Cannot allocate memory for absolute path\n");
-               exit(1);
-        }
-        strcpy(str,"which ");
-        strcat(str, argv[firstArg]);
-        FILE *fullPath = popen(str,"r");
-        if (fullPath) {
-                getline(&str, &bufsize,fullPath);
-                
-                // remove the endline character
-                str[strlen(str)-1] = 0;
-                
-                if (strncmp(str,"which",5) == 0) {
-                        printf("Unknown command %s\n", argv[firstArg]);
-                        exit(1);
-                }
-                
-                argv[firstArg] = str;
-                pclose(fullPath);
-        }
-        else {
-                printf("Unknown command %s\n", argv[firstArg]);
-                exit(1);
-        }
-        
-        characterInterval = 100000 / argBaud; // in 100 usecs, assuming 1 start and 1 stop bit.
-        
-        if (DEBUG) printf("character_interval = %0.1f msec\n",(double)characterInterval/10.0);
-                
-        globalClearPersistent = 1;
-                
-        // create pipes for communication between parent and child
-        if (pipe(getDataPipe) == -1) {
-                printf("Cannot initialize data pipe\n");
-                exit(1);
-        }
-                
-        if (pipe(putKeysPipe) == -1) {
-                printf("Cannot initialize key pipe\n");
-                exit(1);
-        }
-                
-        // now fork a child process
-        pid_t pid = fork();
-        if (pid == -1) {
-                printf("Cannot fork child process\n");
-                exit(1);
-        }
-        else if (pid == 0) {  // child process
-                
-                // we need a second string array with an empty string as last item!
-                argv2[0] = argv[firstArg];
-                for (int i = 1; i < argc; i++)
-                        argv2[i] = argv[firstArg+i-1];
-                argv2[argc-firstArg+1] = (char*) NULL;
-                
-                // int i = 0;
-                // do {
-                //        printf("argv2[%d] = %s\n",i,argv2[i]);
-                //        i++;
-                // }
-                // while (argv2[i] != (char*) NULL);
-                        
-                // set stdout of child process to getDataPipe
-                while ((dup2(getDataPipe[1], STDOUT_FILENO) == -1) && (errno == EINTR)) {}
-                close(getDataPipe[1]); // not used anymore
-                close(getDataPipe[0]); // not used
-                        
-                // set stdin of child process to putKeysPipe
-                while ((dup2(putKeysPipe[0], STDIN_FILENO) == -1) && (errno == EINTR)) {}
-                close(putKeysPipe[1]); // not used
-                close(putKeysPipe[0]); // not used anymore
-                
-                // run rsh in the child process
-                execv(argv2[0],argv2+1);
-                free(str);
-                exit(0);
-        }
-                
-        // parent process
-        
-        free(str);
-        
-        close(getDataPipe[1]); // not used
-        close(putKeysPipe[0]); // not used
-                
-        // use termios to turn off line buffering for both pipes
-        // struct termios term;
-        // tcgetattr(getDataPipe[0], &term);
-        // term.c_lflag &= ~ICANON ;
-        // tcsetattr(getDataPipe[0], TCSANOW,&term);
-        // tcgetattr(putKeysPipe[1], &term);
-        // tcsetattr(putKeysPipe[0], TCSANOW,&term);
-                
-        // open now a stream from the getDataPipe descriptor
-        getData = fdopen(getDataPipe[0],"r");
-        if (getData == 0) {
-                printf("Parent: Cannot open input stream\n");
-                exit(1);
-        }
-        setbuf(getData,0);
-                
-        // open now a stream from the putKeysPipe descriptor
-        putKeys = fdopen(putKeysPipe[1],"w");
-        if (putKeys == 0) {
-                printf("Parent: Cannot open output stream\n");
-                exit(1);
-        }
-        setbuf(putKeys,0);
-        
-        mSeconds();             // initialize the timer
-        u100ResetSeconds(1);                        
-}
-
-int tek4010_on_timer_event()
-// if TIMER_INTERVAL in tek4010.h is larger than zero, this function
-// is called every TIMER-INTERVAL milliseconds
-// if the function returns 1, the window is redrawn by calling applicatin_draw
-{
-        // if there is a char available on the imput stream
-        // or there is still a bright spot, return 1 to ask for
-        // one more redraw
-       
-        // is child process still running?
-        
-        int status;
-        if ((!argNoexit) && (isInput() == 0) && (waitpid(-1, &status, WNOHANG))) {
-                long t = mSeconds();
-                printf("Execution time: %0.3f sec\n", (double)t/1000.0);
-                if (t > 0) {
-                        printf("Average screen refresh rate: %0.1f Hz\n",(double)(1000.0*refreshCount)/t);
-                        printf("Average character rate: %0.0f baud\n",(double)(8000.0*charCount)/t);
-                }
-                tek4010_quit();
-                gtk_main_quit();
-                printf("Process has been terminated\n");
-                exit(0);
-        }
-        return (isBrightSpot || isInput());
-}
- 
-int tek4010_clicked(int button, int x, int y)
-// is called if a mouse button is clicked in the window
-// button = 1: means left mouse button; button = 3 means right mouse button
-// x and y are the coordinates
-// if the function returns 1, the window is redrawn by calling applicatin_draw
-{
-	return 1;
-}
-
-void tek4010_quit()
-// is called if the main window is called bevore the tek4010 exits
-// put any code here which needs to be called on exit
-{
-        pclose(getData);
-}
-
-int checkExitFromGraphics(int ch)
-// test for exit from graphics character
-{
-        if ((ch==31) || (ch==13) || (ch==27) || (ch==12)) {
-                mode = 0;
-                if (DEBUG) printf("Leaving graphics mode\n");
-                showCursor = 0;
-                if (ch == 12) globalClearPersistent = 1;
-                plotPointMode = 0;
-                return 1;
-        }
-        else return 0;
-}
-
-void doCursor(cairo_t *cr2)
-{
-        cairo_set_source_rgb(cr2, 0, CURSOR_INTENSITY, 0);
-        cairo_set_line_width (cr2, 1);
-        cairo_rectangle(cr2, x0 + eoffx, windowHeight - y0 - vDotsPerChar + 8,
-                                                hDotsPerChar - 3, vDotsPerChar - 3);
-        cairo_fill(cr2);
-        cairo_stroke (cr2);
-}
-
-void clearPersistent(cairo_t *cr, cairo_t *cr2)
-// clear the persistant surface
-// flash using the second surface
-{
-        cairo_set_source_rgb(cr, BLACK_COLOR);
-        cairo_paint(cr);
-        globalClearPersistent = 0;
-        x0 = 0;
-        y0 = windowHeight - vDotsPerChar;
-        x2 = x0;
-        y2 = y0;
-        leftmargin = 0;
-        cairo_set_source_rgb(cr, 0, NORMAL_INTENSITY, 0);
-        cairo_set_source_rgb(cr2, BRIGHT_SPOT_COLOR);
-        cairo_paint(cr2);
-        isBrightSpot = 1;
-        plotPointMode = 0;
-        ltype = SOLID;  
-}
-
-void clearSecond(cairo_t *cr2)
-// clear second surface
-{ 
-        cairo_set_source_rgba(cr2, 0, 0, 0, 0);
-        cairo_set_operator(cr2, CAIRO_OPERATOR_SOURCE);
-        cairo_paint(cr2);
-        cairo_set_operator(cr2, CAIRO_OPERATOR_OVER);
-}
-
-void tek4010_line_type(cairo_t *cr, cairo_t *cr2, enum LineType ln)
-{
-    int ndash,ndx;
-    double ofs = 0.5;
-
-    switch (ln) {
-    case SOLID:
-        ndx = 0;
-        ndash = 0;
-        break;
-    case DOTTED:
-        ndx = 0;
-        ndash = 2;
-        break;
-    case DOTDASH:
-        ndx = 2;
-        ndash = 4;
-        break;
-    case LONGDASH:
-        ndx = 8;
-        ndash = 2;
-        break;
-    case SHORTDASH:
-        ndx = 6;
-        ndash = 2;
-        break;
-    }
-    cairo_set_dash (cr,&dashset[ndx],ndash,ofs);
-    cairo_set_dash (cr2,&dashset[ndx],ndash,ofs);
-}
-
-void drawVector(cairo_t *cr, cairo_t *cr2)
-{
-        if (DEBUG) printf("******************************************** Drawing to (%d,%d)\n",x2,y2);
-        if ((x2 == x0) && (y2 == y0)) x0++; // cairo cannot draw a dot
-        if (writeThroughMode) {
-                cairo_set_line_width (cr2, 2);
-                cairo_set_source_rgb(cr2, 0.0, WRITE_TROUGH_INTENSITY, 0.0);
-                cairo_move_to(cr2, x0 + eoffx, windowHeight - y0);
-                cairo_line_to(cr2, x2 + eoffx, windowHeight - y2);
-                cairo_stroke (cr2);
-        }
-        
-        else {
-                // draw the actual vector on permanent surface
-                cairo_set_line_width (cr2, 1);
-                tek4010_line_type(cr, cr2, ltype);
-                cairo_move_to(cr, x0 + eoffx, windowHeight - y0);
-                cairo_line_to(cr, x2 + eoffx, windowHeight - y2);
-                cairo_stroke (cr);
-        
-                //draw the bright spot, half intensity
-                cairo_set_line_width (cr2, 6);
-                cairo_set_source_rgb(cr2, BRIGHT_SPOT_COLOR_HALF);                        
-                cairo_move_to(cr2, x0 + eoffx, windowHeight - y0);
-                cairo_line_to(cr2, x2 + eoffx, windowHeight - y2);
-                cairo_stroke (cr2);
-                                        
-                // draw the bright spot, high intensity
-                cairo_set_line_width (cr2, 3);
-                cairo_set_source_rgb(cr2, BRIGHT_SPOT_COLOR);                        
-                cairo_move_to(cr2, x0 + eoffx, windowHeight - y0);
-                cairo_line_to(cr2, x2 + eoffx, windowHeight - y2);
-                cairo_stroke(cr2);
-        }
-
-        isBrightSpot = 1; // also to be set if writeThroughMode
-}
-
-void escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
+void tek4010_escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
 // handle escape sequencies
 {
         if (DEBUG) printf("Escape mode, ch=%02X\n",ch);
@@ -546,7 +84,7 @@ void escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
                         break;
                 case 12:
                         if (DEBUG) printf("Form feed, clear screen\n");
-                        clearPersistent(cr,cr2);
+                        tube_clearPersistent(cr,cr2);
                         mode = 0;
                         break;
                 case '[':   
@@ -612,35 +150,19 @@ void escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
         }         
 }
 
-void checkLimits()
-/* check whether char is in visibel space */
-{
-        /* don't check here for leftmargin, graphics needs to write characters to the whole screen */
-        if (x0 < 0) x0 = 0;
-        
-        if (x0 > windowWidth - hDotsPerChar) {
-                x0 = leftmargin; y0 -= vDotsPerChar;
-        }
-        if (y0 < 4) {
-                y0 = windowHeight - vDotsPerChar;
-                if (leftmargin) leftmargin = 0;
-                else leftmargin = windowWidth / 2;
-                /* check here for leftmargin */
-                if (x0 < leftmargin) x0 = leftmargin;
-        }
-        if (y0 > (windowHeight - vDotsPerChar)) y0 = windowHeight - vDotsPerChar;
-}
 
-void emulateDeflectionTime()
+int tek4010_checkExitFromGraphics(int ch)
+// test for exit from graphics character
 {
-        // find length of longer component
-        int l = x2 - x0;
-        if ((x0-x2) > l) l = x0 - x2;
-        if ((y2-y0) > l) l = y2 - y0;
-        if ((y0-y2) > l) l = y0 - y2;
-        if (l > 300) {  // the 300 accounts for other overheads
-                usleep((l - 300) * 2);  // roughly 2 usec per dot
+        if ((ch==31) || (ch==13) || (ch==27) || (ch==12)) {
+                mode = 0;
+                if (DEBUG) printf("Leaving graphics mode\n");
+                showCursor = 0;
+                if (ch == 12) globaltube_clearPersistent = 1;
+                plotPointMode = 0;
+                return 1;
         }
+        else return 0;
 }
 
 void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
@@ -649,12 +171,8 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
 
 {	
         int ch;
-        char s[2];
         
         refreshCount++;
-        
-        int xlast = 0;
-        int ylast = 0;
         
         if (first) {
                 first = 0;
@@ -679,34 +197,20 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                 // printf("Refresh interval: %d\n",refresh_interval);
         }
         
-        startPaintTime = mSeconds(); // start to measure time for this draw operation
+        startPaintTime = tube_mSeconds(); // start to measure time for this draw operation
 
         showCursor = 1;
         isBrightSpot = 0;
         
         // clear the second surface
-        clearSecond(cr2);
+        tube_clearSecond(cr2);
         
         // clear persistent surface, if necessary
-        if (globalClearPersistent) {
-                clearPersistent(cr,cr2);
+        if (globaltube_clearPersistent) {
+                tube_clearPersistent(cr,cr2);
         }
         
-        cairo_set_antialias(cr, CAIRO_ANTIALIAS_BEST);      
-	cairo_set_line_width (cr, 1);
-        cairo_set_source_rgb(cr, 0, NORMAL_INTENSITY, 0);
-        
-        cairo_select_font_face(cr, "Monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-        cairo_select_font_face(cr2, "Monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-        
-        if (argFull > 0.0) {
-                cairo_set_font_size(cr, (int)(efactor * 18));
-                cairo_set_font_size(cr2,(int)(efactor * 18));
-        }
-        else {
-                cairo_set_font_size(cr, 18);
-                cairo_set_font_size(cr2, 18);
-        }
+        tube_setupPainting(cr, cr2, "Monospace", (int)(efactor * 18));
         
         if (plotPointMode)
                 todo = 16 * TODO;
@@ -718,14 +222,14 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                 todo = TODO;
                 
         do {
-                ch = getInputChar();
+                ch = tube_getInputChar();
                 
-                if (isInput() == 0) {
+                if (tube_isInput() == 0) {
                         todo = 0;
                 }
 
                 if (ch == -1) {
-                        if ((mode == 0) && showCursor) doCursor(cr2);
+                        if ((mode == 0) && showCursor) tube_doCursor(cr2);
                         return;         // no char available, need to allow for updates
                 }
                 
@@ -754,7 +258,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 
                 if ((mode >= 1) && (mode <= 8)) {
                         
-                        if (checkExitFromGraphics(ch)) {
+                        if (tek4010_checkExitFromGraphics(ch)) {
                                 todo = todo - 4;
                                 goto endDo;
                         }
@@ -827,9 +331,9 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                         case 2: yl = (ch & 31);
                                 if (argFull) {
                                         int yb = (xy4014 >> 2) & 3;
-                                        y0 = (int)(efactor * (double)(((yh+yl) << 2) + yb) / 4.0);
+                                        tube_y0 = (int)(efactor * (double)(((yh+yl) << 2) + yb) / 4.0);
                                 }
-                                else y0 = yh + yl;
+                                else tube_y0 = yh + yl;
                                 mode++;
                                 if (DEBUG) printf("setting yl to %d\n", yl);
                                 break;
@@ -839,13 +343,13 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                         case 4: xl = (ch & 31);
                                 if (argFull) {
                                         int xb = xy4014 & 3;
-                                        x0 = (int)(efactor * (double)(((xh+xl) << 2) + xb) / 4.0);
+                                        tube_x0 = (int)(efactor * (double)(((xh+xl) << 2) + xb) / 4.0);
                                 }
-                                else x0 = xh + xl;
+                                else tube_x0 = xh + xl;
                                 mode++;
-                                emulateDeflectionTime();
+                                tube_emulateDeflectionTime();
                                 if (DEBUG) printf("setting xl to %d\n", xl);
-                                if (DEBUG) printf("******************************************** Moving to (%d,%d)\n",x0,y0);
+                                if (DEBUG) printf("******************************************** Moving to (%d,%d)\n",tube_x0,tube_y0);
                                 break;
                         case 5: if (ch == 29) {
                                         if (DEBUG) printf("setting mode to 1\n");
@@ -866,62 +370,41 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                         case 8: xl = (ch & 31);
                                 if (argFull) {
                                         int xb = xy4014 & 3;
-                                        x2 = (int)(efactor * (double)(((xh+xl) << 2) + xb) / 4.0);
+                                        tube_x2 = (int)(efactor * (double)(((xh+xl) << 2) + xb) / 4.0);
                                         int yb = (xy4014 >> 2) & 3;
-                                        y2 = (int)(efactor * (double)(((yh+yl) << 2) + yb) / 4.0);
+                                        tube_y2 = (int)(efactor * (double)(((yh+yl) << 2) + yb) / 4.0);
                                 }
                                 else {
-                                        x2 = xh + xl;
-                                        y2 = yh + yl;
+                                        tube_x2 = xh + xl;
+                                        tube_y2 = yh + yl;
                                 }
                                 if (DEBUG) printf(">>>>>xl=%d\n",xl);
                                 
                                 if (plotPointMode>0.0) {
                                         
+                                        tube_drawPoint(cr, cr2);
+                                        
                                         // draw the point
-                                        cairo_set_source_rgb(cr, 0, NORMAL_INTENSITY, 0);
-                                        cairo_move_to(cr, x2 + eoffx, windowHeight - y2);
-                                        cairo_line_to(cr, x2 + 1 + eoffx, windowHeight - y2);
-                                        cairo_stroke (cr);
                                         
-                                        // speed is a problem here
-                                        // do not draw adjacent bright spots
-                                        
-                                        if (((x2 - xlast) > 2) || ((xlast - x2) > 2) ||
-                                                ((y2 - ylast) > 2) || ((ylast - y2) > 2))  {
-                                        
-                                                // draw the bright spot, higher intensity
-                                                cairo_set_line_width (cr2, 0.1);
-                                                cairo_set_source_rgb(cr2, BRIGHT_SPOT_COLOR);                        
-                                                cairo_arc(cr2, x2 + eoffx, windowHeight - y2, 2, 0, PI2);
-                                                cairo_fill(cr2);
-                                                
-                                                xlast = x2;
-                                                ylast = y2;
-                                        }
-                                        
-                                        isBrightSpot = 1;
                                         mode = 50;
                                         todo--;
                                 }
                                 
                                 else {
-                                        cairo_set_source_rgb(cr, 0, WRITE_TROUGH_INTENSITY, 0);
-                                        emulateDeflectionTime();
-                                        drawVector(cr,cr2);
+                                        tube_drawVector(cr,cr2);
                                         
                                         todo--;                                        
                                 }
                                 
                                 showCursor = 0;
                                 
-                                x0 = x2;        // prepare for additional vectors
-                                y0 = y2;                                
+                                tube_x0 = tube_x2;        // prepare for additional vectors
+                                tube_y0 = tube_y2;                                
                                 mode = 5;
                                 
                                 break;
                         case 30: 
-                                escapeCodeHandler(cr, cr2, ch);
+                                tek4010_escapeCodeHandler(cr, cr2, ch);
                                 break;               
                         case 40: // incremental plot mode, not implemented
                                 if (ch == 31) mode = 0;  // leave this mode
@@ -935,33 +418,33 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 case 0:     break;
                                 case 7:     // bell function, delay 0.1 sec
                                             // cannot delay if bright spot is on, needs to be turned off first
-                                            u100ResetSeconds(1);
+                                            tube_u100ResetSeconds(1);
                                             usleep(50000);
                                             showCursor=0;
                                             todo = 0;
                                             break;
                                 case 8:     // backspace
-                                            x0 -= hDotsPerChar;
-                                            checkLimits();
+                                            tube_x0 -= hDotsPerChar;
+                                            tek4010_checkLimits();
                                             break;
                                 case 9:     // tab
                                             if (argTab1)
-                                                x0 += hDotsPerChar;
+                                                tube_x0 += hDotsPerChar;
                                             else
-                                                x0 = x0 - (x0 % (8 * hDotsPerChar)) + 8 * hDotsPerChar;
-                                            checkLimits();
+                                                tube_x0 = tube_x0 - (tube_x0 % (8 * hDotsPerChar)) + 8 * hDotsPerChar;
+                                            tek4010_checkLimits();
                                             break;
                                 case 10:    // new line
-                                            y0 -= vDotsPerChar;
-                                            if (!argRaw) x0 = leftmargin;
-                                            checkLimits();
+                                            tube_y0 -= vDotsPerChar;
+                                            if (!argRaw) tube_x0 = leftmargin;
+                                            tek4010_checkLimits();
                                             break;
                                 case 11:    // VT, move one line up
-                                            y0 += vDotsPerChar;
-                                            checkLimits();
+                                            tube_y0 += vDotsPerChar;
+                                            tek4010_checkLimits();
                                             break;
                                 case 13:    // return
-                                            mode = 0; x0 = leftmargin;
+                                            mode = 0; tube_x0 = leftmargin;
                                             break;
                                 case 23:    // ctrl-w  screen dump
                                             system("scrot --focussed");
@@ -980,30 +463,9 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                             mode = 0;
                                             break;
                                 default:    if ((ch >= 32) && (ch <127)) { // printable character
-                                                checkLimits();
-                                                s[0] = ch;
-                                                s[1] = 0;
+                                                tek4010_checkLimits();
+                                                tube_drawCharacter(cr,cr2, ch);
                                                 
-                                                if (writeThroughMode) {  // draw the write-through character
-                                                        cairo_set_source_rgb(cr2, 0, WRITE_TROUGH_INTENSITY, 0);
-                                                        cairo_move_to(cr2, x0 + eoffx, windowHeight - y0 + 4);
-                                                        cairo_show_text(cr2, s);
-                                                }
-                                                
-                                                else {
-                                                        // draw the character
-                                                        cairo_set_source_rgb(cr, 0, NORMAL_INTENSITY, 0);
-                                                        cairo_move_to(cr, x0 + eoffx, windowHeight - y0 + 4);
-                                                        cairo_show_text(cr, s);
-                                                
-                                                        // draw the bright spot
-                                                        cairo_set_source_rgb(cr2, BRIGHT_SPOT_COLOR);
-                                                        cairo_move_to(cr2, x0 + eoffx, windowHeight - y0 + 4);
-                                                        cairo_show_text(cr2, s);                        
-                                                }
-                                                
-                                                x0 += hDotsPerChar;
-                                                isBrightSpot = 1;
                                                 todo-= 2;
                                             }
                                             break;
@@ -1012,10 +474,10 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                 }
                 endDo:;
         }
-        while ((todo > 0) && ((mSeconds() - startPaintTime) < refresh_interval));
+        while ((todo > 0) && ((tube_mSeconds() - startPaintTime) < refresh_interval));
         
         // display cursor
         
-        if (showCursor && (isInput() == 0)) doCursor(cr2);
+        if (showCursor && (tube_isInput() == 0)) tube_doCursor(cr2);
         
 }

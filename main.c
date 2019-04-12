@@ -34,6 +34,8 @@
  * 
  */
  
+#define TIME_INTERVAL       10              // time interval for timer function in msec
+ 
 #define GDK_DISABLE_DEPRECATION_WARNINGS
 
 #include <stdio.h>
@@ -43,7 +45,6 @@
 #include <gtk/gtk.h>
 
 #include "main.h"
-#include "tek4010.h"
 
 extern FILE *putKeys;
 
@@ -57,7 +58,7 @@ extern int argARDS;
 int windowWidth;
 int windowHeight;
 
-int globalClearPersistent;
+int globaltube_clearPersistent;
 
 static void do_drawing(cairo_t *, GtkWidget *);
 
@@ -70,21 +71,21 @@ static gboolean on_draw_event(GtkWidget *widget, cairo_t *cr,
 
 static gboolean on_timer_event(GtkWidget *widget)
 {
-	if (tek4010_on_timer_event())
+	if (tube_on_timer_event())
                 gtk_widget_queue_draw(widget);
 	return TRUE;
 }
 
 static gboolean clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-    if (tek4010_clicked(event->button, event->x, event->y))
+    if (tube_clicked(event->button, event->x, event->y))
                 gtk_widget_queue_draw(widget);
     return TRUE;
 }
 
 static void on_quit_event()
 {
-	tek4010_quit();
+	tube_quit();
 	gtk_main_quit();
         exit(0);
 }
@@ -130,7 +131,7 @@ static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_da
                 (event->keyval == 0xFF55) ||    // "page up" key
                 (event->keyval == 0xFF56))      // "page down" key        
         {
-                globalClearPersistent = 1;
+                globaltube_clearPersistent = 1;
                 gtk_widget_queue_draw(widget);
                 return;
         }
@@ -141,7 +142,7 @@ static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_da
         else if (event->state & GDK_CONTROL_MASK) {
                 if ((event->keyval == 0xFF51) ||    // "<ctrl>left arrow" key
                     (event->keyval == 0xFF52)) {    // "<ctrl>up arrow" key
-                        globalClearPersistent = 1;
+                        globaltube_clearPersistent = 1;
                         gtk_widget_queue_draw(widget);
                         return;
                 }
@@ -149,7 +150,7 @@ static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_da
                         system("scrot --focussed");
                         return;
                 }
-                else if (event->keyval == 0x0071) { // "<ctrl>q" quits tek4010
+                else if (event->keyval == 0071) { // "<ctrl>q" quits tek4010
                         on_quit_event();
                         return;
                 }
@@ -174,15 +175,24 @@ int main (int argc, char *argv[])
 	GtkWidget *darea;
 	GtkWidget *window;
         
-        int askWindowWidth = A_WINDOW_WIDTH;
-        int askWindowHeight = A_WINDOW_HEIGHT;
+        int askWindowWidth;
+        int askWindowHeight;
         
-        tek4010_init(argc, argv);
+        tube_init(argc, argv);
         
-        if (argFull) {
+        if (argARDS) {
+                askWindowWidth = 1080;
+                askWindowHeight = 1414;                
+        }
+        
+        else if (argFull) {
                 askWindowWidth = 4096;
                 askWindowHeight = 3072;
         }
+        else {
+                askWindowWidth = 1024;
+                askWindowHeight = 780;
+        }        
           
 	gtk_init(&argc, &argv);
 	
@@ -205,7 +215,7 @@ int main (int argc, char *argv[])
 	int screenHeight = gdk_screen_get_height(screen);
 	printf("Screen dimensions: %d x %d\n", screenWidth, screenHeight);
         
-        if (argFull) {        
+        if (argFull && !argARDS) {        
                 // DISPLAY UNDECORATED FULL SCREEN WINDOW
 		gtk_window_set_decorated(GTK_WINDOW(window), FALSE);
 		gtk_window_fullscreen(GTK_WINDOW(window));
@@ -216,6 +226,10 @@ int main (int argc, char *argv[])
  
         else {
                 // DISPLAY DECORATED WINDOW
+                if (argARDS && (askWindowHeight > (screenHeight - 32))) {
+                        askWindowWidth = 540;
+                        askWindowHeight = 707;
+                }
                 gtk_window_set_decorated(GTK_WINDOW(window), TRUE);
                 gtk_window_set_default_size(GTK_WINDOW(window), askWindowWidth, askWindowHeight);
                 windowWidth  = askWindowWidth;
@@ -234,10 +248,6 @@ int main (int argc, char *argv[])
 
 	gtk_window_set_title(GTK_WINDOW(window), windowName);
 	
-	if (strlen(ICON_NAME) > 0) {
-		gtk_window_set_icon_from_file(GTK_WINDOW(window), ICON_NAME, NULL);	
-	}
-
 	gtk_widget_show_all(window);
 
 	gtk_main();

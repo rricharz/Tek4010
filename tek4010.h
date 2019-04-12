@@ -1,7 +1,0 @@
-
-#define A_WINDOW_WIDTH    1024              // proposed width of main window
-#define A_WINDOW_HEIGHT    780              // proposed height of main window
-#define ICON_NAME       ""                  // path to icon for window
-
-#define TIME_INTERVAL       10              // time interval for timer function in msec
-                                            // 0 means no timer function

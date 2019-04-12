@@ -24,13 +24,6 @@
  *
  */
  
-#define WRITE_TROUGH_INTENSITY  0.5             // green only
-#define NORMAL_INTENSITY        0.8
-#define CURSOR_INTENSITY        0.8
-#define BRIGHT_SPOT_COLOR       1.0,1.0,1.0
-#define BRIGHT_SPOT_COLOR_HALF  0.3,0.6,0.3
-#define BLACK_COLOR             0.0,0.08,0.0    // effect of flood gun
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h> 
@@ -43,36 +36,9 @@
 #include <sys/time.h>
 
 #include "main.h"
-#include "tek4010.h"
-
-extern void gtk_main_quit();
-extern int globalClearPersistent;
-extern int windowWidth;
-extern int windowHeight;
-
-extern int argFull;
-
-extern int hDotsPerChar;
-extern int vDotsPerChar;
-
-extern int refresh_interval;           // after this time in msec next refresh is done
-extern long refreshCount;
-
-extern int showCursor;                 // set of cursor is shown (not set in graphics mode)
-extern int isBrightSpot;               // set if there is currently a bright spot on the screen
-
-extern double efactor;
-extern int eoffx;
+#include "tube.h"
 
 static long startPaintTime;
-
-extern long mSeconds();
-extern void doCursor(cairo_t *cr2);
-extern void clearPersistent(cairo_t *cr, cairo_t *cr2);
-extern void clearSecond(cairo_t *cr2);
-extern void clearPersistent(cairo_t *cr, cairo_t *cr2);
-extern int isInput();
-extern int getInputChar();
 
 void ards_draw(cairo_t *cr, cairo_t *cr2, int first)
 // draw onto the main window using cairo
@@ -80,13 +46,9 @@ void ards_draw(cairo_t *cr, cairo_t *cr2, int first)
 
 {	
         int ch;
-        char s[2];
         
         refreshCount++;  // to calculate the average refresh rate
-        
-        int xlast = 0;
-        int ylast = 0;
-        
+               
         if (first) {
                 first = 0;
                 int actualWidth;                
@@ -110,37 +72,23 @@ void ards_draw(cairo_t *cr, cairo_t *cr2, int first)
                 // printf("Refresh interval: %d\n",refresh_interval);
         }
         
-        startPaintTime = mSeconds(); // start to measure time for this draw operation
+        startPaintTime = tube_mSeconds(); // start to measure time for this draw operation
 
         showCursor = 1;
         isBrightSpot = 0;
         
         // clear the second surface
-        clearSecond(cr2);
+        tube_clearSecond(cr2);
         
         // clear persistent surface, if necessary
-        if (globalClearPersistent) {
-                clearPersistent(cr,cr2);
+        if (globaltube_clearPersistent) {
+                tube_clearPersistent(cr,cr2);
         }
         
-        cairo_set_antialias(cr, CAIRO_ANTIALIAS_BEST);      
-	cairo_set_line_width (cr, 1);
-        cairo_set_source_rgb(cr, 0, NORMAL_INTENSITY, 0);
-        
-        cairo_select_font_face(cr, "Monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-        cairo_select_font_face(cr2, "Monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-        
-        if (argFull > 0.0) {
-                cairo_set_font_size(cr, (int)(efactor * 18));
-                cairo_set_font_size(cr2,(int)(efactor * 18));
-        }
-        else {
-                cairo_set_font_size(cr, 18);
-                cairo_set_font_size(cr2, 18);
-        }
+        tube_setupPainting(cr, cr2, "Monospace", (int)(efactor * 18));
         
         do {
-                ch = getInputChar();
+                ch = tube_getInputChar();
                 
                 
                 
@@ -151,10 +99,10 @@ void ards_draw(cairo_t *cr, cairo_t *cr2, int first)
                 
                 
         }
-        while (((mSeconds() - startPaintTime) < refresh_interval));
+        while (((tube_mSeconds() - startPaintTime) < refresh_interval));
         
         // display cursor
         
-        if (showCursor && (isInput() == 0)) doCursor(cr2);
+        if (showCursor && (tube_isInput() == 0)) tube_doCursor(cr2);
         
 }
