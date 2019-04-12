@@ -203,7 +203,7 @@ void tek4010_init(int argc, char* argv[])
         char *argv2[20];
         size_t bufsize = 127;
         int firstArg = 1;
-        printf("tek4010 version 1.0.3\n");
+        printf("tek4010 version 1.1\n");
         windowName = "Tektronix 4010/4014 emulator";
         if ((argc<2) || (argc>19)) {
                 printf("Error:number of arguments\n");
@@ -237,10 +237,10 @@ void tek4010_init(int argc, char* argv[])
                         argTab1 = 1;
                 else if (strcmp(argv[firstArg],"-full") == 0)
                         argFull = 1;
-                else if (strcmp(argv[firstArg],"-ARDS") == 0) {
-                        argARDS = 1;
-                        windowName = "ARDS emulator";
-                }
+                // else if (strcmp(argv[firstArg],"-ARDS") == 0) {
+                //        argARDS = 1;
+                //        windowName = "ARDS emulator";
+                // }
                 else {
                         printf("tek4010: unknown argument %s\n", argv[firstArg]);
                         exit(1);
@@ -249,7 +249,7 @@ void tek4010_init(int argc, char* argv[])
                 
         }
                 
-        // A child process for rsh is forked ans communication
+        // A child process for rsh is forked and communication
         // between parent and child are established
         
         // expand argv[firstArg] to full path and check, whether it exists

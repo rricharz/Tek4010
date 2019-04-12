@@ -1,3 +1,7 @@
+Version 1.1 April 12, 2019
+==========================
+Phase: Fist offical release
+
 Version 1.0.3 April 11, 2019
 ============================
 Phase: beta test
