@@ -68,10 +68,7 @@ int refresh_interval;           // after this time in msec next refresh is done
 int showCursor;                 // set of cursor is shown (not set in graphics mode)
 int isBrightSpot = 0;           // set if there is currently a bright spot on the screen
 
-int count = 0;
-
 int xlast, ylast;
-
 
 enum LineType ltype;
 double dashset[] = {2,6,2,2,6,3,3,3,6,6};
@@ -93,28 +90,6 @@ static long charResetCount = 0;
 static long characterInterval = 0;
 
 long startPaintTime;
-
-// mode handles the current state of the emulator:
-//
-// mode 0       alpha mode
-//
-// mode 1       expecting address byte of dark mode (move to) address
-// mode 2       expecting second byte of dark mode (move to) address
-// mode 3       expecting third byte of dark mode (move to) address
-// mode 4       expecting fourth byte of dark mode (move to) address
-// mode 5       expecting first byte of persistent vector end point address
-// mode 6       expecting second byte of persistent vector end point address
-// mode 7       expecting third byte of persistent vector end point address
-// mode 8       expecting fourth byte of persistent vector end point address
-//
-// mode 30      expecting escape sequence, escape code received
-// mode 31      received in ANSI escape sequence, escape sequence continues if next char is digit
-//
-// mode 40      incremental plot mode; is ignored until exit from incremental plot received
-// mode 50      special point plot mode; not yet implemented
-// mode 101     ignore until group separator
-
-int mode, savemode;
 
 int leftmargin;
 

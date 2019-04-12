@@ -26,8 +26,6 @@
  
 #define DEBUG    0              // print debug info
  
-
-
 #define TODO  (long)(8.0 * efactor * efactor)   // draw multiple objects until screen updates
 
 #define _GNU_SOURCE
@@ -46,7 +44,28 @@
 #include "main.h"
 #include "tube.h"
 
-extern int mode, savemode;
+// mode handles the current state of the emulator:
+//
+// mode 0       alpha mode
+//
+// mode 1       expecting address byte of dark mode (move to) address
+// mode 2       expecting second byte of dark mode (move to) address
+// mode 3       expecting third byte of dark mode (move to) address
+// mode 4       expecting fourth byte of dark mode (move to) address
+// mode 5       expecting first byte of persistent vector end point address
+// mode 6       expecting second byte of persistent vector end point address
+// mode 7       expecting third byte of persistent vector end point address
+// mode 8       expecting fourth byte of persistent vector end point address
+//
+// mode 30      expecting escape sequence, escape code received
+// mode 31      received in ANSI escape sequence, escape sequence continues if next char is digit
+//
+// mode 40      incremental plot mode; is ignored until exit from incremental plot received
+// mode 50      special point plot mode; not yet implemented
+// mode 101     ignore until group separator
+
+int mode, savemode;
+
 extern int leftmargin;
 
 static long startPaintTime;
