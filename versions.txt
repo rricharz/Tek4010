@@ -1,3 +1,9 @@
+Next version t.b.b
+==================
+New features
+- variable character size, set with ESC sequencies, reset if screen is cleared
+
+
 Version 1.1 April 12, 2019
 ==========================
 Phase: Fist offical release

@@ -64,9 +64,8 @@ void ards_draw(cairo_t *cr, cairo_t *cr2, int first)
                         eoffx = 0;
                         refresh_interval = 30;   
                 }
-                hDotsPerChar  = actualWidth / 74;
-                vDotsPerChar  = windowHeight / 35;
                 windowWidth = actualWidth;
+                tube_changeCharacterSize(cr, cr2, 74, 35, (int) (18.0 * efactor));
                 // printf("Scaling: %0.2f\n", efactor);
                 // printf("Offset: %d\n",eoffx);
                 // printf("Refresh interval: %d\n",refresh_interval);
@@ -85,7 +84,7 @@ void ards_draw(cairo_t *cr, cairo_t *cr2, int first)
                 tube_clearPersistent(cr,cr2);
         }
         
-        tube_setupPainting(cr, cr2, "Monospace", (int)(efactor * 18));
+        tube_setupPainting(cr, cr2, "Monospace");
         
         do {
                 ch = tube_getInputChar();

@@ -88,6 +88,7 @@ long refreshCount = 0;           // variables for baud rate and refresh rate mea
 static long charCount = 0;
 static long charResetCount = 0;
 static long characterInterval = 0;
+static int currentFontSize = 18;
 
 long startPaintTime;
 
@@ -462,7 +463,10 @@ void tube_drawCharacter(cairo_t *cr, cairo_t *cr2, char ch)
 {
         char s[2];
         s[0] = ch;
-        s[1] = 0;                                                
+        s[1] = 0;
+        
+        cairo_set_font_size(cr, currentFontSize);
+        cairo_set_font_size(cr2,currentFontSize);                                              
 
         if (writeThroughMode) {  // draw the write-through character
                 cairo_set_source_rgb(cr2, 0, WRITE_TROUGH_INTENSITY, 0);
@@ -568,15 +572,20 @@ void tube_drawVector(cairo_t *cr, cairo_t *cr2)
         isBrightSpot = 1; // also to be set if writeThroughMode
 }
 
-void tube_setupPainting(cairo_t *cr, cairo_t *cr2, char *fontName, int fontSize)
+void tube_setupPainting(cairo_t *cr, cairo_t *cr2, char *fontName)
 {
         cairo_set_antialias(cr, CAIRO_ANTIALIAS_BEST);      
 	cairo_set_line_width (cr, 1);
-        cairo_set_source_rgb(cr, 0, NORMAL_INTENSITY, 0);
-        
+        cairo_set_source_rgb(cr, 0, NORMAL_INTENSITY, 0);        
         cairo_select_font_face(cr, fontName, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-        cairo_select_font_face(cr2, fontName, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-        
-        cairo_set_font_size(cr, fontSize);
-        cairo_set_font_size(cr2,fontSize);
+        cairo_select_font_face(cr2, fontName, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);        
+}
+
+void tube_changeCharacterSize(cairo_t *cr, cairo_t *cr2,int charsPerLine, int charsPerPage, int fontSize)
+{
+        int fontsize;
+        hDotsPerChar = windowWidth / charsPerLine;
+        vDotsPerChar = windowHeight / charsPerPage;
+        leftmargin = 0;
+        currentFontSize = fontSize;
 }

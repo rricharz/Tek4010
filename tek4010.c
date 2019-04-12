@@ -103,6 +103,7 @@ void tek4010_escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
                         break;
                 case 12:
                         if (DEBUG) printf("Form feed, clear screen\n");
+                        tube_changeCharacterSize(cr, cr2, 74, 35, (int) (18.0 * efactor));
                         tube_clearPersistent(cr,cr2);
                         mode = 0;
                         break;
@@ -127,7 +128,6 @@ void tek4010_escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
                         plotPointMode = 0;
                         break;
                                          
-                // start of ignoring ANSI escape sequencies, could be improved (but the Tek4010 couldn't do this either!)
                 case '0':
                 case '1':
                 case '2':
@@ -135,15 +135,14 @@ void tek4010_escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
                 case '4':
                 case '5':
                 case '6':
-                case '7':
-                case '8':
-                case '9':       break;
-                case ';':       mode = 31; break;
-                case ']':       break;
-                case 'm':       mode = 0; break;
+                case '7': printf("esc %c\n", ch); mode = 31; break;
+                case '8': tube_changeCharacterSize(cr, cr2, 74, 35, (int)(efactor * 18)); break;
+                case '9': tube_changeCharacterSize(cr, cr2, 81, 38, (int)(efactor * 16)); break;
+                case ':': tube_changeCharacterSize(cr, cr2, 121, 58, (int)(efactor * 11)); break;
+                case ';': tube_changeCharacterSize(cr, cr2, 133, 64, (int)(efactor * 10)); break;
+                case ']': printf("esc %c\n", ch);      break;
+                case 'm': mode = 0; break;
                 
-                // end of ignoring ANSI escape sequencies
-
                 case '`': ltype = SOLID;    writeThroughMode = 0; mode = 0; break;
                 case 'a': ltype = DOTTED;   writeThroughMode = 0; mode = 0; break;
                 case 'b': ltype = DOTDASH;  writeThroughMode = 0; mode = 0; break;
@@ -208,9 +207,8 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                         eoffx = 0;
                         refresh_interval = 30;   
                 }
-                hDotsPerChar  = actualWidth / 74;
-                vDotsPerChar  = windowHeight / 35;
                 windowWidth = actualWidth;
+                tube_changeCharacterSize(cr, cr2, 74, 35, (int) (18.0 * efactor));
                 // printf("Scaling: %0.2f\n", efactor);
                 // printf("Offset: %d\n",eoffx);
                 // printf("Refresh interval: %d\n",refresh_interval);
@@ -227,9 +225,10 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
         // clear persistent surface, if necessary
         if (globaltube_clearPersistent) {
                 tube_clearPersistent(cr,cr2);
+                tube_changeCharacterSize(cr, cr2, 74, 35, (int) (18.0 * efactor));
         }
         
-        tube_setupPainting(cr, cr2, "Monospace", (int)(efactor * 18));
+        tube_setupPainting(cr, cr2, "Monospace");
         
         if (plotPointMode)
                 todo = 16 * TODO;
