@@ -65,6 +65,7 @@
 // mode 101     ignore until group separator
 
 int mode, savemode;
+int penDown = 1;
 
 extern int leftmargin;
 
@@ -109,7 +110,7 @@ void tek4010_escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
 
                 case 5: // ENQ: ask for status and position
                         // not yet implemented, needs to send 7 bytes
-                        printf("ENQ not supported, ignored\n");
+                        if (DEBUG) printf("ENQ not supported, ignored\n");
                         mode = 0; break;
                 case 6: break;
                 
@@ -141,13 +142,13 @@ void tek4010_escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
                 case 23: system("scrot --focussed"); mode= 0; break;
                 
                 case 26: // sub
-                        printf("GIN mode not supported, ignored\n");
-                        mode = 50;
+                        if (DEBUG) printf("GIN mode not supported, ignored\n");
+                        mode = 0;
                         break;
                         
                 // modes 27 and 29 - 31 are identical in all modes
                 case 28: // record sepatator
-                        printf("Special point plot mode not supported, ignored\n");
+                        if (DEBUG) printf("Special point plot mode not supported, ignored\n");
                         mode = 50;
                         break;
 
@@ -177,7 +178,8 @@ void tek4010_escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
                 case 'l':
                 case 'm':
                 case 'n':
-                case 'o': printf("Defocussed mode ESC %c not supported, ignored\n", ch); mode = 101;  break;
+                case 'o': if (DEBUG) printf("Defocussed mode ESC %c not supported, ignored\n", ch);
+                          mode = 101;  break;
                                 
                 // write-trough mode
                 case 'p': ltype = SOLID;    writeThroughMode = 1; mode = 101; showCursor = 0; break;
@@ -190,7 +192,7 @@ void tek4010_escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
                 case 'w': ltype = SOLID;    writeThroughMode = 1; mode = 101; showCursor = 0; break; 
                         
                 default: 
-                        printf("ESC %d not supported, ignored\n",ch);
+                        if (DEBUG) printf("ESC %d not supported, ignored\n",ch);
                         mode = 0;
                         break;                                               
         }         
@@ -329,8 +331,9 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                         mode = 1;
                                         plotPointMode = 0;
                                         goto endDo;
-                        case 30:        // record separator >> incremental mode
-                                        printf("Special point plot mode not supported, ignored\n");
+                        case 30:        // record separator >> incremental plot mode
+                                        if (DEBUG) printf("Incremental point plot mode not supported, ignored\n");
+                                        penDown = 1;
                                         mode = 40;
                                         goto endDo;
                         case 31:        // US, normal mode
@@ -397,7 +400,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 if (ch ==  0) return;
                                 if (ch == 29) mode = 1; // group separator
                                 else if (ch == 28) { plotPointMode = 1; todo = 16 * todo; }
-                                else printf("Plot mode, unknown char %d, plotPointMode = %d\n",ch,plotPointMode);
+                                else if (DEBUG) printf("Plot mode, unknown char %d, plotPointMode = %d\n",ch,plotPointMode);
                                 return;
                         }
                                 
@@ -441,7 +444,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 else if (tag != 0) {
                                         yh = 32 * (ch & 31);  mode++;
                                 }
-                                else printf("case 5: tag is 0\n");
+                                else if (DEBUG) printf("case 5: tag is 0\n");
                                 if (DEBUG) printf(">>>>>yh=%d\n",yh);
                                 break;
                         case 6: yl = (ch & 31);               mode++;
@@ -465,11 +468,9 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 
                                 if (plotPointMode>0.0) {
                                         
+                                        // draw the point
                                         tube_drawPoint(cr, cr2);
                                         
-                                        // draw the point
-                                        
-                                        mode = 50;
                                         todo--;
                                 }
                                 
@@ -486,13 +487,27 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 mode = 5;
                                 
                                 break;
-                        case 30: 
+                        case 30: // escape code handler
                                 tek4010_escapeCodeHandler(cr, cr2, ch);
                                 break;               
-                        case 40: // incremental plot mode, not implemented
+                        case 40: // incremental plot mode
                                 tek4010_checkReturnToAlpha(ch);  // check for exit
+                                if (DEBUG) printf("Incremental plot mode, ch = %d, penDown = %d\n",ch, penDown);
+                                if (ch == 32) penDown = 0;
+                                else if (ch == 80) penDown = 1;
+                                else if ((ch & 0x70) == 0x40){
+                                        if (ch & 4) tube_y0++;
+                                        if (ch & 1) tube_x0++;
+                                        if (ch & 8) tube_y0--;
+                                        if (ch & 2) tube_x0--;
+                                        if (DEBUG) printf("point (%d,%d)\n", tube_x0, tube_y0);
+                                        tube_x2 = tube_x0;
+                                        tube_y2 = tube_y0;
+                                        if (penDown) tube_drawPoint(cr, cr2);
+                                }
+                                else if (DEBUG) printf("Illegal byte 0x%02X in incremental plot\n", ch);  
                                 break;
-                        case 50: // incremental plot mode, not implemented
+                        case 50: // special plot mode, not implemented
                                 tek4010_checkReturnToAlpha(ch);  // check for exit
                                 break;                                
                         case 101: 
@@ -530,7 +545,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                             break;
                                 }
                                 break;
-                        default: printf("Illegal mode - this is a tek4010decoder error and should not happen\n");
+                        default: if (DEBUG) printf("Illegal mode - this is a tek4010decoder error and should not happen\n");
                                 break;
                 }
                 endDo:;

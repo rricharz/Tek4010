@@ -2,6 +2,7 @@ Next version t.b.b
 ==================
 New features
 - variable character size, set with ESC sequencies, reset if screen is cleared
+- incremental plot implemented
 Bug fixes
 - vertical position of characters corrected
 - full implementation of Tektronix 4014 decoder
