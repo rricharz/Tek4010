@@ -51,7 +51,6 @@
 #include "tube.h"
 
 extern void gtk_main_quit();
-extern int globaltube_clearPersistent;
 extern int windowWidth;
 extern int windowHeight;
 extern char *windowName;
@@ -75,6 +74,7 @@ double dashset[] = {2,6,2,2,6,3,3,3,6,6};
 
 int plotPointMode = 0;           // plot point mode
 int writeThroughMode = 0;        // write through mode
+int tube_doClearPersistent;
 
 int tube_x0, tube_x2,tube_y0, tube_y2;
 
@@ -162,7 +162,6 @@ int tube_getInputChar()
                 if (t < charResetCount * characterInterval)
                         return -1; // there is time to refresh the screen
                 int c = getc(getData) & 0x7F;
-                if (DEBUG) printf(">>%02X<<",c);
                 charCount++;
                 charResetCount++;
                 lastTime = t;
@@ -259,7 +258,7 @@ void tube_init(int argc, char* argv[])
         
         if (DEBUG) printf("character_interval = %0.1f msec\n",(double)characterInterval/10.0);
                 
-        globaltube_clearPersistent = 1;
+        tube_doClearPersistent = 1;
                 
         // create pipes for communication between parent and child
         if (pipe(getDataPipe) == -1) {
@@ -403,7 +402,7 @@ void tube_clearPersistent(cairo_t *cr, cairo_t *cr2)
 {
         cairo_set_source_rgb(cr, BLACK_COLOR);
         cairo_paint(cr);
-        globaltube_clearPersistent = 0;
+        tube_doClearPersistent = 0;
         tube_x0 = 0;
         tube_y0 = windowHeight - vDotsPerChar;
         tube_x2 = tube_x0;
@@ -470,19 +469,19 @@ void tube_drawCharacter(cairo_t *cr, cairo_t *cr2, char ch)
 
         if (writeThroughMode) {  // draw the write-through character
                 cairo_set_source_rgb(cr2, 0, WRITE_TROUGH_INTENSITY, 0);
-                cairo_move_to(cr2, tube_x0 + eoffx, windowHeight - tube_y0 + 4);
+                cairo_move_to(cr2, tube_x0 + eoffx, windowHeight - tube_y0);
                 cairo_show_text(cr2, s);
         }
                                                 
         else {
                 // draw the character
                 cairo_set_source_rgb(cr, 0, NORMAL_INTENSITY, 0);
-                cairo_move_to(cr, tube_x0 + eoffx, windowHeight - tube_y0 + 4);
+                cairo_move_to(cr, tube_x0 + eoffx, windowHeight - tube_y0);
                 cairo_show_text(cr, s);
                                                 
                 // draw the bright spot
                 cairo_set_source_rgb(cr2, BRIGHT_SPOT_COLOR);
-                cairo_move_to(cr2, tube_x0 + eoffx, windowHeight - tube_y0 + 4);
+                cairo_move_to(cr2, tube_x0 + eoffx, windowHeight - tube_y0);
                 cairo_show_text(cr2, s);                        
         }
                                                 
@@ -531,8 +530,11 @@ void tube_drawPoint(cairo_t *cr, cairo_t *cr2)
 
 void tube_drawVector(cairo_t *cr, cairo_t *cr2)
 {
-        if (DEBUG) printf("******************************************** Drawing to (%d,%d)\n",tube_x2,tube_y2);
-
+        if (DEBUG) {
+                printf("********************************************");
+                printf("Drawing from (%d,%d) to (%d,%d), writethrough = %d\n",
+                                tube_x0, tube_y0, tube_x2, tube_y2, writeThroughMode);
+        }
         tube_emulateDeflectionTime();
 
         if ((tube_x2 == tube_x0) && (tube_y2 == tube_y0)) tube_x0++; // cairo cannot draw a dot

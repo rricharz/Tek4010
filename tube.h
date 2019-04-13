@@ -3,7 +3,7 @@
 enum LineType {SOLID,DOTTED,DOTDASH,SHORTDASH,LONGDASH};
 extern enum LineType ltype;
 
-extern int globaltube_clearPersistent;
+extern int tube_doClearPersistent;
 extern int windowWidth;
 extern int windowHeight;
 
@@ -21,7 +21,7 @@ extern int showCursor;                 // set of cursor is shown (not set in gra
 extern int isBrightSpot;               // set if there is currently a bright spot on the screen
 
 extern int plotPointMode;
-int writeThroughMode;
+extern int writeThroughMode;
 
 extern double efactor;
 extern int eoffx;
@@ -33,7 +33,6 @@ extern long tube_u100ResetSeconds(int reset);
 extern void tube_doCursor(cairo_t *cr2);
 extern void tube_clearPersistent(cairo_t *cr, cairo_t *cr2);
 extern void tube_clearSecond(cairo_t *cr2);
-extern void tube_clearPersistent(cairo_t *cr, cairo_t *cr2);
 extern int  tube_isInput();
 extern int  tube_getInputChar();
 extern void tube_emulateDeflectionTime();

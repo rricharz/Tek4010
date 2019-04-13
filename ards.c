@@ -80,7 +80,7 @@ void ards_draw(cairo_t *cr, cairo_t *cr2, int first)
         tube_clearSecond(cr2);
         
         // clear persistent surface, if necessary
-        if (globaltube_clearPersistent) {
+        if (tube_doClearPersistent) {
                 tube_clearPersistent(cr,cr2);
         }
         

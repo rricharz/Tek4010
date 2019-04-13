@@ -91,67 +91,95 @@ void tek4010_checkLimits()
         if (tube_y0 > (windowHeight - vDotsPerChar)) tube_y0 = windowHeight - vDotsPerChar;
 }
 
-void tek4010_escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
-// handle escape sequencies
+void tek4010_bell()
 {
-        if (DEBUG) printf("Escape mode, ch=%02X\n",ch);
+        // bell function, delay 0.1 sec
+        tube_u100ResetSeconds(1);
+        usleep(50000);
+        showCursor=0;
+        todo = 0;
+}
+
+void tek4010_escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
+// handle escape sequencies, see 4014 user manual, table page G-1
+// codes identical for all modes are handled elsewhere
+{
         switch (ch) {
-                case 0: break;
+                case 0: break; // ignore filler 0
+
                 case 5: // ENQ: ask for status and position
                         // not yet implemented, needs to send 7 bytes
-                        printf("ENQ not implemented\n");
-                        break;
-                case 12:
-                        if (DEBUG) printf("Form feed, clear screen\n");
+                        printf("ENQ not supported, ignored\n");
+                        mode = 0; break;
+                case 6: break;
+                
+                case 8: // backspace during ESC
+                        tube_x0 -= hDotsPerChar;
+                        tek4010_checkLimits();
+                        mode = 0; break;
+                case 9: // tab during ESC
+                        if (argTab1)
+                                tube_x0 += hDotsPerChar;
+                        else
+                                tube_x0 = tube_x0 - (tube_x0 % (8 * hDotsPerChar)) + 8 * hDotsPerChar;
+                        tek4010_checkLimits();
+                        mode = 0; break;
+
+                case 11:// VT during ESC, move one line up
+                        tube_y0 += vDotsPerChar;
+                        tek4010_checkLimits();
+                        mode = 0; break;
+                case 12:// FF during ESC
                         tube_changeCharacterSize(cr, cr2, 74, 35, (int) (18.0 * efactor));
                         tube_clearPersistent(cr,cr2);
-                        mode = 0;
-                        break;
-                case '[':   
-                        // a second escape code follows, do not reset mode
-                        break;
-                        
+                        mode = 0; break;
+                case 13:mode = 0; break;
                 case 14: // SO  activate alternative char set, not implemented
-                case 15: // SI  deactivate alternative char set
-                        mode = 0;
+                case 15: // SI  deactivate alternative char set, not implemented
                         break;
-                        
+                
                 case 23: system("scrot --focussed"); mode= 0; break;
-                        
-                case 28: // file separator  >> point plot mode
-                        mode = 5;
-                        plotPointMode= 1;
+                
+                case 26: // sub
+                        printf("GIN mode not supported, ignored\n");
+                        mode = 50;
                         break;
                         
-                case 29: // group separator >> graphics mode
-                        mode = 1;               
-                        plotPointMode = 0;
+                // modes 27 and 29 - 31 are identical in all modes
+                case 28: // record sepatator
+                        printf("Special point plot mode not supported, ignored\n");
+                        mode = 50;
                         break;
-                                         
-                case '0':
-                case '1':
-                case '2':
-                case '3':
-                case '4':
-                case '5':
-                case '6':
-                case '7': printf("esc %c\n", ch); mode = 31; break;
+
                 case '8': tube_changeCharacterSize(cr, cr2, 74, 35, (int)(efactor * 18)); break;
                 case '9': tube_changeCharacterSize(cr, cr2, 81, 38, (int)(efactor * 16)); break;
                 case ':': tube_changeCharacterSize(cr, cr2, 121, 58, (int)(efactor * 11)); break;
                 case ';': tube_changeCharacterSize(cr, cr2, 133, 64, (int)(efactor * 10)); break;
-                case ']': printf("esc %c\n", ch);      break;
-                case 'm': mode = 0; break;
                 
+                case '[':   // a second escape code follows, do not reset mode
+                          break;
+                
+                // normal mode
                 case '`': ltype = SOLID;    writeThroughMode = 0; mode = 0; break;
                 case 'a': ltype = DOTTED;   writeThroughMode = 0; mode = 0; break;
                 case 'b': ltype = DOTDASH;  writeThroughMode = 0; mode = 0; break;
                 case 'c': ltype = SHORTDASH;writeThroughMode = 0; mode = 0; break;
                 case 'd': ltype = LONGDASH; writeThroughMode = 0; mode = 0; break;
                 case 'e': ltype = SOLID;    writeThroughMode = 0; mode = 0; break;
-                case 'f': ltype = SOLID;    writeThroughMode = 0; mode = 0; break;
-                case 'h': ltype = SOLID;    writeThroughMode = 0; mode = 0; break; 
-                                    
+                case 'f': ltype = SOLID;    writeThroughMode = 0; mode = 0; break;                
+                case 'g': ltype = SOLID;    writeThroughMode = 0; mode = 0; break;
+                        
+                // defocussed mode
+                case 'h':
+                case 'i': 
+                case 'j':
+                case 'k':
+                case 'l':
+                case 'm':
+                case 'n':
+                case 'o': printf("Defocussed mode ESC %c not supported, ignored\n", ch); mode = 101;  break;
+                                
+                // write-trough mode
                 case 'p': ltype = SOLID;    writeThroughMode = 1; mode = 101; showCursor = 0; break;
                 case 'q': ltype = DOTTED;   writeThroughMode = 1; mode = 101; showCursor = 0; break;
                 case 'r': ltype = DOTDASH;  writeThroughMode = 1; mode = 101; showCursor = 0; break;
@@ -162,21 +190,28 @@ void tek4010_escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
                 case 'w': ltype = SOLID;    writeThroughMode = 1; mode = 101; showCursor = 0; break; 
                         
                 default: 
-                        printf("Escape code %02X not implemented, mode = %d\n",ch, savemode);
+                        printf("ESC %d not supported, ignored\n",ch);
                         mode = 0;
                         break;                                               
         }         
 }
 
-
-int tek4010_checkExitFromGraphics(int ch)
-// test for exit from graphics character
+int tek4010_checkReturnToAlpha(int ch)
+// test for return to alpha character set
+// see 4014 manual, page F-10, note 1
 {
         if ((ch==31) || (ch==13) || (ch==27) || (ch==12)) {
+                if (DEBUG && mode) printf("Going to alpha mode\n");
                 mode = 0;
-                if (DEBUG) printf("Leaving graphics mode\n");
                 showCursor = 0;
-                if (ch == 12) globaltube_clearPersistent = 1;
+                if (ch == 12) {
+                        tube_doClearPersistent = 1;
+                        todo = 0;
+                }
+                if (ch == 27) {
+                        mode = 30;
+                        todo = 0;
+                }
                 plotPointMode = 0;
                 return 1;
         }
@@ -223,7 +258,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
         tube_clearSecond(cr2);
         
         // clear persistent surface, if necessary
-        if (globaltube_clearPersistent) {
+        if (tube_doClearPersistent) {
                 tube_clearPersistent(cr,cr2);
                 tube_changeCharacterSize(cr, cr2, 74, 35, (int) (18.0 * efactor));
         }
@@ -256,34 +291,61 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                         if ((ch>0x20)&&(ch<=0x7E)) printf(" (%c)",ch);
                         printf("\n");
                 }
+
+                if (tek4010_checkReturnToAlpha(ch)) {
+                        todo = todo - 4;
+                        goto endDo;
+                }
+
+                // the following chars are identical in all modes (with exception: 13,28)
+                // see 4014 user manual, table on page G1 ff
                 
-                if (mode == 31) {
-                        printf("ANSI escape mode 31, ch=%02x\n",ch);
-                        if ((ch>='0') && (ch<='9')) { savemode = mode; mode = 30; }
+                switch (ch) {
+                        case 7:         tek4010_bell();        
+                                        goto endDo;
+                        case 10:        // new line
+                                        tube_y0 -= vDotsPerChar;
+                                        if (!argRaw) tube_x0 = leftmargin;
+                                        tek4010_checkLimits();
+                                        goto endDo;
+                        case 13:        // return
+                                        if (mode != 30) { // special handling in ESC mode
+                                                mode = 0; tube_x0 = leftmargin;
+                                                goto endDo;
+                                        }
+                                        break;
+                        case 27:        // escape code, all modes
+                                        savemode = mode;
+                                        mode = 30; 
+                                        goto endDo; 
+                        case 28:        // file separator  >> point plot mode
+                                        if (mode != 30) { // special handling in ESC mode
+                                                mode = 5;
+                                                plotPointMode= 1;
+                                                goto endDo;
+                                        }
+                                        break;
+                        case 29:        // group separator >> graphics mode
+                                        mode = 1;
+                                        plotPointMode = 0;
+                                        goto endDo;
+                        case 30:        // record separator >> incremental mode
+                                        printf("Special point plot mode not supported, ignored\n");
+                                        mode = 40;
+                                        goto endDo;
+                        case 31:        // US, normal mode
+                                        mode = 0;
+                                        goto endDo;
                 }
                 
-                if (ch == 27) {  // escape code
-                        savemode = mode;
-                        mode = 30; return; 
-                }
                 
-                if (ch == 30) {
-                        printf("Incremental plot mode not implemented\n");
-                        mode = 40; return;
-                }
+                // handle skipping coordinate bytes
+                // this cannot be done in switch(mode) below, because multiple bytes
+                // can be skipped and the current byte must be executed after a mode change
                 
                 int tag = (ch >> 5) & 3;
                                 
                 if ((mode >= 1) && (mode <= 8)) {
-                        
-                        if (tek4010_checkExitFromGraphics(ch)) {
-                                todo = todo - 4;
-                                goto endDo;
-                        }
-                        
-                        // handle skipped coordinate bytes
-                        // this cannot be done in switch(mode) below, because multiple bytes
-                        // can be switched and the current byte must be executed after a mode change
                         
                         if ((mode == 5) && (ch == 29)) {
                                 if (DEBUG) printf("group separator, go from mode 5 to mode 1\n");
@@ -293,10 +355,10 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                         
                         if (DEBUG) {
                                 if (mode & 1)
-                                        printf("mode=%d,tag=%d-H-val=%d,",
+                                        printf("    mode=%d,tag=%d-H-val=%d,",
                                                 mode,tag, 32 * (ch & 31));
                                 else
-                                        printf("mode=%d,tag=%d-L-val=%d,",
+                                        printf("    mode=%d,tag=%d-L-val=%d,",
                                                 mode,tag, ch & 31);
                                 printf("xh=%d,xl=%d,yh=%d,yl=%d\n",xh,xl,yh,yl);                
                         }
@@ -340,6 +402,9 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                         }
                                 
                 }
+
+                
+                // handling anything specific to a mode
                 
                 switch (mode) {                                
                         case 1: plotPointMode = 0; // normal graphics mode, starting coordinates
@@ -425,22 +490,19 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 tek4010_escapeCodeHandler(cr, cr2, ch);
                                 break;               
                         case 40: // incremental plot mode, not implemented
-                                if (ch == 31) mode = 0;  // leave this mode
+                                tek4010_checkReturnToAlpha(ch);  // check for exit
                                 break;
+                        case 50: // incremental plot mode, not implemented
+                                tek4010_checkReturnToAlpha(ch);  // check for exit
+                                break;                                
                         case 101: 
                                 if (DEBUG) printf("Ignore until group separator, ch = %02x\n", ch);
                                 if (ch == 29) mode = 1;
                                 break;
-                        default: 
+                        case 0: // handle ALPHA mode; 4014 user manual, table page G-1
+                                // some characters are indentical for all modes and handled elsewhere
                                 switch (ch) {
                                 case 0:     break;
-                                case 7:     // bell function, delay 0.1 sec
-                                            // cannot delay if bright spot is on, needs to be turned off first
-                                            tube_u100ResetSeconds(1);
-                                            usleep(50000);
-                                            showCursor=0;
-                                            todo = 0;
-                                            break;
                                 case 8:     // backspace
                                             tube_x0 -= hDotsPerChar;
                                             tek4010_checkLimits();
@@ -452,43 +514,24 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                                 tube_x0 = tube_x0 - (tube_x0 % (8 * hDotsPerChar)) + 8 * hDotsPerChar;
                                             tek4010_checkLimits();
                                             break;
-                                case 10:    // new line
-                                            tube_y0 -= vDotsPerChar;
-                                            if (!argRaw) tube_x0 = leftmargin;
-                                            tek4010_checkLimits();
-                                            break;
                                 case 11:    // VT, move one line up
                                             tube_y0 += vDotsPerChar;
                                             tek4010_checkLimits();
                                             break;
-                                case 13:    // return
-                                            mode = 0; tube_x0 = leftmargin;
-                                            break;
                                 case 23:    // ctrl-w  screen dump
                                             system("scrot --focussed");
                                             break;
-                                case 28:    // file separator  >> point plot mode
-                                            mode = 5;
-                                            plotPointMode= 1;
-                                            break;
-                                case 29:    // group separator
-                                            mode = 1;
-                                            break;
-                                case 30:    // record separator
-                                            mode = 40;
-                                            break;
-                                case 31:    // US, leave graphics mode
-                                            mode = 0;
-                                            break;
+
                                 default:    if ((ch >= 32) && (ch <127)) { // printable character
                                                 tek4010_checkLimits();
-                                                tube_drawCharacter(cr,cr2, ch);
-                                                
+                                                tube_drawCharacter(cr,cr2, ch);                                                
                                                 todo-= 2;
                                             }
                                             break;
                                 }
-                                break;                                
+                                break;
+                        default: printf("Illegal mode - this is a tek4010decoder error and should not happen\n");
+                                break;
                 }
                 endDo:;
         }

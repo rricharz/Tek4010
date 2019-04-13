@@ -263,7 +263,7 @@ module.
 If called with the -full option, the tek4010 emulator creates creates a full screen window,
 and uses the full 4K resolution of the 4014 with enhanced graphics
 module installed, scaled down to the actual window size.
-Use control-q close the tek4010 window. This option is experimental.
+Use control-q to close the tek4010 window. This option is experimental.
 
 **Compiling the tek4010 project**
 
@@ -274,6 +274,7 @@ If you want to compile the project, you need to install "libgtk-3-dev":
 There is a make file in the repo.
 
 **Version**
+
 See [versions.txt](versions.txt)
 
 

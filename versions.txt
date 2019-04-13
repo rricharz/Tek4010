@@ -2,11 +2,14 @@ Next version t.b.b
 ==================
 New features
 - variable character size, set with ESC sequencies, reset if screen is cleared
-
+Bug fixes
+- vertical position of characters corrected
+- full implementation of Tektronix 4014 decoder
+Appearance:
 
 Version 1.1 April 12, 2019
 ==========================
-Phase: Fist offical release
+Phase: First offical release
 
 Version 1.0.3 April 11, 2019
 ============================

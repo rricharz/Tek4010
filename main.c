@@ -58,7 +58,7 @@ extern int argARDS;
 int windowWidth;
 int windowHeight;
 
-int globaltube_clearPersistent;
+extern int tube_doClearPersistent;
 
 static void do_drawing(cairo_t *, GtkWidget *);
 
@@ -131,7 +131,7 @@ static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_da
                 (event->keyval == 0xFF55) ||    // "page up" key
                 (event->keyval == 0xFF56))      // "page down" key        
         {
-                globaltube_clearPersistent = 1;
+                tube_doClearPersistent = 1;
                 gtk_widget_queue_draw(widget);
                 return;
         }
@@ -142,7 +142,7 @@ static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_da
         else if (event->state & GDK_CONTROL_MASK) {
                 if ((event->keyval == 0xFF51) ||    // "<ctrl>left arrow" key
                     (event->keyval == 0xFF52)) {    // "<ctrl>up arrow" key
-                        globaltube_clearPersistent = 1;
+                        tube_doClearPersistent = 1;
                         gtk_widget_queue_draw(widget);
                         return;
                 }
