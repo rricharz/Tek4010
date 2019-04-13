@@ -63,6 +63,13 @@ static void draw_char (cairo_t *cr, cairo_t *cr2, char ch)
   //fprintf (stderr, "[tube: %d,%d]", tube_x0, tube_y0);
   tube_drawCharacter(cr, cr2, ch);
   x0 += (int)(hDotsPerChar / efactor);
+  /*
+  tube_x0 = (x0 + 540)/2;
+  tube_y0 = (y0 + 707)/2 - hDotsPerChar;
+  //fprintf (stderr, "[tube: %d,%d]", tube_x0, tube_y0);
+  tube_drawCharacter(cr, cr2, ch);
+  x0 += vDotsPerChar;
+  */
 }
 
 static void draw_vector (cairo_t *cr, cairo_t *cr2)
@@ -89,8 +96,12 @@ void ards_draw(cairo_t *cr, cairo_t *cr2, int first)
                 efactor = windowWidth / 1080.0;
                 // fprintf (stderr, "efactor: %0.2f\n", efactor);
                 refresh_interval = 30;        
+<<<<<<< HEAD
                 tube_changeCharacterSize(cr, cr2, 80, 50, (int)(efactor * 20));
                 
+=======
+                tube_changeCharacterSize(cr, cr2, 80, 50, 10);
+>>>>>>> 5177976... Update ARDS character rendering.
         }
         
         startPaintTime = tube_mSeconds(); // start to measure time for this draw operation
