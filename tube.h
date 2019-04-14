@@ -20,6 +20,10 @@ extern long refreshCount;
 extern int showCursor;                 // set of cursor is shown (not set in graphics mode)
 extern int isBrightSpot;               // set if there is currently a bright spot on the screen
 
+extern int specialPlotMode;
+extern int defocussed;
+extern int intensity;
+
 extern int plotPointMode;
 extern int writeThroughMode;
 

@@ -73,6 +73,16 @@ static long startPaintTime;
 static int xh,xl,yh,yl,xy4014;
 static long todo;
 
+// table for special plot point mode
+// 4014 manual page F-9
+int intensityTable[] = {14,16,17,19,  20,22,23,25,  28,31,34,38,  41,33,47,50,
+                        56,62,69,75,  81,88,94,100, 56,62,69,75,  81,88,96,100,
+                         0, 1, 1, 1,   1, 1, 1, 2,   2, 2, 2, 2,   3, 3, 3, 3,
+                         4, 4, 4, 5,   5, 5, 6, 6,   7, 8, 9,10,  11,12,12,13,
+                        14,16,17,19,  20,22,23,25,  28,31,34,38,  41,44,47,50,
+                        56,62,69,75,  81,88,94,100, 56,63,69,75,  81,88};
+                     
+
 void tek4010_checkLimits()
 /* check whether char is in visibel space */
 {
@@ -147,9 +157,12 @@ void tek4010_escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
                         break;
                         
                 // modes 27 and 29 - 31 are identical in all modes
-                case 28: // record sepatator
-                        if (DEBUG) printf("Special point plot mode not supported, ignored\n");
-                        mode = 50;
+                case 28: // record separator
+                        /*if (DEBUG)*/ printf("Special point plot mode, mode=%d\n",savemode);
+                        mode = 50; // for the intensity/focus character
+                        specialPlotMode = 1;
+                        double intensity = 1.0;
+                        int defocussed = 0;
                         break;
 
                 case '8': tube_changeCharacterSize(cr, cr2, 74, 35, (int)(efactor * 18)); break;
@@ -215,6 +228,7 @@ int tek4010_checkReturnToAlpha(int ch)
                         todo = 0;
                 }
                 plotPointMode = 0;
+                specialPlotMode = 0;
                 return 1;
         }
         else return 0;
@@ -225,7 +239,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
 // cr is used for persistent drawing, cr2 for temporary drawing 
 
 {	
-        int ch;
+        int ch, tag;
         
         refreshCount++;
         
@@ -332,7 +346,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                         plotPointMode = 0;
                                         goto endDo;
                         case 30:        // record separator >> incremental plot mode
-                                        if (DEBUG) printf("Incremental point plot mode not supported, ignored\n");
+                                        if (DEBUG) printf("Incremental point plot mode\n");
                                         penDown = 1;
                                         mode = 40;
                                         goto endDo;
@@ -346,7 +360,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                 // this cannot be done in switch(mode) below, because multiple bytes
                 // can be skipped and the current byte must be executed after a mode change
                 
-                int tag = (ch >> 5) & 3;
+                tag = (ch >> 5) & 3;
                                 
                 if ((mode >= 1) && (mode <= 8)) {
                         
@@ -483,9 +497,9 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 showCursor = 0;
                                 
                                 tube_x0 = tube_x2;        // prepare for additional vectors
-                                tube_y0 = tube_y2;                                
-                                mode = 5;
-                                
+                                tube_y0 = tube_y2;
+                                if (specialPlotMode) mode = 50;  // another intensity/focus char follows                             
+                                else mode = 5;                                
                                 break;
                         case 30: // escape code handler
                                 tek4010_escapeCodeHandler(cr, cr2, ch);
@@ -507,8 +521,15 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 }
                                 else if (DEBUG) printf("Illegal byte 0x%02X in incremental plot\n", ch);  
                                 break;
-                        case 50: // special plot mode, not implemented
-                                tek4010_checkReturnToAlpha(ch);  // check for exit
+                        case 50:// special plot mode, not implemented
+                                // ignore the value for now
+                                tag = ch >> 5;
+                                if ((ch < 32) || (ch >= 126)) return;
+                                if (DEBUG) printf("intensity/focus control = %c: %d: ", ch, tag);
+                                defocussed = (tag == 1);
+                                intensity = intensityTable[ch - 32];
+                                if (DEBUG) printf("defocussed = %d, intensity = %d%%\n", defocussed, intensity);
+                                mode = 5; // coordinates follow                                
                                 break;                                
                         case 101: 
                                 if (DEBUG) printf("Ignore until group separator, ch = %02x\n", ch);

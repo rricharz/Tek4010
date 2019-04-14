@@ -1,27 +1,29 @@
 [![Build Status](https://travis-ci.org/rricharz/Tek4010.svg?branch=master)](https://travis-ci.org/rricharz/Tek4010)
 
-# Tektronix 4010 and 4014 Terminal Emulator
+# Tektronix 4010 and 4014 Storage Tube Terminal Emulator
 
 This is a [Tektronix 4010 and 4014](https://en.wikipedia.org/wiki/Tektronix_4010) terminal emulator
 for the Raspberry Pi and other Linux systems. It can also be used on Windows and Macintosh systems
 with [Virtualbox](https://www.virtualbox.org/) and [Ubuntu](https://www.ubuntu.com/).
 
+It can also display historical data for the
+[MIT Project MAC](https://en.wikipedia.org/wiki/MIT_Computer_Science_and_Artificial_Intelligence_Laboratory#Project_MAC)
+'s ARDS (Advanced Remote Display Station).
+
 ![screen_shot](screendump.png?raw=true "tek4010 screendump")
 
-It attempts to emulate the storage tube display of the Tektronix 4010, including the bright
-drawing spot.
+It attempts to emulate the [storage tube display](https://en.wikipedia.org/wiki/Storage_tube)
+of the Tektronix 4010, including the bright drawing spot.
 
-To the best of my knowledge this is the only Tektronix 4010 emulator, which makes an effort
-to emulate the storage tube behavior of the 4010. If the look and feel is not important, you can
-use ["xterm"](https://en.wikipedia.org/wiki/Xterm) instead. "xterm" does not support the
-"write through" mode.
-
-This tek4010 emulator is currently in beta-testing and updated frequently.
+To the best of my knowledge this is the only Tektronix 4010/4014 emulator, which makes an effort
+to emulate the storage tube behavior. If the look and feel is not important, you can
+use ["xterm"](https://en.wikipedia.org/wiki/Xterm) instead. "xterm" does not support all
+graphics modes of the 4014.
 
 It can be used to log into a historical Unix system such as
 [2.11 BSD](https://en.wikipedia.org/wiki/Berkeley_Software_Distribution) on the
 [pidp11](http://obsolescence.wixsite.com/obsolescence/pidp-11)
-or a real historical system.
+or a real historical system. At can also be used to display historical plot data.
 
 This [video of a tek4010 demo](https://youtu.be/ioYiu6oUT88) was generated using
 [simplescreenrecorder](https://www.maartenbaert.be/simplescreenrecorder). There is also a
@@ -232,7 +234,9 @@ tek4010 has the following options:
 	-full		in this mode the tek4010 emulator creates a full screen window, and
 			uses the full resolution of the 4014 with the enhanced graphics module
 			installed, scaled down to the actual window size. Use control-q to
-			close the tek4010 window. This option is experimental.			
+			close the tek4010 window. This option is experimental.
+
+	-ARDS		display ARDS data			
 
 **Reporting problems**
 
@@ -276,5 +280,12 @@ There is a make file in the repo.
 **Version**
 
 See [versions.txt](versions.txt)
+
+**Contributors**
+
+The storage tube emulator and the Tektronix 4010/4014 decoder were witten by Rene Richarz.
+The ARDS decoder was written by Lars Brinkhoff.
+The historical plot data for the Tektronix 4014 was obtained from Jos Dreesen.
+Thanks to many others who contributed important ideas and helped with the debugging.
 
 

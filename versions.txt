@@ -1,12 +1,13 @@
-Next version t.b.b
-==================
+Next version t.b.d.
+===================
 New features
-- variable character size, set with ESC sequencies, reset if screen is cleared
-- incremental plot implemented
+- variable character size
+- incremental plot mode
+- ARDS mode
+- special plot mode with greyscale
 Bug fixes
 - vertical position of characters corrected
 - full implementation of Tektronix 4014 decoder
-Appearance:
 
 Version 1.1 April 12, 2019
 ==========================
