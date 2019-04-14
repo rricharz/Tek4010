@@ -125,7 +125,7 @@ static void do_drawing(cairo_t *cr, GtkWidget *widget)
 static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
 {
         int ch;
-        //printf("key pressed, state =%04X, keyval=%04X\r\n", event->state, event->keyval);
+        printf("key pressed, state =%04X, keyval=%04X\r\n", event->state, event->keyval);
         
         if ((event->keyval == 0xFF50) ||        // "home" key
                 (event->keyval == 0xFF55) ||    // "page up" key
@@ -140,6 +140,7 @@ static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_da
         else if ((event->keyval >= 0xFF00) && (event->keyval <= 0xFF1F))
                 ch = event->keyval & 0x1F;
         else if (event->state & GDK_CONTROL_MASK) {
+                printf("control\n");
                 if ((event->keyval == 0xFF51) ||    // "<ctrl>left arrow" key
                     (event->keyval == 0xFF52)) {    // "<ctrl>up arrow" key
                         tube_doClearPersistent = 1;
@@ -150,7 +151,8 @@ static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_da
                         system("scrot --focussed");
                         return;
                 }
-                else if (event->keyval == 0071) { // "<ctrl>q" quits tek4010
+                else if (event->keyval == 0x0071) { // "<ctrl>q" quits tek4010
+                        printf("calling quit\n");
                         on_quit_event();
                         return;
                 }
