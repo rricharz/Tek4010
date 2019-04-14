@@ -1,5 +1,5 @@
-Next version t.b.d.
-===================
+Version 1.2 April 14, 2019
+==========================
 New features
 - variable character size
 - incremental plot mode
