@@ -234,7 +234,7 @@ tek4010 has the following options:
 	-full		in this mode the tek4010 emulator creates a full screen window, and
 			uses the full resolution of the 4014 with the enhanced graphics module
 			installed, scaled down to the actual window size. Use control-q to
-			close the tek4010 window. This option is experimental.
+			close the tek4010 window.
 
 	-ARDS		display ARDS data			
 

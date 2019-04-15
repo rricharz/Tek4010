@@ -21,7 +21,7 @@ void startDraw(int x1,int y1)
     ys = y1;
 }
 
-extern void endDraw()
+void endDraw()
 {
     putchar(31);
     fflush(stdout);
