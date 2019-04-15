@@ -84,21 +84,8 @@ void ards_draw(cairo_t *cr, cairo_t *cr2, int first)
                
         if (first) {
                 first = 0;
-                int actualWidth;                
-                if (argFull) {
-                        efactor = windowHeight / 780.0;
-                        actualWidth = (int)(efactor * 1024.0);
-                        eoffx = (windowWidth - actualWidth) / 2;
-                        refresh_interval = (int)(30.0 * efactor * efactor);
-                }
-                else {
-                        efactor = 1.0;
-                        actualWidth = windowWidth;
-                        eoffx = 0;
-                        refresh_interval = 30;   
-                }
-                windowWidth = actualWidth;
-                tube_changeCharacterSize(cr, cr2, 74, 35, (int) (10.0 * efactor));
+                refresh_interval = 30;        
+                tube_changeCharacterSize(cr, cr2, 74, 35, 10);
         }
         
         startPaintTime = tube_mSeconds(); // start to measure time for this draw operation

@@ -84,9 +84,6 @@ int tube_x0, tube_x2,tube_y0, tube_y2;
 
 static int debugCount = 0;
 
-double efactor;
-int eoffx;
-
 long refreshCount = 0;           // variables for baud rate and refresh rate measurements
 
 static long charCount = 0;
@@ -181,7 +178,7 @@ void tube_init(int argc, char* argv[])
         char *argv2[20];
         size_t bufsize = 127;
         int firstArg = 1;
-        printf("tek4010 version 1.2\n");
+        printf("tek4010 version 1.2.1\n");
         windowName = "Tektronix 4010/4014 emulator";
         if ((argc<2) || (argc>19)) {
                 printf("Error:number of arguments\n");
@@ -394,7 +391,7 @@ void tube_doCursor(cairo_t *cr2)
 {
         cairo_set_source_rgb(cr2, 0, CURSOR_INTENSITY, 0);
         cairo_set_line_width (cr2, 1);
-        cairo_rectangle(cr2, tube_x0 + eoffx, windowHeight - tube_y0 - vDotsPerChar + 8,
+        cairo_rectangle(cr2, tube_x0, windowHeight - tube_y0 - vDotsPerChar + 8,
                                                 hDotsPerChar - 3, vDotsPerChar - 3);
         cairo_fill(cr2);
         cairo_stroke (cr2);
@@ -476,19 +473,19 @@ void tube_drawCharacter(cairo_t *cr, cairo_t *cr2, char ch)
 
         if (writeThroughMode) {  // draw the write-through character
                 cairo_set_source_rgb(cr2, 0, WRITE_TROUGH_INTENSITY, 0);
-                cairo_move_to(cr2, tube_x0 + eoffx, windowHeight - tube_y0);
+                cairo_move_to(cr2, tube_x0, windowHeight - tube_y0);
                 cairo_show_text(cr2, s);
         }
                                                 
         else {
                 // draw the character
                 cairo_set_source_rgb(cr, 0, (NORMAL_INTENSITY * intensity) / 100, 0);
-                cairo_move_to(cr, tube_x0 + eoffx, windowHeight - tube_y0);
+                cairo_move_to(cr, tube_x0, windowHeight - tube_y0);
                 cairo_show_text(cr, s);
                                                 
                 // draw the bright spot
                 cairo_set_source_rgb(cr2, BRIGHT_SPOT_COLOR, BRIGHT_SPOT_COLOR, BRIGHT_SPOT_COLOR);
-                cairo_move_to(cr2, tube_x0 + eoffx, windowHeight - tube_y0);
+                cairo_move_to(cr2, tube_x0, windowHeight - tube_y0);
                 cairo_show_text(cr2, s);                        
         }
                                                 
@@ -513,8 +510,8 @@ void tube_drawPoint(cairo_t *cr, cairo_t *cr2)
 #define PI2 6.283185307
         cairo_set_line_width (cr, 1 + defocussed);
         cairo_set_source_rgb(cr, 0, (NORMAL_INTENSITY * intensity) / 100, 0);
-        cairo_move_to(cr, tube_x2 + eoffx, windowHeight - tube_y2);
-        cairo_line_to(cr, tube_x2 + 1 + eoffx, windowHeight - tube_y2);
+        cairo_move_to(cr, tube_x2, windowHeight - tube_y2);
+        cairo_line_to(cr, tube_x2 + 1, windowHeight - tube_y2);
         cairo_stroke (cr);
                                         
         // speed is a problem here
@@ -527,7 +524,7 @@ void tube_drawPoint(cairo_t *cr, cairo_t *cr2)
                 cairo_set_line_width (cr2, 0.1);
                 double bsc = (BRIGHT_SPOT_COLOR * intensity) / 100;
                 cairo_set_source_rgb(cr2, bsc, bsc, bsc);                        
-                cairo_arc(cr2, tube_x2 + eoffx, windowHeight - tube_y2, 2 + defocussed, 0, PI2);
+                cairo_arc(cr2, tube_x2, windowHeight - tube_y2, 2 + defocussed, 0, PI2);
                 cairo_fill(cr2);
                                                 
                 xlast = tube_x2;
@@ -551,8 +548,8 @@ void tube_drawVector(cairo_t *cr, cairo_t *cr2)
         if (writeThroughMode) {
                 cairo_set_line_width (cr2, 2);
                 cairo_set_source_rgb(cr2, 0.0, WRITE_TROUGH_INTENSITY, 0.0);
-                cairo_move_to(cr2, tube_x0 + eoffx, windowHeight - tube_y0);
-                cairo_line_to(cr2, tube_x2 + eoffx, windowHeight - tube_y2);
+                cairo_move_to(cr2, tube_x0, windowHeight - tube_y0);
+                cairo_line_to(cr2, tube_x2, windowHeight - tube_y2);
                 cairo_stroke (cr2);
         }
         
@@ -561,24 +558,24 @@ void tube_drawVector(cairo_t *cr, cairo_t *cr2)
                 cairo_set_line_width (cr, 1 + defocussed);
                 cairo_set_source_rgb(cr, 0, (NORMAL_INTENSITY * intensity) / 100, 0);
                 tube_line_type(cr, cr2, ltype);
-                cairo_move_to(cr, tube_x0 + eoffx, windowHeight - tube_y0);
-                cairo_line_to(cr, tube_x2 + eoffx, windowHeight - tube_y2);
+                cairo_move_to(cr, tube_x0, windowHeight - tube_y0);
+                cairo_line_to(cr, tube_x2, windowHeight - tube_y2);
                 cairo_stroke (cr);
         
                 //draw the bright spot, half intensity
                 cairo_set_line_width (cr2, 6 + 2 * defocussed);
                 double bsc = (BRIGHT_SPOT_COLOR_HALF * intensity) / 100;
                 cairo_set_source_rgb(cr2, bsc, bsc, bsc);                        
-                cairo_move_to(cr2, tube_x0 + eoffx, windowHeight - tube_y0);
-                cairo_line_to(cr2, tube_x2 + eoffx, windowHeight - tube_y2);
+                cairo_move_to(cr2, tube_x0, windowHeight - tube_y0);
+                cairo_line_to(cr2, tube_x2, windowHeight - tube_y2);
                 cairo_stroke (cr2);
                                         
                 // draw the bright spot, high intensity
                 cairo_set_line_width (cr2, 3 + 2 * defocussed);
                 bsc = (BRIGHT_SPOT_COLOR * intensity) / 100;
                 cairo_set_source_rgb(cr2, bsc, bsc, bsc);                        
-                cairo_move_to(cr2, tube_x0 + eoffx, windowHeight - tube_y0);
-                cairo_line_to(cr2, tube_x2 + eoffx, windowHeight - tube_y2);
+                cairo_move_to(cr2, tube_x0, windowHeight - tube_y0);
+                cairo_line_to(cr2, tube_x2, windowHeight - tube_y2);
                 cairo_stroke(cr2);
         }
 

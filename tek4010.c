@@ -72,6 +72,7 @@ extern int leftmargin;
 static long startPaintTime;
 static int xh,xl,yh,yl,xy4014;
 static long todo;
+static double efactor;
 
 // table for special plot point mode
 // 4014 manual page F-9
@@ -158,7 +159,7 @@ void tek4010_escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
                         
                 // modes 27 and 29 - 31 are identical in all modes
                 case 28: // record separator
-                        /*if (DEBUG)*/ printf("Special point plot mode, mode=%d\n",savemode);
+                        if (DEBUG) printf("Special point plot mode, mode=%d\n",savemode);
                         mode = 50; // for the intensity/focus character
                         specialPlotMode = 1;
                         double intensity = 1.0;
@@ -245,23 +246,15 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
         
         if (first) {
                 first = 0;
-                int actualWidth;                
                 if (argFull) {
                         efactor = windowHeight / 780.0;
-                        actualWidth = (int)(efactor * 1024.0);
-                        eoffx = (windowWidth - actualWidth) / 2;
-                        refresh_interval = (int)(30.0 * efactor * efactor);
                 }
                 else {
                         efactor = 1.0;
-                        actualWidth = windowWidth;
-                        eoffx = 0;
-                        refresh_interval = 30;   
                 }
-                windowWidth = actualWidth;
+                refresh_interval = 30;
                 tube_changeCharacterSize(cr, cr2, 74, 35, (int) (18.0 * efactor));
-                // printf("Scaling: %0.2f\n", efactor);
-                // printf("Offset: %d\n",eoffx);
+                printf("Scaling: %0.3f\n", efactor / 4.0);
                 // printf("Refresh interval: %d\n",refresh_interval);
         }
         

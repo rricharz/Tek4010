@@ -1,3 +1,11 @@
+Version 1.2.1 April 15, 2019
+============================
+New features
+- full screen mode for ARDS (variable scaling not yet implemented)
+Bug fixes
+- substantial speed increase on high resolution screens
+- removed some debug messages
+
 Version 1.2 April 14, 2019
 ==========================
 New features

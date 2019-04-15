@@ -57,6 +57,8 @@ extern int argARDS;
 
 int windowWidth;
 int windowHeight;
+static int windowHeightOffset = 0;
+static int windowWidthOffset = 0;
 
 extern int tube_doClearPersistent;
 
@@ -96,7 +98,7 @@ static void do_drawing(cairo_t *cr, GtkWidget *widget)
 	
 	if (global_firstcall) {
 		permanent_surface = cairo_surface_create_similar(cairo_get_target(cr),
-			CAIRO_CONTENT_COLOR_ALPHA, windowWidth, windowHeight);
+			CAIRO_CONTENT_COLOR, windowWidth, windowHeight);
                 temporary_surface = cairo_surface_create_similar(cairo_get_target(cr),
 			CAIRO_CONTENT_COLOR_ALPHA, windowWidth, windowHeight);
 	}
@@ -113,11 +115,11 @@ static void do_drawing(cairo_t *cr, GtkWidget *widget)
                 tek4010_draw(permanent_cr, temporary_cr, global_firstcall);
 	global_firstcall = FALSE;
 
-	cairo_set_source_surface(cr, permanent_surface, 0, 0);
+	cairo_set_source_surface(cr, permanent_surface, windowWidthOffset, windowHeightOffset);
 	cairo_paint(cr);
-        cairo_set_source_surface(cr, temporary_surface, 0, 0);
+        cairo_set_source_surface(cr, temporary_surface, windowWidthOffset, windowHeightOffset);
 	cairo_paint(cr);
-  
+         
 	cairo_destroy(permanent_cr);
         cairo_destroy(temporary_cr);  
 }
@@ -125,7 +127,7 @@ static void do_drawing(cairo_t *cr, GtkWidget *widget)
 static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
 {
         int ch;
-        printf("key pressed, state =%04X, keyval=%04X\r\n", event->state, event->keyval);
+        // printf("key pressed, state =%04X, keyval=%04X\r\n", event->state, event->keyval);
         
         if ((event->keyval == 0xFF50) ||        // "home" key
                 (event->keyval == 0xFF55) ||    // "page up" key
@@ -140,7 +142,6 @@ static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_da
         else if ((event->keyval >= 0xFF00) && (event->keyval <= 0xFF1F))
                 ch = event->keyval & 0x1F;
         else if (event->state & GDK_CONTROL_MASK) {
-                printf("control\n");
                 if ((event->keyval == 0xFF51) ||    // "<ctrl>left arrow" key
                     (event->keyval == 0xFF52)) {    // "<ctrl>up arrow" key
                         tube_doClearPersistent = 1;
@@ -152,7 +153,6 @@ static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_da
                         return;
                 }
                 else if (event->keyval == 0x0071) { // "<ctrl>q" quits tek4010
-                        printf("calling quit\n");
                         on_quit_event();
                         return;
                 }
@@ -179,6 +179,7 @@ int main (int argc, char *argv[])
         
         int askWindowWidth;
         int askWindowHeight;
+        double aspectRatio;
         
         tube_init(argc, argv);
         
@@ -194,13 +195,21 @@ int main (int argc, char *argv[])
         else {
                 askWindowWidth = 1024;
                 askWindowHeight = 780;
-        }        
+        }
+        aspectRatio = (double)askWindowWidth/(double)askWindowHeight;   
           
 	gtk_init(&argc, &argv);
 	
 	global_firstcall = TRUE;
 
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+        
+        // set the background color
+        GdkColor color;
+        color.red   = 0;
+        color.green = 0;
+        color.blue  = 0;
+        gtk_widget_modify_bg(window, GTK_STATE_NORMAL, &color);
 
 	darea = gtk_drawing_area_new();
 	gtk_container_add(GTK_CONTAINER(window), darea);
@@ -217,13 +226,22 @@ int main (int argc, char *argv[])
 	int screenHeight = gdk_screen_get_height(screen);
 	printf("Screen dimensions: %d x %d\n", screenWidth, screenHeight);
         
-        if (argFull && !argARDS) {        
+        if (argFull) {        
                 // DISPLAY UNDECORATED FULL SCREEN WINDOW
 		gtk_window_set_decorated(GTK_WINDOW(window), FALSE);
 		gtk_window_fullscreen(GTK_WINDOW(window));
 		gtk_window_set_keep_above(GTK_WINDOW(window), FALSE);
 		windowWidth  = screenWidth;
 		windowHeight = screenHeight;
+                // force aspect ratio
+                if (windowWidth > (int)((double)windowHeight * aspectRatio)) {
+                        windowWidthOffset = (windowWidth - (int)((double)windowHeight * aspectRatio)) / 2;
+                        windowWidth = (int)((double)windowHeight * aspectRatio);
+                }
+                if (windowHeight > (int)((double)windowWidth / aspectRatio)) {
+                        windowHeightOffset = (windowHeight - (int)((double)windowWidth / aspectRatio)) / 2;
+                        windowHeight = (int)((double)windowWidth / aspectRatio);
+                }
         }
  
         else {

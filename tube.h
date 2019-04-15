@@ -27,9 +27,6 @@ extern int intensity;
 extern int plotPointMode;
 extern int writeThroughMode;
 
-extern double efactor;
-extern int eoffx;
-
 extern int tube_x0, tube_x2, tube_y0, tube_y2;
 
 extern long tube_mSeconds();
