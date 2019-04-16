@@ -245,17 +245,11 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
         refreshCount++;
         
         if (first) {
-                first = 0;
-                if (argFull) {
-                        efactor = windowHeight / 780.0;
-                }
-                else {
-                        efactor = 1.0;
-                }
+                first = 0; 
+                efactor = windowWidth / 1024.0;
                 refresh_interval = 30;
                 tube_changeCharacterSize(cr, cr2, 74, 35, (int) (18.0 * efactor));
-                printf("Scaling: %0.3f\n", efactor / 4.0);
-                // printf("Refresh interval: %d\n",refresh_interval);
+                if (windowWidth != 1024) printf("Scaling: %0.3f\n", efactor / 4.0);
         }
         
         startPaintTime = tube_mSeconds(); // start to measure time for this draw operation
@@ -422,7 +416,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 if (DEBUG) printf("setting yh to %d\n", yh);
                                 break;
                         case 2: yl = (ch & 31);
-                                if (argFull) {
+                                if (windowWidth != 1024) {
                                         int yb = (xy4014 >> 2) & 3;
                                         tube_y0 = (int)(efactor * (double)(((yh+yl) << 2) + yb) / 4.0);
                                 }
@@ -434,7 +428,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 if (DEBUG) printf("setting xh to %d\n", xh);
                                 break;
                         case 4: xl = (ch & 31);
-                                if (argFull) {
+                                if (windowWidth != 1024) {
                                         int xb = xy4014 & 3;
                                         tube_x0 = (int)(efactor * (double)(((xh+xl) << 2) + xb) / 4.0);
                                 }
@@ -461,7 +455,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 break;
                                 if (DEBUG) printf(">>>>>xh=%d\n",xh);
                         case 8: xl = (ch & 31);
-                                if (argFull) {
+                                if (windowWidth != 1024) {
                                         int xb = xy4014 & 3;
                                         tube_x2 = (int)(efactor * (double)(((xh+xl) << 2) + xb) / 4.0);
                                         int yb = (xy4014 >> 2) & 3;

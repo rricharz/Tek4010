@@ -55,10 +55,10 @@ static int global_firstcall;
 extern int argFull;
 extern int argARDS;
 
+static GtkWidget *window;
 int windowWidth;
 int windowHeight;
-static int windowHeightOffset = 0;
-static int windowWidthOffset = 0;
+static double aspectRatio;
 
 extern int tube_doClearPersistent;
 
@@ -95,8 +95,25 @@ static void on_quit_event()
 static void do_drawing(cairo_t *cr, GtkWidget *widget)
 {
         static cairo_surface_t *permanent_surface, *temporary_surface;
+        static int windowHeightOffset = 0;
+        static int windowWidthOffset = 0;
 	
 	if (global_firstcall) {
+                // force aspect ratio by making black stripes at left and right, or top and bottom
+                gtk_window_get_size(GTK_WINDOW(window), &windowWidth, &windowHeight);
+                // gtk_window_set_resizable(GTK_WINDOW(window), 0); // do not allow further resizing
+                
+                if (windowWidth > (int)((double)windowHeight * aspectRatio + 0.5)) {
+                        windowWidthOffset = (windowWidth - (int)((double)windowHeight * aspectRatio)) / 2;
+                        windowWidth = (int)((double)windowHeight * aspectRatio + 0.5);
+                }
+                if (windowHeight > (int)((double)windowWidth / aspectRatio + 0.5) ) {
+                        windowHeightOffset = (windowHeight - (int)((double)windowWidth / aspectRatio)) / 2;
+                        windowHeight = (int)((double)windowWidth / aspectRatio + 0.5);
+                }
+                
+                printf("Window dimensions: %d x %d\n", windowWidth, windowHeight);
+
 		permanent_surface = cairo_surface_create_similar(cairo_get_target(cr),
 			CAIRO_CONTENT_COLOR, windowWidth, windowHeight);
                 temporary_surface = cairo_surface_create_similar(cairo_get_target(cr),
@@ -175,11 +192,9 @@ static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_da
 int main (int argc, char *argv[])
 {
 	GtkWidget *darea;
-	GtkWidget *window;
         
         int askWindowWidth;
         int askWindowHeight;
-        double aspectRatio;
         
         tube_init(argc, argv);
         
@@ -190,13 +205,14 @@ int main (int argc, char *argv[])
         
         else if (argFull) {
                 askWindowWidth = 4096;
-                askWindowHeight = 3072;
+                askWindowHeight = 3120;
         }
         else {
                 askWindowWidth = 1024;
                 askWindowHeight = 780;
         }
-        aspectRatio = (double)askWindowWidth/(double)askWindowHeight;   
+        
+        aspectRatio = (double)askWindowWidth / (double)askWindowHeight;
           
 	gtk_init(&argc, &argv);
 	
@@ -233,32 +249,27 @@ int main (int argc, char *argv[])
 		gtk_window_set_keep_above(GTK_WINDOW(window), FALSE);
 		windowWidth  = screenWidth;
 		windowHeight = screenHeight;
-                // force aspect ratio
-                if (windowWidth > (int)((double)windowHeight * aspectRatio)) {
-                        windowWidthOffset = (windowWidth - (int)((double)windowHeight * aspectRatio)) / 2;
-                        windowWidth = (int)((double)windowHeight * aspectRatio);
-                }
-                if (windowHeight > (int)((double)windowWidth / aspectRatio)) {
-                        windowHeightOffset = (windowHeight - (int)((double)windowWidth / aspectRatio)) / 2;
-                        windowHeight = (int)((double)windowWidth / aspectRatio);
-                }
         }
  
         else {
                 // DISPLAY DECORATED WINDOW
-                if (argARDS && (askWindowHeight > (screenHeight - 32))) {
-                        askWindowWidth = 540;
-                        askWindowHeight = 707;
+#define BORDER 64       // we need to make an educated guess here what the window manager will accept
+                        // otherwise we will have a decorated window with wrong aspect ratio
+                        // if BORDER is too small, we end up with small black stripes at the left and right
+                        // if BORDER is too large, the decorated window will  be smaller than possible
+                        // with a reasonable size BORDER, both are acceptable
+                        // ideally, one could force the window manager to use a certain aspect ratio
+                if (askWindowHeight > (screenHeight - BORDER)) {
+                        askWindowWidth = (int)((double)(screenHeight - BORDER) * aspectRatio);
+                        askWindowHeight = screenHeight - BORDER;
                 }
                 gtk_window_set_decorated(GTK_WINDOW(window), TRUE);
                 gtk_window_set_default_size(GTK_WINDOW(window), askWindowWidth, askWindowHeight);
                 windowWidth  = askWindowWidth;
                 windowHeight = askWindowHeight;                
         }
+        // printf("Requested window dimensions: %d x %d\n", windowWidth, windowHeight);
  
-        printf("Window dimensions: %d x %d\n", windowWidth, windowHeight);
-        
-  
         if (TIME_INTERVAL > 0) {
 		// Add timer event
 		// Register the timer and set time in mS.

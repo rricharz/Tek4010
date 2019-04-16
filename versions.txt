@@ -1,3 +1,8 @@
+Version 1.2.2 April 16, 2019
+============================
+Bug fixes
+- fixed window size and scaling on lower resolution displays
+
 Version 1.2.1 April 15, 2019
 ============================
 New features
