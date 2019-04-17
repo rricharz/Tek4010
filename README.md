@@ -3,8 +3,7 @@
 # Tektronix 4010 and 4014 Storage Tube Terminal Emulator
 
 This is a [Tektronix 4010 and 4014](https://en.wikipedia.org/wiki/Tektronix_4010) terminal emulator
-for the Raspberry Pi and other Linux systems. It can also be used on Windows and Macintosh systems
-with [Virtualbox](https://www.virtualbox.org/) and [Ubuntu](https://www.ubuntu.com/).
+for the Raspberry Pi (Raspberry Pi 3 or faster) and other Linux systems.
 
 It can also display historical data for the
 [MIT Project MAC](https://en.wikipedia.org/wiki/MIT_Computer_Science_and_Artificial_Intelligence_Laboratory#Project_MAC)
@@ -28,12 +27,6 @@ or a real historical system. At can also be used to display historical plot data
 This [video of a tek4010 demo](https://youtu.be/ioYiu6oUT88) was generated using
 [simplescreenrecorder](https://www.maartenbaert.be/simplescreenrecorder). There is also a
 video of a an [animation using the tek4010](https://youtu.be/7FMewaoEOmk).
-
-If you want to make an installation on Windows or OSX, first install Virtualbox and Ubuntu on
-your system. Here are examples of guides for
-[OSX](https://www.dev2qa.com/how-to-install-ubuntu-on-virtualbox-mac/)
-and [Windows](https://itsfoss.com/install-linux-in-virtualbox/). Once you are running in
-virtual Ubuntu you can proceed.
 
 Install the tek4010 emulator from this repo on a Raspberry Pi or Ubuntu. I propose using
 
