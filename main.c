@@ -34,7 +34,7 @@
  * 
  */
  
-#define TIME_INTERVAL       10              // time interval for timer function in msec
+#define TIME_INTERVAL       5              // time interval for timer function in msec (after last refresh)
  
 #define GDK_DISABLE_DEPRECATION_WARNINGS
 
@@ -59,6 +59,8 @@ static GtkWidget *window;
 int windowWidth;
 int windowHeight;
 static double aspectRatio;
+
+guint global_timeout_ref;
 
 extern int tube_doClearPersistent;
 
@@ -97,6 +99,8 @@ static void do_drawing(cairo_t *cr, GtkWidget *widget)
         static cairo_surface_t *permanent_surface, *temporary_surface;
         static int windowHeightOffset = 0;
         static int windowWidthOffset = 0;
+        
+        g_source_remove(global_timeout_ref);    // stop timer, in case do_drawing takes too long
 	
 	if (global_firstcall) {
                 // force aspect ratio by making black stripes at left and right, or top and bottom
@@ -118,6 +122,12 @@ static void do_drawing(cairo_t *cr, GtkWidget *widget)
 			CAIRO_CONTENT_COLOR, windowWidth, windowHeight);
                 temporary_surface = cairo_surface_create_similar(cairo_get_target(cr),
 			CAIRO_CONTENT_COLOR_ALPHA, windowWidth, windowHeight);
+                        
+                if (argFull) { // hide cursor in full mode
+                        GdkCursor* Cursor = gdk_cursor_new(GDK_BLANK_CURSOR);
+                        GdkWindow* win = gtk_widget_get_window(window);
+                        gdk_window_set_cursor((win), Cursor);
+                }
 	}
 	
 	cairo_t *permanent_cr = cairo_create(permanent_surface);
@@ -138,7 +148,9 @@ static void do_drawing(cairo_t *cr, GtkWidget *widget)
 	cairo_paint(cr);
          
 	cairo_destroy(permanent_cr);
-        cairo_destroy(temporary_cr);  
+        cairo_destroy(temporary_cr);
+        global_timeout_ref = g_timeout_add(TIME_INTERVAL, (GSourceFunc) on_timer_event,
+                                                (gpointer) window);
 }
 
 static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
@@ -274,7 +286,8 @@ int main (int argc, char *argv[])
 		// Add timer event
 		// Register the timer and set time in mS.
 		// The timer_event() function is called repeatedly until it returns FALSE. 
-		g_timeout_add(TIME_INTERVAL, (GSourceFunc) on_timer_event, (gpointer) window);
+		global_timeout_ref = g_timeout_add(TIME_INTERVAL, (GSourceFunc) on_timer_event,
+                                                (gpointer) window);
 	}
 
 	gtk_window_set_title(GTK_WINDOW(window), windowName);

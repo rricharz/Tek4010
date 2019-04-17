@@ -1,3 +1,9 @@
+Version 1.2.3 April 17, 2019
+============================
+Bug fixes
+- fixed a racing condition preventing visibility of some bright spots on slow displays
+- hide cursor in full screen mode
+
 Version 1.2.2 April 16, 2019
 ============================
 Bug fixes
