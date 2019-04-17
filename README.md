@@ -48,8 +48,7 @@ the program. On the Raspberry Pi you can skip this step.
         
 Thanks to Lars Brinkhoff (lars@nocrew.org) to pointing out how easy it is to compile tek4010
 on Ubuntu. He also helped me to fix some bugs and proposed many nice features. Don't forget to
-recompile the program each time you update from the repository if you are using Ubuntu. I have
-tested this on my Macintosh with Virtualbox and Ubunto, and it works very well!
+recompile the program each time you update from the repository if you are using Ubuntu.
 
 There is a file "dodekagon.plt" in the repo, which you can use to test the tek4010 emulator.
 "dodekagon.plt" was produced in 2.11 BSD using my program "dodekagon". Type
