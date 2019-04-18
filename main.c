@@ -34,7 +34,7 @@
  * 
  */
  
-#define TIME_INTERVAL       5              // time interval for timer function in msec (after last refresh)
+#define TIME_INTERVAL       35              // time interval for timer function in msec (after last refresh)
  
 #define GDK_DISABLE_DEPRECATION_WARNINGS
 

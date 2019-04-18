@@ -26,7 +26,7 @@
  
 #define DEBUG    0              // print debug info
  
-#define TODO  (long)(8.0 * efactor * efactor)   // draw multiple objects until screen updates
+#define TODO  (long)(16)   // draw multiple objects until screen updates
 
 #define _GNU_SOURCE
  

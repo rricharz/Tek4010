@@ -1,3 +1,9 @@
+Version 1.2.4 April 18, 2019
+============================
+Bug fixes
+- Optimized for a variety of displays, cpu speeds and actual frame rates, including
+  VirtualBox environments
+
 Version 1.2.3 April 17, 2019
 ============================
 Bug fixes

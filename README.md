@@ -232,8 +232,6 @@ tek4010 has the following options:
 
 **Reporting problems**
 
-As this software is still in beta test, there will be problems.
-
 If everything works properly for you, but your graphics application produces garbage on the
 tek4010 emulator, you can send me your data as follows: On a historical Unix system, type
 
@@ -259,7 +257,7 @@ module.
 If called with the -full option, the tek4010 emulator creates creates a full screen window,
 and uses the full 4K resolution of the 4014 with enhanced graphics
 module installed, scaled down to the actual window size.
-Use control-q to close the tek4010 window. This option is experimental.
+Use control-q to close the tek4010 window.
 
 **Compiling the tek4010 project**
 
@@ -268,6 +266,15 @@ If you want to compile the project, you need to install "libgtk-3-dev":
 	sudo apt-get install libgtk-3-dev
 
 There is a make file in the repo.
+
+**Using tek4010 on OSX and Windows using VirtualBox and Ubuntu**
+
+It is possible to run tek4010 in a virtual Ubuntu environment on OSX or Windows. I found that in
+such virtual environments the raw CPU speed is usually higher than on a Raspberry Pi, but the
+actual frame rates are sometimes slower. I have made a substantial effort to make sure that the bright
+spot animations also look good in environments with rather slow frame rates, but do not expect a
+miracle. Emulating a storage tube display without any screen refresh requirements on a machine
+with limited frame rate has its limitations.
 
 **Version**
 
