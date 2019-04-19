@@ -49,6 +49,8 @@ static long startPaintTime;
 
 static int mode;
 
+static double efactor;
+
 static int args;
 static unsigned char data[4];
 
@@ -56,19 +58,19 @@ static int x0 = -485, y0 = 450, x2, y2;
 
 static void draw_char (cairo_t *cr, cairo_t *cr2, char ch)
 {
-  tube_x0 = (x0 + 540)/2;
-  tube_y0 = (y0 + 707)/2;
+  tube_x0 = (int)(efactor * (x0 + 540));
+  tube_y0 = (int)(efactor * (y0 + 707)) - vDotsPerChar/2;
   //fprintf (stderr, "[tube: %d,%d]", tube_x0, tube_y0);
   tube_drawCharacter(cr, cr2, ch);
-  x0 += 9;
+  x0 += (int)(hDotsPerChar / efactor);
 }
 
 static void draw_vector (cairo_t *cr, cairo_t *cr2)
 {
-  tube_x0 = (x0 + 540)/2;
-  tube_y0 = (y0 + 707)/2;
-  tube_x2 = (x2 + 540)/2;
-  tube_y2 = (y2 + 707)/2;
+  tube_x0 = (int)(efactor * (x0 + 540));
+  tube_y0 = (int)(efactor * (y0 + 707));
+  tube_x2 = (int)(efactor * (x2 + 540));
+  tube_y2 = (int)(efactor * (y2 + 707));
   //fprintf (stderr, "[tube: %d,%d - %d,%d]", tube_x0, tube_y0, tube_x2, tube_y2);
   tube_drawVector(cr, cr2);
 }
@@ -84,8 +86,11 @@ void ards_draw(cairo_t *cr, cairo_t *cr2, int first)
                
         if (first) {
                 first = 0;
+                efactor = windowWidth / 1080.0;
+                // fprintf (stderr, "efactor: %0.2f\n", efactor);
                 refresh_interval = 30;        
-                tube_changeCharacterSize(cr, cr2, 74, 35, 10);
+                tube_changeCharacterSize(cr, cr2, 80, 50, (int)(efactor * 20));
+                
         }
         
         startPaintTime = tube_mSeconds(); // start to measure time for this draw operation
