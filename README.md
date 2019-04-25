@@ -285,6 +285,8 @@ See [versions.txt](versions.txt)
 The storage tube emulator and the Tektronix 4010/4014 decoder were witten by Rene Richarz.
 The ARDS decoder was written by Lars Brinkhoff.
 The historical plot data for the Tektronix 4014 was obtained from Jos Dreesen.
-Thanks to many others who contributed important ideas and helped with the debugging.
+Thanks to Ian Schofield for his critical comments and a code snippet for drawing dashed and dotted lines,
+and to Oscar Vermeulen for his support.
+Thanks also to all others who contributed important ideas and helped with the debugging.
 
 
