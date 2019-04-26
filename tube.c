@@ -74,6 +74,7 @@ double dashset[] = {2,6,2,2,6,3,3,3,6,6};
 
 int plotPointMode = 0;           // plot point mode
 int writeThroughMode = 0;        // write through mode
+int isGinMode = 0;                 // set if GIN mode is active
 int tube_doClearPersistent;
 
 int specialPlotMode = 0;
@@ -178,7 +179,7 @@ void tube_init(int argc, char* argv[])
         char *argv2[20];
         size_t bufsize = 127;
         int firstArg = 1;
-        printf("tek4010 version 1.2.5\n");
+        printf("tek4010 version 1.2.6\n");
         windowName = "Tektronix 4010/4014 emulator";
         if ((argc<2) || (argc>19)) {
                 printf("Error:number of arguments\n");
@@ -377,7 +378,12 @@ int tube_clicked(int button, int x, int y)
 // x and y are the coordinates
 // if the function returns 1, the window is redrawn by calling applicatin_draw
 {
-	return 1;
+        if (argARDS) return 0;
+        if (button == 1) {
+                tek4010_clicked(x, y);
+                return 1;
+        }
+	return 0;
 }
 
 void tube_quit()
@@ -532,6 +538,18 @@ void tube_drawPoint(cairo_t *cr, cairo_t *cr2)
         }
                                         
         isBrightSpot = 1;      
+}
+
+void tube_crosshair(cairo_t *cr, cairo_t *cr2)
+{
+        // printf("crosshair at %d,%d\n", tube_x0, tube_y0);
+        cairo_set_line_width (cr2, 1);
+        cairo_set_source_rgb(cr2, 0.0, WRITE_TROUGH_INTENSITY, 0.0);
+        cairo_move_to(cr2, tube_x0, 0);
+        cairo_line_to(cr2, tube_x0, windowHeight);
+        cairo_move_to(cr2, 0, tube_y0);
+        cairo_line_to(cr2, windowWidth, tube_y0);
+        cairo_stroke (cr2);        
 }
 
 void tube_drawVector(cairo_t *cr, cairo_t *cr2)

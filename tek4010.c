@@ -62,12 +62,14 @@
 //
 // mode 40      incremental plot mode; is ignored until exit from incremental plot received
 // mode 50      special point plot mode; not yet implemented
+// mode 60      crosshair mode
 // mode 101     ignore until group separator
 
 int mode, savemode;
 int penDown = 1;
 
 extern int leftmargin;
+extern FILE *putKeys;
 
 static long startPaintTime;
 static int xh,xl,yh,yl,xy4014;
@@ -105,11 +107,63 @@ void tek4010_checkLimits()
 
 void tek4010_bell()
 {
-        // bell function, delay 0.1 sec
+        // bell function, delay 0.05 sec
         tube_u100ResetSeconds(1);
         usleep(50000);
         showCursor=0;
         todo = 0;
+}
+
+void sendCoordinates()
+{
+        // send 4 coordinate bytes
+        putc((tube_x0 >> 5) + 0xa0,putKeys);
+        putc((tube_x0 & 31) + 0xa0,putKeys);
+        putc((tube_y0 >> 5) + 0xa0,putKeys);
+        putc((tube_y0 & 31) + 0xa0,putKeys);
+}
+
+void enqMode()
+{
+        // activated by sending ESC ENQ
+        int status;
+        status = 0xa0;
+        if (leftmargin == 0) status += 2;
+        if (mode == 0) status += 4;
+        putc(status,putKeys);           // send status byte
+        sendCoordinates();
+        putc(13 + 128, putKeys);        // cr, bit 8 set
+                                        // cannot send a EOT here       
+}
+
+void ginMode(cairo_t *cr, cairo_t *cr2)
+{
+        // activated by sending ESC SUB
+        if (DEBUG) printf("GIN, mode = %d\n", mode);
+        tube_crosshair(cr, cr2);
+        mode = 60;
+        todo = 0;
+        showCursor = 0;
+        isGinMode = 1;
+}
+
+void ginSend(int ch)
+{
+        // user has stoken a key during GIN mode
+        if (DEBUG) printf("ginSend, ch = %d\n", ch);
+        putc(ch + 128,putKeys);
+        sendCoordinates();
+        putc(13+128,putKeys);           // cr, bit 8 set
+                                        // cannot send a EOT here
+}
+
+void tek4010_clicked(int x, int y)
+{
+        if (DEBUG) printf("Clicked, mode = %d\n", mode);
+        if (mode == 60) {
+                tube_x0 = x;
+                tube_y0 = y;
+        }
 }
 
 void tek4010_escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
@@ -120,8 +174,7 @@ void tek4010_escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
                 case 0: break; // ignore filler 0
 
                 case 5: // ENQ: ask for status and position
-                        // not yet implemented, needs to send 7 bytes
-                        if (DEBUG) printf("ENQ not supported, ignored\n");
+                        enqMode();
                         mode = 0; break;
                 case 6: break;
                 
@@ -153,8 +206,7 @@ void tek4010_escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
                 case 23: system("scrot --focussed"); mode= 0; break;
                 
                 case 26: // sub
-                        if (DEBUG) printf("GIN mode not supported, ignored\n");
-                        mode = 0;
+                        ginMode(cr, cr2);
                         break;
                         
                 // modes 27 and 29 - 31 are identical in all modes
@@ -276,7 +328,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                 todo = 4 * TODO;      // for text speed
         else
                 todo = TODO;
-                
+
         do {
                 ch = tube_getInputChar();
                 
@@ -286,7 +338,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
 
                 if (ch == -1) {
                         if ((mode == 0) && showCursor) tube_doCursor(cr2);
-                        return;         // no char available, need to allow for updates
+                        if (mode != 60) return;         // no char available, need to allow for updates
                 }
                 
                 if (DEBUG) {
@@ -517,7 +569,17 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 intensity = intensityTable[ch - 32];
                                 if (DEBUG) printf("defocussed = %d, intensity = %d%%\n", defocussed, intensity);
                                 mode = 5; // coordinates follow                                
-                                break;                                
+                                break;
+                        case 60:// crosshair mode
+                                if (isGinMode > 1) { // key stroken by user
+                                        ginSend(isGinMode);
+                                        mode = 0;
+                                        todo = 0;
+                                        isGinMode = 0;
+                                }
+                                else
+                                        ginMode(cr, cr2);
+                                break;
                         case 101: 
                                 if (DEBUG) printf("Ignore until group separator, ch = %02x\n", ch);
                                 if (ch == 29) mode = 1;

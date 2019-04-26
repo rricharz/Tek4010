@@ -45,6 +45,7 @@
 #include <gtk/gtk.h>
 
 #include "main.h"
+#include "tube.h"
 
 extern FILE *putKeys;
 
@@ -156,7 +157,7 @@ static void do_drawing(cairo_t *cr, GtkWidget *widget)
 static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
 {
         int ch;
-        // printf("key pressed, state =%04X, keyval=%04X\r\n", event->state, event->keyval);
+        // printf("key pressed, state =%04X, keyval=%04X, isGinMode = %d\r\n", event->state, event->keyval, isGinMode);
         
         if ((event->keyval == 0xFF50) ||        // "home" key
                 (event->keyval == 0xFF55) ||    // "page up" key
@@ -196,8 +197,13 @@ static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_da
                 ch = event->keyval & 0x7F;
                 
         else return;
+        
+        if (isGinMode) { // need to pass key to GIN mode handling, not to child process
+                isGinMode = ch;
+                gtk_widget_queue_draw(widget);
+        }
                 
-        if (putKeys)
+        else if (putKeys)
                 putc(ch,putKeys);      // pipe key to child process, if stream open
 }
 

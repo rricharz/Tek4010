@@ -19,6 +19,7 @@ extern long refreshCount;
 
 extern int showCursor;                 // set of cursor is shown (not set in graphics mode)
 extern int isBrightSpot;               // set if there is currently a bright spot on the screen
+extern int isGinMode;                    // set if GIN mode is active
 
 extern int specialPlotMode;
 extern int defocussed;
@@ -37,6 +38,7 @@ extern void tube_clearSecond(cairo_t *cr2);
 extern int  tube_isInput();
 extern int  tube_getInputChar();
 extern void tube_emulateDeflectionTime();
+extern void tube_crosshair(cairo_t *cr, cairo_t *cr2);
 extern void tube_drawVector(cairo_t *cr, cairo_t *cr2);
 extern void tube_drawCharacter(cairo_t *cr, cairo_t *cr2, char ch);
 extern void tube_drawPoint(cairo_t *cr, cairo_t *cr2);
