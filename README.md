@@ -37,7 +37,8 @@ This allows you to get updates later easily as follows:
 	git pull
 
 If you just want the "tek4010" program for the Raspberry Pi, without the source, the original plot files
-and the original manuals, you can also go to the [releases page](releases), and just download the latest
+and the original manuals, you can also go to the
+[releases page](https://github.com/rricharz/Tek4010/releases), and just download the latest
 "tek4010" program.
         
 The compiled "tek4010" program is for a Raspberry Pi. If you are on Ubuntu, do the following to recompile
