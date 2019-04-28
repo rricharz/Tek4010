@@ -14,15 +14,15 @@ It can also display historical data for the
 It attempts to emulate the [storage tube display](https://en.wikipedia.org/wiki/Storage_tube)
 of the Tektronix 4010, including the bright drawing spot.
 
-To the best of my knowledge this is the only Tektronix 4010/4014 emulator, which makes an effort
-to emulate the storage tube behavior. If the look and feel is not important, you can
+The "tek4010" emulator makes an effort to emulate the storage tube behavior of the original.
+If the look and feel is not important, you can
 use ["xterm"](https://en.wikipedia.org/wiki/Xterm) instead. "xterm" does not support all
 graphics modes of the 4014.
 
 It can be used to log into a historical Unix system such as
 [2.11 BSD](https://en.wikipedia.org/wiki/Berkeley_Software_Distribution) on the
-[pidp11](http://obsolescence.wixsite.com/obsolescence/pidp-11)
-or a real historical system. At can also be used to display historical plot data.
+[PiDP-11](http://obsolescence.wixsite.com/obsolescence/pidp-11)
+or a real historical system. It can also be used to display historical plot data.
 
 This [video of a tek4010 demo](https://youtu.be/ioYiu6oUT88) was generated using
 [simplescreenrecorder](https://www.maartenbaert.be/simplescreenrecorder). There is also a
@@ -39,7 +39,7 @@ This allows you to get updates later easily as follows:
 	cd Tek4010
 	git pull
         
-The built tek4010 file is for a Raspberry Pi. If you are on Ubuntu, do the follwing to recompile
+The built tek4010 file is for a Raspberry Pi. If you are on Ubuntu, do the following to recompile
 the program. On the Raspberry Pi you can skip this step.
 
         sudo apt-get install libgtk-3-dev
@@ -84,7 +84,7 @@ or
 If you want to use this emulator together with 2.11 BSD Unix, look also at
 [Using the historical Unix 2.11 BSD operating system on the PiDP-11](https://github.com/rricharz/pidp11-2.11bsd.git)
 
-**Login directly into a remote historical Unix operating system**
+**Log directly into a remote historical Unix operating system**
 
 This can either be a real historical computer, or a virtual system using simh such
 as the PiDP-11.
@@ -100,7 +100,7 @@ or
 where "user_name" is the name of the user on the historical operating system, and "system"
 is the hostname of this system. If the historical operating system is running using an
 emulator, this is NOT the hostname of the system, on which the emulator is running. See
-the chapter below if you prefer to login into the system, on which the emulator is
+the chapter below if you prefer to log into the system, on which the emulator is
 running. For example, type
 
 	rsh -l rene pdp11
@@ -139,7 +139,7 @@ You can also use the following control key function to close tek4010:
 
 	control-q	Close tek4010 window and quit tek4010.
 
-**Login into the system running simh (same or different Raspberry Pi)**
+**Log into the system running simh (same or different Raspberry Pi)**
 
 This makes sense, if you have set up a virtual DZ11 for multiple user login, opening a
 telnet port for multiplexed terminals. On the PiDP-11 using 2.11 BSD, the distribution software has
@@ -166,7 +166,7 @@ or
 
 	tek4010 telnet localhost 4000	
 
-**Login into PiDP-11 running on the same Raspberry Pi, using the console**
+**Log into PiDP-11 running on the same Raspberry Pi, using the console**
 
 This is the least preferred setup, only to be used if you cannot use one of the setups
 above. You cannot use the tek4010 emulator running screens, as it is done in the standard setup
@@ -248,7 +248,7 @@ If you are registered on github, you can also open an issue.
 This tek4010 emulator creates a graphics window of 1024x780 points, which is the display size
 of the Tektronix 4010 terminal and the Tektronix 4014 terminal without enhanced graphics module.
 The Raspberry Pi can handle
-sufficiently high refresh rates at this resolution. This emulator makes an attempt to filter
+sufficiently high refresh rates at this resolution. This emulator executes
 Tektronix 4014 graphics code with the enhanced graphics module installed, so that such
 graphics codes can be displayed using this terminal emulator, but the lowest two bits of
 each axis are not used in this case, as in the Tektronix 4014 without the enhanced graphics
@@ -280,6 +280,10 @@ with limited frame rate has its limitations.
 
 See [versions.txt](versions.txt)
 
+**Manuals**
+
+The manuals of the historical terminals are available in the [manuals folder](manuals)
+
 **Contributors**
 
 The storage tube emulator and the Tektronix 4010/4014 decoder were witten by Rene Richarz.
@@ -287,6 +291,8 @@ The ARDS decoder was written by Lars Brinkhoff.
 The historical plot data for the Tektronix 4014 was obtained from Jos Dreesen.
 Thanks to Ian Schofield for his critical comments and a code snippet for drawing dashed and dotted lines,
 and to Oscar Vermeulen for his support.
-Thanks also to all others who contributed important ideas and helped with the debugging.
+The manuals were obtained from bitsavers.org.
+Thanks also to all others who contributed important ideas, helped with the debugging and preserved
+the historical data. This program is the result of a community effort.
 
 
