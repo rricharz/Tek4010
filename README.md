@@ -11,11 +11,8 @@ It can also display historical data for the
 
 ![screen_shot](screendump.png?raw=true "tek4010 screendump")
 
-It attempts to emulate the [storage tube display](https://en.wikipedia.org/wiki/Storage_tube)
-of the Tektronix 4010, including the bright drawing spot.
-
-The "tek4010" emulator makes an effort to emulate the storage tube behavior of the original.
-If the look and feel is not important, you can
+It makes an effort to emulate the [storage tube display](https://en.wikipedia.org/wiki/Storage_tube)
+of the Tektronix 4010, including the bright drawing spot. If the look and feel is not important, you can
 use ["xterm"](https://en.wikipedia.org/wiki/Xterm) instead. "xterm" does not support all
 graphics modes of the 4014.
 
@@ -38,8 +35,12 @@ This allows you to get updates later easily as follows:
 
 	cd Tek4010
 	git pull
+
+If you just want the "tek4010" program for the Raspberry Pi, without the source, the original plot files
+and the original manuals, you can also go to the [releases page](releases), and just download the latest
+"tek4010" program.
         
-The built tek4010 file is for a Raspberry Pi. If you are on Ubuntu, do the following to recompile
+The compiled "tek4010" program is for a Raspberry Pi. If you are on Ubuntu, do the following to recompile
 the program. On the Raspberry Pi you can skip this step.
 
         sudo apt-get install libgtk-3-dev
@@ -48,7 +49,8 @@ the program. On the Raspberry Pi you can skip this step.
         
 Thanks to Lars Brinkhoff (lars@nocrew.org) to pointing out how easy it is to compile tek4010
 on Ubuntu. He also helped me to fix some bugs and proposed many nice features. Don't forget to
-recompile the program each time you update from the repository if you are using Ubuntu.
+recompile the program each time you update from the repository if you are using Ubuntu. In this
+case, you will also have to delete the compiled "tek4010" program before you can do a new pull.
 
 There is a file "dodekagon.plt" in the repo, which you can use to test the tek4010 emulator.
 "dodekagon.plt" was produced in 2.11 BSD using my program "dodekagon". Type
