@@ -32,7 +32,7 @@
 #define CURSOR_INTENSITY        0.8
 #define BRIGHT_SPOT_COLOR       1.0
 #define BRIGHT_SPOT_COLOR_HALF  0.6
-#define BLACK_COLOR             0.0,0.08,0.0    // effect of flood gun
+#define BLACK_COLOR             0.08            // effect of flood gun
 
 #define _GNU_SOURCE
 
@@ -407,7 +407,7 @@ void tube_clearPersistent(cairo_t *cr, cairo_t *cr2)
 // clear the persistant surface
 // flash using the second surface
 {
-        cairo_set_source_rgb(cr, BLACK_COLOR);
+        cairo_set_source_rgb(cr, 0.0, BLACK_COLOR, 0.0);
         cairo_paint(cr);
         tube_doClearPersistent = 0;
         tube_x0 = 0;
@@ -485,7 +485,7 @@ void tube_drawCharacter(cairo_t *cr, cairo_t *cr2, char ch)
                                                 
         else {
                 // draw the character
-                cairo_set_source_rgb(cr, 0, (NORMAL_INTENSITY * intensity) / 100, 0);
+                cairo_set_source_rgb(cr, 0, BLACK_COLOR + ((NORMAL_INTENSITY - BLACK_COLOR) * intensity) / 100, 0);
                 cairo_move_to(cr, tube_x0, windowHeight - tube_y0);
                 cairo_show_text(cr, s);
                                                 
@@ -515,7 +515,7 @@ void tube_drawPoint(cairo_t *cr, cairo_t *cr2)
 {
 #define PI2 6.283185307
         cairo_set_line_width (cr, 1 + defocussed);
-        cairo_set_source_rgb(cr, 0, (NORMAL_INTENSITY * intensity) / 100, 0);
+        cairo_set_source_rgb(cr, 0, BLACK_COLOR + ((NORMAL_INTENSITY - BLACK_COLOR) * intensity) / 100, 0);
         cairo_move_to(cr, tube_x2, windowHeight - tube_y2);
         cairo_line_to(cr, tube_x2 + 1, windowHeight - tube_y2);
         cairo_stroke (cr);
@@ -574,7 +574,7 @@ void tube_drawVector(cairo_t *cr, cairo_t *cr2)
         else {
                 // draw the actual vector on permanent surface
                 cairo_set_line_width (cr, 1 + defocussed);
-                cairo_set_source_rgb(cr, 0, (NORMAL_INTENSITY * intensity) / 100, 0);
+                cairo_set_source_rgb(cr, 0, BLACK_COLOR + ((NORMAL_INTENSITY - BLACK_COLOR) * intensity) / 100, 0);
                 tube_line_type(cr, cr2, ltype);
                 cairo_move_to(cr, tube_x0, windowHeight - tube_y0);
                 cairo_line_to(cr, tube_x2, windowHeight - tube_y2);

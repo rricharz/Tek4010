@@ -218,10 +218,10 @@ void tek4010_escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
                         int defocussed = 0;
                         break;
 
-                case '8': tube_changeCharacterSize(cr, cr2, 74, 35, (int)(efactor * 18)); break;
-                case '9': tube_changeCharacterSize(cr, cr2, 81, 38, (int)(efactor * 16)); break;
-                case ':': tube_changeCharacterSize(cr, cr2, 121, 58, (int)(efactor * 11)); break;
-                case ';': tube_changeCharacterSize(cr, cr2, 133, 64, (int)(efactor * 10)); break;
+                case '8': tube_changeCharacterSize(cr, cr2, 74, 35, (int)(efactor * 18)); mode = 0; break;
+                case '9': tube_changeCharacterSize(cr, cr2, 81, 38, (int)(efactor * 16)); mode = 0; break;
+                case ':': tube_changeCharacterSize(cr, cr2, 121, 58, (int)(efactor * 11)); mode = 0; break;
+                case ';': tube_changeCharacterSize(cr, cr2, 133, 64, (int)(efactor * 10)); mode = 0; break;
                 
                 case '[':   // a second escape code follows, do not reset mode
                           break;
@@ -560,8 +560,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 }
                                 else if (DEBUG) printf("Illegal byte 0x%02X in incremental plot\n", ch);  
                                 break;
-                        case 50:// special plot mode, not implemented
-                                // ignore the value for now
+                        case 50:// special plot mode
                                 tag = ch >> 5;
                                 if ((ch < 32) || (ch >= 126)) return;
                                 if (DEBUG) printf("intensity/focus control = %c: %d: ", ch, tag);
