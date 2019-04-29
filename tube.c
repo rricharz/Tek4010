@@ -91,6 +91,7 @@ static long charCount = 0;
 static long charResetCount = 0;
 static long characterInterval = 0;
 static int currentFontSize = 18;
+static int currentCharacterOffset = 0;
 
 long startPaintTime;
 
@@ -397,7 +398,7 @@ void tube_doCursor(cairo_t *cr2)
 {
         cairo_set_source_rgb(cr2, 0, CURSOR_INTENSITY, 0);
         cairo_set_line_width (cr2, 1);
-        cairo_rectangle(cr2, tube_x0, windowHeight - tube_y0 - vDotsPerChar + 8,
+        cairo_rectangle(cr2, tube_x0, windowHeight - tube_y0 - vDotsPerChar + 6 + currentCharacterOffset,
                                                 hDotsPerChar - 3, vDotsPerChar - 3);
         cairo_fill(cr2);
         cairo_stroke (cr2);
@@ -479,19 +480,19 @@ void tube_drawCharacter(cairo_t *cr, cairo_t *cr2, char ch)
 
         if (writeThroughMode) {  // draw the write-through character
                 cairo_set_source_rgb(cr2, 0, WRITE_TROUGH_INTENSITY, 0);
-                cairo_move_to(cr2, tube_x0, windowHeight - tube_y0);
+                cairo_move_to(cr2, tube_x0, windowHeight - tube_y0 + currentCharacterOffset);
                 cairo_show_text(cr2, s);
         }
                                                 
         else {
                 // draw the character
                 cairo_set_source_rgb(cr, 0, BLACK_COLOR + ((NORMAL_INTENSITY - BLACK_COLOR) * intensity) / 100, 0);
-                cairo_move_to(cr, tube_x0, windowHeight - tube_y0);
+                cairo_move_to(cr, tube_x0, windowHeight - tube_y0 + currentCharacterOffset);
                 cairo_show_text(cr, s);
                                                 
                 // draw the bright spot
                 cairo_set_source_rgb(cr2, BRIGHT_SPOT_COLOR, BRIGHT_SPOT_COLOR, BRIGHT_SPOT_COLOR);
-                cairo_move_to(cr2, tube_x0, windowHeight - tube_y0);
+                cairo_move_to(cr2, tube_x0, windowHeight - tube_y0 + currentCharacterOffset);
                 cairo_show_text(cr2, s);                        
         }
                                                 
@@ -612,8 +613,18 @@ void tube_setupPainting(cairo_t *cr, cairo_t *cr2, char *fontName)
 void tube_changeCharacterSize(cairo_t *cr, cairo_t *cr2,int charsPerLine, int charsPerPage, int fontSize)
 {
         int fontsize;
+        cairo_font_extents_t et;
         hDotsPerChar = windowWidth / charsPerLine;
         vDotsPerChar = windowHeight / charsPerPage;
         leftmargin = 0;
         currentFontSize = fontSize;
+        cairo_set_font_size(cr, currentFontSize);
+        cairo_set_font_size(cr2,currentFontSize);    
+        if (argARDS) {
+               cairo_font_extents(cr, &et);
+               currentCharacterOffset =(int)et.ascent;
+               if (DEBUG) printf("Set vertical character offset for ARDS mode to %d\n", currentCharacterOffset);
+        }
+        else
+                currentCharacterOffset = 0;
 }

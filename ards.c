@@ -59,7 +59,7 @@ static int x0 = -485, y0 = 450, x2, y2;
 static void draw_char (cairo_t *cr, cairo_t *cr2, char ch)
 {
   tube_x0 = (int)(efactor * (x0 + 540));
-  tube_y0 = (int)(efactor * (y0 + 707)) - vDotsPerChar/2;
+  tube_y0 = (int)(efactor * (y0 + 707));
   //fprintf (stderr, "[tube: %d,%d]", tube_x0, tube_y0);
   tube_drawCharacter(cr, cr2, ch);
   x0 += (int)(hDotsPerChar / efactor);

@@ -2,15 +2,8 @@
  *
  * main.c
  * provides a simple framework for basic drawing with cairo and gtk+ 3.0
- * define main window in tek4010.h
- * and cairo drawing in tek4010.c
  * 
- * The framework provides functions to
- *   a function to draw using cairo
- *   a function to initialize your code
- *   a function to exit your code
- *   a peridicaly called function
- *   a function called if the mouse is clicked
+ * Version adapted for tek4010
  * 
  * Copyright 2016,2019  rricharz
  *
