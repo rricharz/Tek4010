@@ -23,7 +23,8 @@ or a real historical system. It can also be used to display historical plot data
 
 This [video of a tek4010 demo](https://youtu.be/ioYiu6oUT88) was generated using
 [simplescreenrecorder](https://www.maartenbaert.be/simplescreenrecorder). There is also a
-video of a an [animation using the tek4010](https://youtu.be/7FMewaoEOmk).
+video of a an [animation using the tek4010](https://youtu.be/7FMewaoEOmk) and a video showing
+[tek4010 alongside the PiDP-11](https://youtu.be/4jZzypvxoHU).
 
 Install the tek4010 emulator from this repo on a Raspberry Pi or Ubuntu. I propose using
 
