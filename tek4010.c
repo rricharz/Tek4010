@@ -117,10 +117,13 @@ void tek4010_bell()
 void sendCoordinates()
 {
         // send 4 coordinate bytes
-        putc((tube_x0 >> 5) + 0xa0,putKeys);
-        putc((tube_x0 & 31) + 0xa0,putKeys);
-        putc((tube_y0 >> 5) + 0xa0,putKeys);
-        putc((tube_y0 & 31) + 0xa0,putKeys);
+        int x,y;
+        x = (int)((double)tube_x0 / efactor);
+        y = (int)((double)tube_y0 / efactor);
+        putc((x >> 5) + 0xa0,putKeys);
+        putc((x & 31) + 0xa0,putKeys);
+        putc((y >> 5) + 0xa0,putKeys);
+        putc((y & 31) + 0xa0,putKeys);
 }
 
 void enqMode()

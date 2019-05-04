@@ -53,6 +53,8 @@ static GtkWidget *window;
 int windowWidth;
 int windowHeight;
 static double aspectRatio;
+static int windowHeightOffset = 0;
+static int windowWidthOffset = 0;
 
 guint global_timeout_ref;
 
@@ -76,7 +78,7 @@ static gboolean on_timer_event(GtkWidget *widget)
 
 static gboolean clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-    if (tube_clicked(event->button, event->x, event->y))
+    if (tube_clicked(event->button, event->x - windowWidthOffset, event->y - windowHeightOffset))
                 gtk_widget_queue_draw(widget);
     return TRUE;
 }
@@ -91,8 +93,6 @@ static void on_quit_event()
 static void do_drawing(cairo_t *cr, GtkWidget *widget)
 {
         static cairo_surface_t *permanent_surface, *temporary_surface;
-        static int windowHeightOffset = 0;
-        static int windowWidthOffset = 0;
         
         g_source_remove(global_timeout_ref);    // stop timer, in case do_drawing takes too long
 	
@@ -117,11 +117,11 @@ static void do_drawing(cairo_t *cr, GtkWidget *widget)
                 temporary_surface = cairo_surface_create_similar(cairo_get_target(cr),
 			CAIRO_CONTENT_COLOR_ALPHA, windowWidth, windowHeight);
                         
-                if (argFull) { // hide cursor in full mode
-                        GdkCursor* Cursor = gdk_cursor_new(GDK_BLANK_CURSOR);
-                        GdkWindow* win = gtk_widget_get_window(window);
-                        gdk_window_set_cursor((win), Cursor);
-                }
+                //if (argFull) { // hide cursor in full mode
+                //        GdkCursor* Cursor = gdk_cursor_new(GDK_BLANK_CURSOR);
+                //        GdkWindow* win = gtk_widget_get_window(window);
+                //        gdk_window_set_cursor((win), Cursor);
+                //}
 	}
 	
 	cairo_t *permanent_cr = cairo_create(permanent_surface);
