@@ -277,8 +277,7 @@ It is possible to run tek4010 in a virtual Ubuntu environment on OSX or Windows.
 such virtual environments the raw CPU speed is usually higher than on a Raspberry Pi, but the
 actual frame rates are sometimes slower. I have made a substantial effort to make sure that the bright
 spot animations also look good in environments with rather slow frame rates, but do not expect a
-miracle. Emulating a storage tube display without any screen refresh requirements on a machine
-with limited frame rate has its limitations.
+miracle. Emulating a storage tube display on a machine with limited frame rate has its limitations.
 
 **Version**
 
@@ -287,6 +286,14 @@ See [versions.txt](versions.txt)
 **Manuals**
 
 The manuals of the historical terminals are available in the [manuals folder](manuals)
+
+**Historically interesting facts about the ARDS terminal**
+
+The ARDS was a pioneering storage tube display terminal. It could already use a 3 button
+mouse as the graphical input device, as this 1971 thesis shows:
+Rhine, George Irvin Jr., "A hardware and software interface between a graphics
+terminal and the SCC 650 computer" (1971), Masters Theses, 5508, page 21,
+http://scholarsmine.mst.edu/masters_theses/5508
 
 **Contributors**
 

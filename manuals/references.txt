@@ -1,2 +1,7 @@
 All Tektronix manuals have been obtained from http://bitsavers.org/pdf/tektronix/401x/
 The ARDS manual has been obtained from http://www.bitsavers.org/pdf/computerDisplaysInc/
+
+Further interesting references:
+
+ARDS ad:		http://www.dvq.com/ads/cdi_dm_4_70.jpg
+Tektronix T4002 ad:	http://www.dvq.com/ads/tek_t4002_dm_4_70.jpg
