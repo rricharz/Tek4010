@@ -381,7 +381,7 @@ int tube_clicked(int button, int x, int y)
 {
         if (argARDS) return 0;
         if (button == 1) {
-                tek4010_clicked(x, y);
+                tek4010_clicked(x, windowHeight - y);
                 return 1;
         }
 	return 0;
@@ -548,8 +548,8 @@ void tube_crosshair(cairo_t *cr, cairo_t *cr2)
         cairo_set_source_rgb(cr2, 0.0, WRITE_TROUGH_INTENSITY, 0.0);
         cairo_move_to(cr2, tube_x0, 0);
         cairo_line_to(cr2, tube_x0, windowHeight);
-        cairo_move_to(cr2, 0, tube_y0);
-        cairo_line_to(cr2, windowWidth, tube_y0);
+        cairo_move_to(cr2, 0, windowHeight - tube_y0);
+        cairo_line_to(cr2, windowWidth, windowHeight - tube_y0);
         cairo_stroke (cr2);        
 }
 
