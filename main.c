@@ -117,11 +117,11 @@ static void do_drawing(cairo_t *cr, GtkWidget *widget)
                 temporary_surface = cairo_surface_create_similar(cairo_get_target(cr),
 			CAIRO_CONTENT_COLOR_ALPHA, windowWidth, windowHeight);
                         
-                //if (argFull) { // hide cursor in full mode
-                //        GdkCursor* Cursor = gdk_cursor_new(GDK_BLANK_CURSOR);
-                //        GdkWindow* win = gtk_widget_get_window(window);
-                //        gdk_window_set_cursor((win), Cursor);
-                //}
+                if (argFull) { // hide cursor in full mode
+                        GdkCursor* Cursor = gdk_cursor_new(GDK_BLANK_CURSOR);
+                        GdkWindow* win = gtk_widget_get_window(window);
+                        gdk_window_set_cursor((win), Cursor);
+                }
 	}
 	
 	cairo_t *permanent_cr = cairo_create(permanent_surface);
