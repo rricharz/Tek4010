@@ -299,6 +299,15 @@ A picture of an ARDS I display with a quite modern looking mouse was published i
 Surveys, Vol. 2, No. 4, December 1970, page 272,
 http://sci-hub.tw/https://dl.acm.org/citation.cfm?id=356582&dl=ACM&coll=DL
 
+Detailed pictures of the terminal and the original mouse built by CDI can be found in the 1968
+ARDS manual (see manuals folder)
+
+**Help wanted**
+
+I am interested to find any recoverable original software using the graphical input modes of the
+Tektronix 4010, 4014 or the ARDS. Please open an issue in this repository or write to
+rricharz77@gmail.com if you are able to help.
+
 **Contributors**
 
 The storage tube emulator and the Tektronix 4010/4014 decoder were witten by Rene Richarz.
