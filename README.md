@@ -5,11 +5,13 @@
 This is a [Tektronix 4010 and 4014](https://en.wikipedia.org/wiki/Tektronix_4010) terminal emulator
 for the Raspberry Pi (Raspberry Pi 3 or faster) and other Linux systems.
 
+![screen_shot](screendump.png?raw=true "tek4010 screendump")
+
 It can also display historical data for the
 [MIT Project MAC](https://en.wikipedia.org/wiki/MIT_Computer_Science_and_Artificial_Intelligence_Laboratory#Project_MAC)
-'s ARDS (Advanced Remote Display Station).
+'s ARDS (Advanced Remote Display Station):
 
-![screen_shot](screendump.png?raw=true "tek4010 screendump")
+![ARDS_screen_shot](trek.png?raw=true "tek4010 ARDS screendump")
 
 It makes an effort to emulate the [storage tube display](https://en.wikipedia.org/wiki/Storage_tube)
 of the Tektronix 4010, including the bright drawing spot. If the look and feel is not important, you can
@@ -59,6 +61,10 @@ There is a file "dodekagon.plt" in the repo, which you can use to test the tek40
 
 	./tek4010 -noexit cat dodekagon.plt
 
+Or, for a ARDS display example, type
+
+	./tek4010 -noexit -ARDS cat ardsfiles/trek.pic
+
 If you want to test text output, type for example
 
 	./tek4010 -noexit head -n 32 tek4010.c
@@ -74,6 +80,10 @@ all possible options, see the chapter "Options of the command tek4010" below.
 If you want to see a demo of historical Tektronix 4014 plot files, type
 
 	./tek4010 ./demo.sh
+
+There are more Tektronix 4014 plot files in pltfiles/More_pltfiles in this repo. You can find more
+ARDS plot files at [larsbrinkhoff/ards-files](https://github.com/larsbrinkhoff/ards-files) in the
+folder pictures.
 
 The emulator does use "rsh" or "telnet", because historical Unix systems do not support
 the secure ssh protocol, and because ssh does not allow using a virtual emulator such as tek4010
@@ -311,7 +321,8 @@ rricharz77@gmail.com if you are able to help.
 **Contributors**
 
 The storage tube emulator and the Tektronix 4010/4014 decoder were witten by Rene Richarz.
-The ARDS decoder was written by Lars Brinkhoff. He also provided some interesting historical documents.
+The ARDS decoder was written by Lars Brinkhoff. He also provided some interesting historical documents
+and the ARDS plot files.
 The historical plot data for the Tektronix 4014 was obtained from Jos Dreesen.
 Thanks to Ian Schofield for his critical comments and a code snippet for drawing dashed and dotted lines,
 and to Oscar Vermeulen for his support.
