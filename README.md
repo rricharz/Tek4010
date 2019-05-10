@@ -138,20 +138,20 @@ in the terminal emulator and clear the persistent screen:
 	home
 	page up
 	page down
-	control arrow up
-	control arrow left
+	ctrl arrow up
+	ctrl arrow left
 
 These keys emulate the "page" key of the Tektronix 4010. You need to use one of these
 keys frequently to avoid to get a mess on the screen, as on a real Tektronix 4010.
 
 The hardcopy function on the Tektronix 4010 is emulated with a screen dump.
 
-	control-w	Make a screen dump in current directory using scrot
-                        Can be typed on the keyboard or sent by the computer during alpha mode
+	ctrl-w	Make a screen dump in current directory using scrot
+		Can be typed on the keyboard or sent by the computer during alpha mode
 
-You can also use the following control key function to close tek4010:
+You can also use the following ctrl key function to close tek4010:
 
-	control-q	Close tek4010 window and quit tek4010.
+	ctrl-q	Close tek4010 window and quit tek4010.
 
 **Log into the system running simh (same or different Raspberry Pi)**
 
@@ -186,7 +186,7 @@ This is the least preferred setup, only to be used if you cannot use one of the 
 above. You cannot use the tek4010 emulator running screens, as it is done in the standard setup
 of the PiDP using the console, because screens filters the output stream of simh and is
 therefore unsuitable for graphics terminals such as the tek4010 emulator. If you don't
-want to change the standard setup, use control-e to stop simh, and then "exit" to quit simh.
+want to change the standard setup, use ctrl-e to stop simh, and then "exit" to quit simh.
 
 Because tek4010 needs rsh, you need to install rsh-server and rsh-client on
 the Raspberry Pi. You cannot use telnet here.
@@ -239,7 +239,7 @@ tek4010 has the following options:
 
 	-full		in this mode the tek4010 emulator creates a full screen window, and
 			uses the full resolution of the 4014 with the enhanced graphics module
-			installed, scaled down to the actual window size. Use control-q to
+			installed, scaled down to the actual window size. Use ctrl-q to
 			close the tek4010 window.
 
 	-ARDS		display ARDS data
@@ -250,13 +250,13 @@ tek4010 has the following options:
 **APL mode**
 
 If tek4010 is called with the -APL argument, a Tektronix 4013 and Tektronix 4015 is emulated
-with the alternative APL character set. In this mode, the following control keyboard characters
+with the alternative APL character set. In this mode, the following ctrl keyboard characters
 are active:
 
-	<control>n	Switch to APL character set
-	<control>o	Switch to normal character set
+	ctrl-n	Switch to APL character set
+	ctrl-o	Switch to normal character set
 
-In this case one can also send "ESC <control>n" and "ESC <control>o" from the computer to switch
+In this case one can also send "ESC ctrl-n" and "ESC ctrl-o" from the computer to switch
 the character set.
 
 If you want to use the APL mode, you need to install the Apl385 font. Starting from the Tek4010
@@ -296,7 +296,7 @@ module.
 If called with the -full option, the tek4010 emulator creates creates a full screen window,
 and uses the full 4K resolution of the 4014 with enhanced graphics
 module installed, scaled down to the actual window size.
-Use control-q to close the tek4010 window.
+Use ctrl-q to close the tek4010 window.
 
 **Compiling the tek4010 project**
 
