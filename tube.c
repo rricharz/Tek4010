@@ -549,7 +549,7 @@ void tube_drawCharacter(cairo_t *cr, cairo_t *cr2, char ch)
                                  break;
                         case 72: sprintf(s,"\u2206");
                                  break;
-                        case 73: sprintf(s,"\u23B1"); // does not work
+                        case 73: sprintf(s,"\u03B9");
                                  break;
                         case 74: sprintf(s,"\u2218");
                                  break;
