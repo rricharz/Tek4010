@@ -242,7 +242,32 @@ tek4010 has the following options:
 			installed, scaled down to the actual window size. Use control-q to
 			close the tek4010 window.
 
-	-ARDS		display ARDS data			
+	-ARDS		display ARDS data
+
+	-APL		emulate Tektronix 4013/4015 with alternative APL character set.
+			This mode is experimental. Details see below.
+
+**APL mode**
+
+If tek4010 is called with the -APL argument, a Tektronix 4013 and Tektronix 4015 is emulated
+with the alternative APL character set. In this mode, the following control keyboard characters
+are active:
+
+	<control>n	Switch to APL character set
+	<control>o	Switch to normal character set
+
+In this case one can also send "ESC <control>n" and "ESC <control>o" from the computer to switch
+the character set.
+
+If you want to use the APL mode, you need to install the Apl385 font. Starting from the Tek4010
+directory, type
+
+	cd apl
+	sudo install_apl
+
+While still being in the apl directory, you can test the APL character set using
+
+	../tek4010 -APL -noexit ./apltest
 
 **Reporting problems**
 

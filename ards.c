@@ -106,7 +106,7 @@ void ards_draw(cairo_t *cr, cairo_t *cr2, int first)
                 tube_clearPersistent(cr,cr2);
         }
         
-        tube_setupPainting(cr, cr2, "Monospace");
+        tube_setupPainting(cr, cr2, STANDARD_FONT);
         
         do {
                 ch = tube_getInputChar();

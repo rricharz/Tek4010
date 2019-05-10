@@ -1,5 +1,9 @@
 // tube.h
 
+// fonts
+#define STANDARD_FONT "Monospace"
+#define APL_FONT "APL385  Unicode"
+
 enum LineType {SOLID,DOTTED,DOTDASH,SHORTDASH,LONGDASH};
 extern enum LineType ltype;
 
@@ -10,6 +14,7 @@ extern int windowHeight;
 extern int argFull;
 extern int argTab1;
 extern int argRaw;
+extern int argAPL;
 
 extern int hDotsPerChar;
 extern int vDotsPerChar;
@@ -24,6 +29,7 @@ extern int isGinMode;                    // set if GIN mode is active
 extern int specialPlotMode;
 extern int defocussed;
 extern int intensity;
+extern int aplMode;
 
 extern int plotPointMode;
 extern int writeThroughMode;

@@ -46,6 +46,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <sys/time.h>
+#include <locale.h>
 
 #include "main.h"
 #include "tube.h"
@@ -61,6 +62,7 @@ int argBaud = 19200;
 int argTab1 = 0;
 int argFull = 0;
 int argARDS = 0;
+int argAPL = 0;
 
 int refresh_interval;           // after this time in msec next refresh is done
 
@@ -80,6 +82,7 @@ int tube_doClearPersistent;
 int specialPlotMode = 0;
 int defocussed = 0;
 int intensity = 100;
+int aplMode = 0;
 
 int tube_x0, tube_x2,tube_y0, tube_y2;
 
@@ -180,7 +183,7 @@ void tube_init(int argc, char* argv[])
         char *argv2[20];
         size_t bufsize = 127;
         int firstArg = 1;
-        printf("tek4010 version 1.3.1\n");
+        printf("tek4010 version 1.3.2\n");
         windowName = "Tektronix 4010/4014 emulator";
         if ((argc<2) || (argc>19)) {
                 printf("Error:number of arguments\n");
@@ -214,6 +217,10 @@ void tube_init(int argc, char* argv[])
                         argTab1 = 1;
                 else if (strcmp(argv[firstArg],"-full") == 0)
                         argFull = 1;
+                else if (strcmp(argv[firstArg],"-APL") == 0) {
+                        argAPL = 1;
+                        windowName = "Tektronix 4013/4015 emulator (APL)";
+                }
                 else if (strcmp(argv[firstArg],"-ARDS") == 0) {
                         argARDS = 1;
                         windowName = "ARDS emulator";
@@ -471,9 +478,148 @@ void tube_line_type(cairo_t *cr, cairo_t *cr2, enum LineType ln)
 
 void tube_drawCharacter(cairo_t *cr, cairo_t *cr2, char ch)
 {
-        char s[2];
-        s[0] = ch;
-        s[1] = 0;
+        char s[8];
+        
+        if (ch < 32) return; // non printable control character
+        
+        if (aplMode) {
+                switch (ch) {
+                        case 32: sprintf(s," ");
+                                 break;
+                        case 33: sprintf(s,"\u00A8");
+                                 break;
+                        case 34: sprintf(s,")");
+                                 break;
+                        case 35: sprintf(s,"<");
+                                 break;
+                        case 36: sprintf(s,"\u2264");
+                                 break;
+                        case 37: sprintf(s,"=");
+                                 break;
+                        case 38: sprintf(s,">");
+                                 break;
+                        case 39: sprintf(s,"]");
+                                 break;
+                        case 40: sprintf(s,"\u2228");              
+                                 break;
+                        case 41: sprintf(s,"\u2227");
+                                 break;
+                        case 42: sprintf(s,"\u2260");
+                                 break;
+                        case 43: sprintf(s,"\u00F7");
+                                 break;
+                        case 44: sprintf(s,",");
+                                 break;
+                        case 45: sprintf(s,"+");
+                                 break;
+                        case 46: sprintf(s,".");
+                                 break;
+                        case 47: sprintf(s,"/");
+                                 break;
+                                 
+                        // 48 - 57: Digits
+                                 
+                        case 58: sprintf(s,"(");
+                                 break;
+                        case 59: sprintf(s,"[");
+                                 break;
+                        case 60: sprintf(s,";");
+                                 break;
+                        case 61: sprintf(s,"x");
+                                 break;
+                        case 62: sprintf(s,":");
+                                 break;
+                        case 63: sprintf(s,"\\");
+                                 break;                                 
+                        case 64: sprintf(s,"\u2212"); // probably wrong
+                                 break;
+                        case 65: sprintf(s,"\u237A");
+                                 break;
+                        case 66: sprintf(s,"\u22A5");
+                                 break;
+                        case 67: sprintf(s,"\u2229");
+                                 break;
+                        case 68: sprintf(s,"\u230A");
+                                 break;
+                        case 69: sprintf(s,"\u220A");
+                                 break;
+                        case 70: sprintf(s,"_");
+                                 break;
+                        case 71: sprintf(s,"\u2207");
+                                 break;
+                        case 72: sprintf(s,"\u2206");
+                                 break;
+                        case 73: sprintf(s,"\u23B1"); // does not work
+                                 break;
+                        case 74: sprintf(s,"\u2218");
+                                 break;
+                        case 75: sprintf(s,"'");
+                                 break;
+                        case 76: sprintf(s,"\u2395");
+                                 break;
+                        case 77: sprintf(s,"|");
+                                 break;
+                        case 78: sprintf(s,"\u22A4");
+                                 break;
+                        case 79: sprintf(s,"o");
+                                 break;
+                        
+                        case 80: sprintf(s,"*");
+                                 break;
+                        case 81: sprintf(s,"?");
+                                 break;
+                        case 82: sprintf(s,"\u03C1");
+                                 break;
+                        case 83: sprintf(s,"\u2308");
+                                 break;
+                        case 84: sprintf(s,"~");
+                                 break;
+                        case 85: sprintf(s,"\u2193");
+                                 break;
+                        case 86: sprintf(s,"\u222A");
+                                 break;
+                        case 87: sprintf(s,"\u03C9");
+                                 break;
+                        case 88: sprintf(s,"\u2283");
+                                 break;
+                        case 89: sprintf(s,"\u2191");
+                                 break;
+                        case 90: sprintf(s,"\u2282");
+                                 break;
+                        case 91: sprintf(s,"\u2190");
+                                 break;
+                        case 92: sprintf(s,"\u22A2");
+                                 break;
+                        case 93: sprintf(s,"\u2192");
+                                 break;
+                        case 94: sprintf(s,"\u2265");
+                                 break;
+                        case 95: sprintf(s,"-");
+                                 break;
+                        case 96: sprintf(s,"\u22C4");
+                                 break;
+                                 
+                        // 97 - 122 capital letters
+                                 
+                        case 123: sprintf(s,"{");
+                                 break;
+                        case 124: sprintf(s,"\u22A3");
+                                 break;
+                        case 125: sprintf(s,"}");
+                                 break;
+                        case 126: sprintf(s,"$");
+                                 break;
+                                 
+                        default: if ((ch>=48) && (ch<=57)) sprintf(s,"%c", ch); // digits
+                                 else if ((ch>=97) && (ch<=122)) sprintf(s,"%c", ch - 32); // capital letters
+                                 else sprintf(s," ");
+                                 break;
+                }
+        }
+        else {
+                s[0] = ch;
+                s[1] = 0;
+        }
         
         cairo_set_font_size(cr, currentFontSize);
         cairo_set_font_size(cr2,currentFontSize);                                              
