@@ -500,7 +500,7 @@ void tube_drawCharacter(cairo_t *cr, cairo_t *cr2, char ch)
                                  break;
                         case 39: sprintf(s,"]");
                                  break;
-                        case 40: sprintf(s,"\u2228");              
+                        case 40: sprintf(s,"\u2228");           
                                  break;
                         case 41: sprintf(s,"\u2227");
                                  break;
@@ -525,13 +525,13 @@ void tube_drawCharacter(cairo_t *cr, cairo_t *cr2, char ch)
                                  break;
                         case 60: sprintf(s,";");
                                  break;
-                        case 61: sprintf(s,"x");
+                        case 61: sprintf(s,"\u00D7");
                                  break;
                         case 62: sprintf(s,":");
                                  break;
                         case 63: sprintf(s,"\\");
                                  break;                                 
-                        case 64: sprintf(s,"\u2212"); // probably wrong
+                        case 64: sprintf(s,"\u00AF");
                                  break;
                         case 65: sprintf(s,"\u237A");
                                  break;
@@ -549,7 +549,7 @@ void tube_drawCharacter(cairo_t *cr, cairo_t *cr2, char ch)
                                  break;
                         case 72: sprintf(s,"\u2206");
                                  break;
-                        case 73: sprintf(s,"\u03B9");
+                        case 73: sprintf(s,"\u2373");
                                  break;
                         case 74: sprintf(s,"\u2218");
                                  break;
@@ -557,22 +557,22 @@ void tube_drawCharacter(cairo_t *cr, cairo_t *cr2, char ch)
                                  break;
                         case 76: sprintf(s,"\u2395");
                                  break;
-                        case 77: sprintf(s,"|");
+                        case 77: sprintf(s,"\u2223");
                                  break;
                         case 78: sprintf(s,"\u22A4");
                                  break;
-                        case 79: sprintf(s,"o");
+                        case 79: sprintf(s,"\u25CB");
                                  break;
                         
-                        case 80: sprintf(s,"*");
+                        case 80: sprintf(s,"\u22c6");
                                  break;
                         case 81: sprintf(s,"?");
                                  break;
-                        case 82: sprintf(s,"\u03C1");
+                        case 82: sprintf(s,"\u2374");
                                  break;
                         case 83: sprintf(s,"\u2308");
                                  break;
-                        case 84: sprintf(s,"~");
+                        case 84: sprintf(s,"\u223C");
                                  break;
                         case 85: sprintf(s,"\u2193");
                                  break;
@@ -615,14 +615,15 @@ void tube_drawCharacter(cairo_t *cr, cairo_t *cr2, char ch)
                                  else sprintf(s," ");
                                  break;
                 }
+                cairo_set_font_size(cr, currentFontSize + 2);
+                cairo_set_font_size(cr2,currentFontSize + 2);  
         }
         else {
                 s[0] = ch;
                 s[1] = 0;
+                cairo_set_font_size(cr, currentFontSize);
+                cairo_set_font_size(cr2,currentFontSize);  
         }
-        
-        cairo_set_font_size(cr, currentFontSize);
-        cairo_set_font_size(cr2,currentFontSize);                                              
 
         if (writeThroughMode) {  // draw the write-through character
                 cairo_set_source_rgb(cr2, 0, WRITE_TROUGH_INTENSITY, 0);
