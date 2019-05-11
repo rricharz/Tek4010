@@ -26,6 +26,10 @@ int main (int argc, char *argv[])
 		}
 		printf("%c", ch);
 	}
+        printf("\noverstrike test");
+        putchar(62); putchar(32);
+        putchar(79); putchar(8); putchar(63); putchar(32);
+        putchar(76); putchar(8); putchar(43);
 	putchar(27); putchar(15);  // switch back to standard character set
 	printf("\n");
 }
