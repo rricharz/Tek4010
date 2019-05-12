@@ -177,13 +177,41 @@ int tube_getInputChar()
                 return -1;
 }
 
+void checkFont(char *fontName)
+// check whether font has been installed
+{
+#define MAXL 255
+        FILE *f;
+        int i, ch;
+        char line[MAXL];
+        sprintf(line,"fc-list \'%s\'", fontName); // prepare system call
+        f = popen(line, "r");
+        if (f != NULL) {
+                i = 0;
+                line[0] = 0;
+                while (((ch=fgetc(f))!=EOF) && (i<MAXL-1)) {
+                        line[i++] = ch;
+                }
+                line[i-1]=0;
+                // printf("%s\n",line);
+                if (strstr(line, fontName) > 0) {
+                        pclose(f);
+                        return;
+                }
+       }
+       pclose(f);
+       printf("Error: APL font \'%s\' not installed. This font is required for the APL mode.\n", fontName);
+       printf("See github.com/rricharz/tek4010 paragraph \'APL mode\'\n");
+       exit(1);
+}
+
 void tube_init(int argc, char* argv[])
 // put any code here to initialize the tek4010
 {
         char *argv2[20];
         size_t bufsize = 127;
         int firstArg = 1;
-        printf("tek4010 version 1.3.2\n");
+        printf("tek4010 version 1.3.3\n");
         windowName = "Tektronix 4010/4014 emulator";
         if ((argc<2) || (argc>19)) {
                 printf("Error:number of arguments\n");
@@ -220,6 +248,7 @@ void tube_init(int argc, char* argv[])
                 else if (strcmp(argv[firstArg],"-APL") == 0) {
                         argAPL = 1;
                         windowName = "Tektronix 4013/4015 emulator (APL)";
+                        checkFont(APL_FONT);
                 }
                 else if (strcmp(argv[firstArg],"-ARDS") == 0) {
                         argARDS = 1;

@@ -181,12 +181,12 @@ static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_da
                 }
                 else if (argAPL && (event->keyval == 0x006E)) { // "<ctrl>n" switch to alternative character set
                         aplMode = 1;
-                        printf("Setting APL mode to 1 from keyboard\n");
+                        // printf("Setting APL mode to 1 from keyboard\n");
                         return;
                 }
                 else if (argAPL && (event->keyval == 0x006F)) { // "<ctrl>o" switch to normalcharacter set
                         aplMode = 0;
-                        printf("Setting APL mode to 0 from keyboard\n");
+                        // printf("Setting APL mode to 0 from keyboard\n");
                         return;
                 }                
                 else
@@ -207,7 +207,7 @@ static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_da
         }
                 
         else if (putKeys) {
-                if (aplMode) printf("sending character %d to host\n", ch);
+                // if (aplMode) printf("sending character %d to host\n", ch);
                 putc(ch,putKeys);      // pipe key to child process, if stream open
         }
 }

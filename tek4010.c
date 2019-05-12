@@ -205,7 +205,7 @@ void tek4010_escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
                 case 14: // SO  activate alternative char set
                         if (argAPL) {            // switch only of argAPL is set
                                 aplMode = 1;
-                                printf("Setting APL mode to 1 from computer\n");
+                                // printf("Setting APL mode to 1 from computer\n");
                         }
                         mode = 0;
                         todo = 0;
@@ -214,7 +214,7 @@ void tek4010_escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
                         aplMode = 0;
                         mode = 0;
                         todo = 0;
-                        printf("Setting APL mode to 0 from computer\n");
+                        // printf("Setting APL mode to 0 from computer\n");
                         break;
                 
                 case 23: system("scrot --focussed"); mode= 0; break;
@@ -358,7 +358,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                         if (mode != 60) return;         // no char available, need to allow for updates
                 }
                 
-                if (aplMode) printf("Receiving character %d from host\n", ch);
+                // if (aplMode) printf("Receiving character %d from host\n", ch);
                 
                 if (DEBUG) {
                         printf("mode=%d, ch code %02X",mode,ch);

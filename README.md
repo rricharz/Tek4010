@@ -265,6 +265,10 @@ directory, type
 	cd apl
 	sudo install_apl
 
+You should see the following line displayed:
+
+        /usr/share/fonts/truetype/apl385/Apl385.ttf: APL385 Unicode:style=Regular
+
 While still being in the apl directory, you can test the APL character set using
 
 	../tek4010 -APL -noexit ./apltest

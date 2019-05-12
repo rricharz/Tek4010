@@ -4,3 +4,4 @@ mkdir /usr/share/fonts/truetype/apl385
 cp Apl385.ttf /usr/share/fonts/truetype/apl385
 
 fc-cache /usr/share/fonts
+fc-list 'APL385 Unicode'

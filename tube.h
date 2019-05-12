@@ -2,7 +2,7 @@
 
 // fonts
 #define STANDARD_FONT "Monospace"
-#define APL_FONT "APL385  Unicode"
+#define APL_FONT "APL385 Unicode"
 
 enum LineType {SOLID,DOTTED,DOTDASH,SHORTDASH,LONGDASH};
 extern enum LineType ltype;
