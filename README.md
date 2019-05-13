@@ -277,9 +277,10 @@ While the second (APL) character set is displayed, it is also possible to transl
 on your keyboard displaying a printable character (ASCII codes between 32 and 127) to any other
 printable character. The file "aplkeys" in the folder "apl" provides an example of such a conversion
 table. The first row in this file is the ASCII code of the key, and the second the translated code.
-It is even possible to produce overstike glyphs by adding a second code multiplied by 256. You
-can modify this table to match your keyboard and country code. You can obtain the codes from the
-screenshot below. To install the "aplkeys" table, type
+If you want to use keys with the "left alt" key, add 128 to the code in the first row of the file. 
+It is even possible to produce overstrike glyphs by adding a second code multiplied by 256 in
+the second row. You can modify this table to match your keyboard and country code. You can obtain
+the codes for the first and second row from the screenshot below. To install the "aplkeys" table, type
 
         mkdir ~/.tek4010conf
         cp aplkeys ~/.tek4010conf
