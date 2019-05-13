@@ -278,10 +278,13 @@ on your keyboard displaying a printable character (ASCII codes between 32 and 12
 printable character. The file "aplkeys" in the folder "apl" provides an example of such a conversion
 table. The first row in this file is the ASCII code of the key, and the second the translated code.
 It is even possible to produce overstike glyphs by adding a second code multiplied by 256. You
-can modify this table to match your keyboard and country code.
+can modify this table to match your keyboard and country code. You can obtain the codes from the
+screenshot below. To install the "aplkeys" table, type
 
         mkdir ~/.tek4010conf
         cp aplkeys ~/.tek4010conf
+
+![character sets](characterset.png?raw=true "tek4010 character sets")
 
 **Reporting problems**
 

@@ -7,24 +7,34 @@
 
 int main (int argc, char *argv[])
 {
-	int ch;
+	int ch, i;
 
 	printf("\nStandard character set:\n");
-	for (ch = 32; ch <= 126; ch++) {
-		if ((ch % 32) == 0) {
-			printf("\n%02X ", ch);
+        printf("    ");
+	for (i = 0; i < 10; i++) printf("%1d ",i);        
+	for (ch = 30; ch <= 126; ch++) {
+		if ((ch % 10) == 0) {
+			printf("\n%03d ", ch);
 		}
-		printf("%c", ch);
+		if (ch > 32)
+			printf("%c ", ch);
+		else
+			printf("  ");
 	}
 	printf("\n");
- 	
-        printf("\nAPL character set:\n");
+
+        printf("\nTektronix APL character set:\n");
 	putchar(27); putchar(14);  // switch to alternative character set
-	for (ch = 32; ch <= 126; ch++) {
-		if ((ch % 32) == 0) {
-			printf("\n%02X ", ch);
+	printf("    ");
+	for (i = 0; i < 10; i++) printf("%1d ",i); 
+	for (ch = 30; ch <= 126; ch++) {
+		if ((ch % 10) == 0) {
+			printf("\n%03d ", ch);
 		}
-		printf("%c", ch);
+		if (ch >32)
+			printf("%c ", ch);
+		else
+			printf("  ");
 	}
         printf("\n\noverstrike test");
         putchar(62); putchar(32);

@@ -195,6 +195,11 @@ static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_da
         else if (event->keyval == 0xFF52) ch = 16;  // arrow up for history up
         else if (event->keyval == 0xFF54) ch = 14;  // arrow down for history down
         
+        else if ((event->state & GDK_MOD1_MASK) && (aplMode)) {   // alt key
+                printf("alt key, ch = %4X\n", event->keyval & 0x7F);
+                ch = (event->keyval & 0x7F) + 128;
+        }
+        
         // normal keys
         else if ((event->keyval >= 0x0020) && (event->keyval <= 0x007F))
                 ch = event->keyval & 0x7F;
