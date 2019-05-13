@@ -207,8 +207,17 @@ static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_da
         }
                 
         else if (putKeys) {
-                // if (aplMode) printf("sending character %d to host\n", ch);
-                putc(ch,putKeys);      // pipe key to child process, if stream open
+                // pipe key to child process, if stream open
+                if (aplMode) {
+                        ch = tube_translateKeyCode(ch);
+                        putc(ch & 0xFF, putKeys);
+                        if (ch >> 8) { // overstrike
+                                putc(8, putKeys);
+                                putc(ch >> 8, putKeys);
+                        }
+                }
+                else
+                        putc(ch,putKeys);
         }
 }
 

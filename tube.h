@@ -38,6 +38,7 @@ extern int tube_x0, tube_x2, tube_y0, tube_y2;
 
 extern long tube_mSeconds();
 extern long tube_u100ResetSeconds(int reset);
+extern int tube_translateKeyCode(int ch);
 extern void tube_doCursor(cairo_t *cr2);
 extern void tube_clearPersistent(cairo_t *cr, cairo_t *cr2);
 extern void tube_clearSecond(cairo_t *cr2);

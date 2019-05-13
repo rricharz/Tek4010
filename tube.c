@@ -47,6 +47,7 @@
 #include <errno.h>
 #include <sys/time.h>
 #include <locale.h>
+#include <pwd.h>
 
 #include "main.h"
 #include "tube.h"
@@ -55,6 +56,16 @@ extern void gtk_main_quit();
 extern int windowWidth;
 extern int windowHeight;
 extern char *windowName;
+
+
+// variables for APL keycode translator
+#define MAXKEYCODES 128
+struct keyCode {
+        int inputCode;
+        int outputCode;
+};
+
+struct keyCode keyTable[MAXKEYCODES];
 
 int argNoexit = 0;              // options
 int argRaw = 0;
@@ -205,13 +216,64 @@ void checkFont(char *fontName)
        exit(1);
 }
 
+void readKeyTranslationTable()
+// read keyboard translation table from ~/.tekaplkeys
+{
+        FILE *confFile;
+        int code1, code2, i;
+        char *homedir = getpwuid(getuid())->pw_dir;	
+	char s[255];
+        
+        memset(keyTable, 0, sizeof(keyTable));
+        
+        strcpy(s, homedir);
+        strcat(s, "/.tek4010conf/aplkeys" );
+        // printf("Looking for conf file %s\n",s);
+        confFile = fopen(s,"r");
+        if (confFile) {
+                // printf("confFile open\n");
+                i = 0;
+                while (!feof(confFile)) {
+                        if (fscanf(confFile, "%d %d\n", &code1, & code2) == 2) {
+                                // printf("%d %d\n", code1, code2);
+                                keyTable[i].inputCode = code1;
+                                keyTable[i].outputCode = code2;
+                                i++;
+                                if (i >= MAXKEYCODES) {
+                                        printf("Error: APL key code table too large, max %d entries\n",MAXKEYCODES);
+                                        fclose(confFile);
+                                        exit(1);
+                                }
+                        }
+                        else 
+                                fscanf(confFile,"%s\n",s); // skip comment line
+                }
+                fclose(confFile);
+        }
+}
+
+int tube_translateKeyCode(int ch)
+{
+        int i = 0;
+        // printf("TranslateKeyCode %d ", ch);
+        while ((i < MAXKEYCODES) && (keyTable[i].inputCode != 0)) {
+                if (keyTable[i].inputCode == ch) {
+                        // printf("%d\n", keyTable[i].outputCode);
+                        return keyTable[i].outputCode;
+                }
+                i++;
+        }
+        printf("\n");
+        return ch;
+}
+
 void tube_init(int argc, char* argv[])
 // put any code here to initialize the tek4010
 {
         char *argv2[20];
         size_t bufsize = 127;
         int firstArg = 1;
-        printf("tek4010 version 1.3.3\n");
+        printf("tek4010 version 1.3.4\n");
         windowName = "Tektronix 4010/4014 emulator";
         if ((argc<2) || (argc>19)) {
                 printf("Error:number of arguments\n");
@@ -249,6 +311,7 @@ void tube_init(int argc, char* argv[])
                         argAPL = 1;
                         windowName = "Tektronix 4013/4015 emulator (APL)";
                         checkFont(APL_FONT);
+                        readKeyTranslationTable();
                 }
                 else if (strcmp(argv[firstArg],"-ARDS") == 0) {
                         argARDS = 1;

@@ -272,6 +272,16 @@ You should see the following line displayed:
 While still being in the apl directory, you can test the APL character set using
 
 	../tek4010 -APL -noexit ./apltest
+        
+While the second (APL) character set is displayed, it is also possible to translate any key
+on your keyboard displaying a printable character (ASCII codes between 32 and 127) to any other
+printable character. The file "aplkeys" in the folder "apl" provides an example of such a conversion
+table. The first row in this file is the ASCII code of the key, and the second the translated code.
+It is even possible to produce overstike glyphs by adding a second code multiplied by 256. You
+can modify this table to match your keyboard and country code.
+
+        mkdir ~/.tek4010conf
+        cp aplkeys ~/.tek4010conf
 
 **Reporting problems**
 
