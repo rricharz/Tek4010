@@ -110,7 +110,7 @@ static void do_drawing(cairo_t *cr, GtkWidget *widget)
                         windowHeight = (int)((double)windowWidth / aspectRatio + 0.5);
                 }
                 
-                printf("Window dimensions: %d x %d\n", windowWidth, windowHeight);
+                // printf("Window dimensions: %d x %d\n", windowWidth, windowHeight);
 
 		permanent_surface = cairo_surface_create_similar(cairo_get_target(cr),
 			CAIRO_CONTENT_COLOR, windowWidth, windowHeight);
@@ -277,7 +277,7 @@ int main (int argc, char *argv[])
         GdkScreen *screen = gtk_window_get_screen(GTK_WINDOW(window));
 	int screenWidth = gdk_screen_get_width(screen);
 	int screenHeight = gdk_screen_get_height(screen);
-	printf("Screen dimensions: %d x %d\n", screenWidth, screenHeight);
+	// printf("Screen dimensions: %d x %d\n", screenWidth, screenHeight);
         
         if (argFull) {        
                 // DISPLAY UNDECORATED FULL SCREEN WINDOW

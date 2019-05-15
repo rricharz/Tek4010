@@ -1,12 +1,16 @@
+Version 1.4 May 15
+==================
+- APL support released, Tek4010, 4013, 4014, 4015 emulation complete
+
 Version 1.3.4 May 13, 2019
 =========================
 New features:
-- support of keyboard translation table added for APL character set
+- experimental support of keyboard translation table for APL character set
 
 Version 1.3.3 May 12, 2019
 =========================
 New features
-- APL mode with APL character set added
+- experimental APL mode with APL character set added
 
 Version 1.3.1 May 4, 2019
 =========================

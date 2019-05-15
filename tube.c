@@ -273,7 +273,7 @@ void tube_init(int argc, char* argv[])
         char *argv2[20];
         size_t bufsize = 127;
         int firstArg = 1;
-        printf("tek4010 version 1.3.4B\n");
+        printf("tek4010 version 1.4\n");
         windowName = "Tektronix 4010/4014 emulator";
         if ((argc<2) || (argc>19)) {
                 printf("Error:number of arguments\n");
@@ -459,11 +459,11 @@ int tube_on_timer_event()
         int status;
         if ((!argNoexit) && (tube_isInput() == 0) && (waitpid(-1, &status, WNOHANG))) {
                 long t = tube_mSeconds();
-                printf("Execution time: %0.3f sec\n", (double)t/1000.0);
-                if (t > 0) {
-                        printf("Average screen refresh rate: %0.1f Hz\n",(double)(1000.0*refreshCount)/t);
-                        printf("Average character rate: %0.0f baud\n",(double)(8000.0*charCount)/t);
-                }
+                // printf("Execution time: %0.3f sec\n", (double)t/1000.0);
+                // if (t > 0) {
+                //         printf("Average screen refresh rate: %0.1f Hz\n",(double)(1000.0*refreshCount)/t);
+                //         printf("Average character rate: %0.0f baud\n",(double)(8000.0*charCount)/t);
+                // }
                 tube_quit();
                 gtk_main_quit();
                 printf("Process has been terminated\n");

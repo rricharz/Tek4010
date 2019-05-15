@@ -1,9 +1,9 @@
 [![Build Status](https://travis-ci.org/rricharz/Tek4010.svg?branch=master)](https://travis-ci.org/rricharz/Tek4010)
 
-# Tektronix 4010 and 4014 Storage Tube Terminal Emulator
+# Tektronix 4010 and 4014 Storage Tube Terminal Emulator (version 1.4)
 
-This is a [Tektronix 4010 and 4014](https://en.wikipedia.org/wiki/Tektronix_4010) terminal emulator
-for the Raspberry Pi (Raspberry Pi 3 or faster) and other Linux systems.
+This is a [Tektronix 4010, 4013, 4014 and 4015](https://en.wikipedia.org/wiki/Tektronix_4010)
+terminal emulator for the Raspberry Pi and other Linux systems.
 
 ![screen_shot](screendump.png?raw=true "tek4010 screendump")
 
@@ -28,7 +28,30 @@ This [video of a tek4010 demo](https://youtu.be/ioYiu6oUT88) was generated using
 video of a an [animation using the tek4010](https://youtu.be/7FMewaoEOmk) and a video showing
 [tek4010 alongside the PiDP-11](https://youtu.be/4jZzypvxoHU).
 
-Install the tek4010 emulator from this repo on a Raspberry Pi or Ubuntu. I propose using
+**Important features of tek4010**
+
+        - Emulation of Tektronix 4010, Tektronix 4013, Tektronix 4014, Tektronix 4015 and ARDS
+        - Emulation of the bright drawing spot
+        - Standard resolution of window 1024 x 780 points
+        - Scaled smaller resolution for lower resolution screens
+        - Full screen resolution in -full mode
+        - Coordinate system: 1024 x 780 and 4096 x 3072 tek points
+        - All Tektronix 4014 modes, including graphical input mode (GIN) and write-through mode
+        - APL character set and keyboard for Tektronix 4013 and Tektronix 4015
+        - telnet and rsh connection to host and direct display of plot files
+        - baud rates: 300 to 19200
+        - Compiled binary for Raspbian included
+        - Can be compiled for other Linux distributions such as Ubuntu
+        - Tested with SimH, PiDP-11, PDP-11/93, VAXstation 4000/90a, 2.11 BSD, RSX-11M+
+        - Stand alone version tested on Raspberry Pi Zero W
+        - Raspberry Pi 3 Model B+ recommended if run on same system as SimH/PiDP-11
+        - Raspberry Pi 3 Model B+ recommended if run in -full mode on high resolution screens
+        - Tested with directly attached HDMI screen and with VNC
+
+**Installation and first tests**
+
+Install the tek4010 emulator from this repo on a Raspberry Pi (desktop version required) or Ubuntu.
+I propose using
 
 	sudo apt-get install git
 	git clone git://github.com/rricharz/Tek4010
@@ -245,7 +268,7 @@ tek4010 has the following options:
 	-ARDS		display ARDS data
 
 	-APL		emulate Tektronix 4013/4015 with alternative APL character set.
-			This mode is experimental. Details see below.
+			Details see below.
 
 **APL mode**
 
@@ -368,9 +391,16 @@ The ARDS decoder was written by Lars Brinkhoff. He also provided some interestin
 and the ARDS plot files.
 The historical plot data for the Tektronix 4014 was obtained from Jos Dreesen.
 Thanks to Ian Schofield for his critical comments and a code snippet for drawing dashed and dotted lines,
-and to Oscar Vermeulen for his support.
+and to Oscar Vermeulen and Mark Matlock for their support.
 The manuals were obtained from bitsavers.org.
 Thanks also to all others who contributed important ideas, helped with the debugging and preserved
 the historical data. This program is the result of a community effort.
+
+**The usual disclaimer**
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
 
 
