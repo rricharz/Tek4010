@@ -42,7 +42,7 @@ video of a an [animation using the tek4010](https://youtu.be/7FMewaoEOmk) and a 
         - baud rates: 300 to 19200
         - Compiled binary for Raspbian included
         - Can be compiled for other Linux distributions such as Ubuntu
-        - Tested with SimH, PiDP-11, PDP-11/93, VAXstation 4000/90a, 2.11 BSD, RSX-11M+
+        - Tested with SimH, PiDP-11, PDP-11/93, VAXstation 4000/90a, 2.11 BSD, RSX-11M+, PLOT10
         - Stand alone version tested on Raspberry Pi Zero W
         - Raspberry Pi 3 Model B+ recommended if run on same system as SimH/PiDP-11
         - Raspberry Pi 3 Model B+ recommended if run in -full mode on high resolution screens
@@ -120,6 +120,9 @@ or
 
 If you want to use this emulator together with 2.11 BSD Unix, look also at
 [Using the historical Unix 2.11 BSD operating system on the PiDP-11](https://github.com/rricharz/pidp11-2.11bsd.git)
+
+If you want to use it with RSX-11, see this [discussion](https://groups.google.com/forum/#!topic/pidp-11/iuoaW8uF3dk)
+to make sure that the "clear screen" escape sequence is properly executed.
 
 **Log directly into a remote historical Unix operating system**
 
