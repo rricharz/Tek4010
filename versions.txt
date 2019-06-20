@@ -1,5 +1,11 @@
-Version 1.4 May 15
-==================
+
+Version 1.4.1 June 20, 2019
+===========================
+- argument -autoClear added
+- improver character size handling for compilation with other fonts
+
+Version 1.4 May 15, 2019
+========================
 - APL support released, Tek4010, 4013, 4014, 4015 emulation complete
 
 Version 1.3.4 May 13, 2019

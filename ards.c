@@ -89,7 +89,7 @@ void ards_draw(cairo_t *cr, cairo_t *cr2, int first)
                 efactor = windowWidth / 1080.0;
                 // fprintf (stderr, "efactor: %0.2f\n", efactor);
                 refresh_interval = 30;        
-                tube_changeCharacterSize(cr, cr2, 80, 50, (int)(efactor * 20));
+                tube_changeCharacterSize(cr, cr2, 80, 50, efactor * 1.1);
                 
         }
         

@@ -74,6 +74,7 @@ int argTab1 = 0;
 int argFull = 0;
 int argARDS = 0;
 int argAPL = 0;
+int argAutoClear = 0;
 
 int refresh_interval;           // after this time in msec next refresh is done
 
@@ -273,7 +274,7 @@ void tube_init(int argc, char* argv[])
         char *argv2[20];
         size_t bufsize = 127;
         int firstArg = 1;
-        printf("tek4010 version 1.4\n");
+        printf("tek4010 version 1.4.1\n");
         windowName = "Tektronix 4010/4014 emulator";
         if ((argc<2) || (argc>19)) {
                 printf("Error:number of arguments\n");
@@ -307,6 +308,8 @@ void tube_init(int argc, char* argv[])
                         argTab1 = 1;
                 else if (strcmp(argv[firstArg],"-full") == 0)
                         argFull = 1;
+                else if (strcmp(argv[firstArg],"-autoClear") == 0)
+                        argAutoClear = 1;
                 else if (strcmp(argv[firstArg],"-APL") == 0) {
                         argAPL = 1;
                         windowName = "Tektronix 4013/4015 emulator (APL)";
@@ -706,16 +709,14 @@ void tube_drawCharacter(cairo_t *cr, cairo_t *cr2, char ch)
                                  else if ((ch>=97) && (ch<=122)) sprintf(s,"%c", ch - 32); // capital letters
                                  else sprintf(s," ");
                                  break;
-                }
-                cairo_set_font_size(cr, currentFontSize + 2);
-                cairo_set_font_size(cr2,currentFontSize + 2);  
+                } 
         }
         else {
                 s[0] = ch;
                 s[1] = 0;
-                cairo_set_font_size(cr, currentFontSize);
-                cairo_set_font_size(cr2,currentFontSize);  
         }
+        cairo_set_font_size(cr, currentFontSize);
+        cairo_set_font_size(cr2,currentFontSize); 
 
         if (writeThroughMode) {  // draw the write-through character
                 cairo_set_source_rgb(cr2, 0, WRITE_TROUGH_INTENSITY, 0);
@@ -849,14 +850,18 @@ void tube_setupPainting(cairo_t *cr, cairo_t *cr2, char *fontName)
         cairo_select_font_face(cr2, fontName, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);        
 }
 
-void tube_changeCharacterSize(cairo_t *cr, cairo_t *cr2,int charsPerLine, int charsPerPage, int fontSize)
+void tube_changeCharacterSize(cairo_t *cr, cairo_t *cr2,int charsPerLine, int charsPerPage, double fontSize)
 {
-        int fontsize;
         cairo_font_extents_t et;
         hDotsPerChar = windowWidth / charsPerLine;
         vDotsPerChar = windowHeight / charsPerPage;
         leftmargin = 0;
-        currentFontSize = fontSize;
+        if (argARDS) {
+                currentFontSize = (int) (fontSize * APL_FONT_SIZE);
+        }
+        else {
+                currentFontSize = (int) (fontSize * STANDARD_FONT_SIZE);
+        }
         cairo_set_font_size(cr, currentFontSize);
         cairo_set_font_size(cr2,currentFontSize);    
         if (argARDS) {

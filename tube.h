@@ -2,7 +2,9 @@
 
 // fonts
 #define STANDARD_FONT "Monospace"
+#define STANDARD_FONT_SIZE 18.0
 #define APL_FONT "APL385 Unicode"
+#define APL_FONT_SIZE 20.0
 
 enum LineType {SOLID,DOTTED,DOTDASH,SHORTDASH,LONGDASH};
 extern enum LineType ltype;
@@ -15,6 +17,7 @@ extern int argFull;
 extern int argTab1;
 extern int argRaw;
 extern int argAPL;
+extern int argAutoClear;
 
 extern int hDotsPerChar;
 extern int vDotsPerChar;
@@ -50,4 +53,4 @@ extern void tube_drawVector(cairo_t *cr, cairo_t *cr2);
 extern void tube_drawCharacter(cairo_t *cr, cairo_t *cr2, char ch);
 extern void tube_drawPoint(cairo_t *cr, cairo_t *cr2);
 extern void tube_setupPainting(cairo_t *cr, cairo_t *cr2, char *fontName);
-extern void tube_changeCharacterSize(cairo_t *cr, cairo_t *cr2, int charsPerLine, int charsPerPage, int fontSize);
+extern void tube_changeCharacterSize(cairo_t *cr, cairo_t *cr2, int charsPerLine, int charsPerPage, double fontSize);

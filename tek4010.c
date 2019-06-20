@@ -86,7 +86,7 @@ int intensityTable[] = {14,16,17,19,  20,22,23,25,  28,31,34,38,  41,33,47,50,
                         56,62,69,75,  81,88,94,100, 56,63,69,75,  81,88};
                      
 
-void tek4010_checkLimits()
+void tek4010_checkLimits(cairo_t *cr, cairo_t *cr2)
 /* check whether char is in visibel space */
 {
         /* don't check here for leftmargin, graphics needs to write characters to the whole screen */
@@ -95,10 +95,14 @@ void tek4010_checkLimits()
         if (tube_x0 > windowWidth - hDotsPerChar) {
                 tube_x0 = leftmargin; tube_y0 -= vDotsPerChar;
         }
-        if (tube_y0 < 4) {
+        if (tube_y0 < 4) { // new line at bottom of page
                 tube_y0 = windowHeight - vDotsPerChar;
                 if (leftmargin) leftmargin = 0;
                 else leftmargin = windowWidth / 2;
+                if (argAutoClear) {
+                        leftmargin = 0;
+                        tube_clearPersistent(cr,cr2);
+                }
                 /* check here for leftmargin */
                 if (tube_x0 < leftmargin) tube_x0 = leftmargin;
         }
@@ -183,22 +187,22 @@ void tek4010_escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
                 
                 case 8: // backspace during ESC
                         tube_x0 -= hDotsPerChar;
-                        tek4010_checkLimits();
+                        tek4010_checkLimits(cr, cr2);
                         mode = 0; break;
                 case 9: // tab during ESC
                         if (argTab1)
                                 tube_x0 += hDotsPerChar;
                         else
                                 tube_x0 = tube_x0 - (tube_x0 % (8 * hDotsPerChar)) + 8 * hDotsPerChar;
-                        tek4010_checkLimits();
+                        tek4010_checkLimits(cr, cr2);
                         mode = 0; break;
 
                 case 11:// VT during ESC, move one line up
                         tube_y0 += vDotsPerChar;
-                        tek4010_checkLimits();
+                        tek4010_checkLimits(cr, cr2);
                         mode = 0; break;
                 case 12:// FF during ESC
-                        tube_changeCharacterSize(cr, cr2, 74, 35, (int) (18.0 * efactor));
+                        tube_changeCharacterSize(cr, cr2, 74, 35, efactor);
                         tube_clearPersistent(cr,cr2);
                         mode = 0; break;
                 case 13:mode = 0; break;
@@ -232,10 +236,10 @@ void tek4010_escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
                         int defocussed = 0;
                         break;
 
-                case '8': tube_changeCharacterSize(cr, cr2, 74, 35, (int)(efactor * 18)); mode = 0; break;
-                case '9': tube_changeCharacterSize(cr, cr2, 81, 38, (int)(efactor * 16)); mode = 0; break;
-                case ':': tube_changeCharacterSize(cr, cr2, 121, 58, (int)(efactor * 11)); mode = 0; break;
-                case ';': tube_changeCharacterSize(cr, cr2, 133, 64, (int)(efactor * 10)); mode = 0; break;
+                case '8': tube_changeCharacterSize(cr, cr2, 74, 35, efactor); mode = 0; break;
+                case '9': tube_changeCharacterSize(cr, cr2, 81, 38, efactor * 0.9); mode = 0; break;
+                case ':': tube_changeCharacterSize(cr, cr2, 121, 58, efactor * 0.65); mode = 0; break;
+                case ';': tube_changeCharacterSize(cr, cr2, 133, 64, efactor * 0.55); mode = 0; break;
                 
                 case '[':   // a second escape code follows, do not reset mode
                           break;
@@ -314,7 +318,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                 first = 0; 
                 efactor = windowWidth / 1024.0;
                 refresh_interval = 30;
-                tube_changeCharacterSize(cr, cr2, 74, 35, (int) (18.0 * efactor));
+                tube_changeCharacterSize(cr, cr2, 74, 35, efactor);
                 if (windowWidth != 1024) printf("Scaling: %0.3f\n", efactor / 4.0);
         }
         
@@ -329,7 +333,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
         // clear persistent surface, if necessary
         if (tube_doClearPersistent) {
                 tube_clearPersistent(cr,cr2);
-                tube_changeCharacterSize(cr, cr2, 74, 35, (int) (18.0 * efactor));
+                tube_changeCharacterSize(cr, cr2, 74, 35, efactor);
         }
         
         if (aplMode)
@@ -380,7 +384,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                         case 10:        // new line
                                         tube_y0 -= vDotsPerChar;
                                         if (!argRaw) tube_x0 = leftmargin;
-                                        tek4010_checkLimits();
+                                        tek4010_checkLimits(cr, cr2);
                                         goto endDo;
                         case 13:        // return
                                         if (mode != 30) { // special handling in ESC mode
@@ -608,25 +612,25 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 case 0:     break;
                                 case 8:     // backspace
                                             tube_x0 -= hDotsPerChar;
-                                            tek4010_checkLimits();
+                                            tek4010_checkLimits(cr, cr2);
                                             break;
                                 case 9:     // tab
                                             if (argTab1)
                                                 tube_x0 += hDotsPerChar;
                                             else
                                                 tube_x0 = tube_x0 - (tube_x0 % (8 * hDotsPerChar)) + 8 * hDotsPerChar;
-                                            tek4010_checkLimits();
+                                            tek4010_checkLimits(cr, cr2);
                                             break;
                                 case 11:    // VT, move one line up
                                             tube_y0 += vDotsPerChar;
-                                            tek4010_checkLimits();
+                                            tek4010_checkLimits(cr, cr2);
                                             break;
                                 case 23:    // ctrl-w  screen dump
                                             system("scrot --focussed");
                                             break;
 
                                 default:    if ((ch >= 32) && (ch <127)) { // printable character
-                                                tek4010_checkLimits();
+                                                tek4010_checkLimits(cr, cr2);
                                                 tube_drawCharacter(cr,cr2, ch);                                                
                                                 todo-= 2;
                                             }

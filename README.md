@@ -272,6 +272,10 @@ tek4010 has the following options:
 
 	-APL		emulate Tektronix 4013/4015 with alternative APL character set.
 			Details see below.
+                        
+        -autoClear      erase screen if a line feed is executed at the bottom of the screen.
+                        This makes it sometimes easier to use tek4010 as the only terminal. It
+                        is not the behaviour of the original hardware. 
 
 **APL mode**
 
@@ -380,6 +384,11 @@ http://sci-hub.tw/https://dl.acm.org/citation.cfm?id=356582&dl=ACM&coll=DL
 
 Detailed pictures of the terminal and the original mouse built by CDI can be found in the 1968
 ARDS manual (see manuals folder)
+
+**Using other fonts**
+
+The font used by tek4010 is defined in tube.h. If you prefer to use a different font (for example a
+dotted font), define STANDARD_FONT and STANDARD_FONT_SIZE in tube.h and recompile the program.
 
 **Help wanted**
 
