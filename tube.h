@@ -18,6 +18,7 @@ extern int argTab1;
 extern int argRaw;
 extern int argAPL;
 extern int argAutoClear;
+extern int argKeepSize;
 
 extern int hDotsPerChar;
 extern int vDotsPerChar;

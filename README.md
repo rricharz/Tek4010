@@ -44,8 +44,10 @@ video of a an [animation using the tek4010](https://youtu.be/7FMewaoEOmk) and a 
         - Can be compiled for other Linux distributions such as Ubuntu
         - Tested with SimH, PiDP-11, PDP-11/93, VAXstation 4000/90a, 2.11 BSD, RSX-11M+, PLOT10
         - Stand alone version tested on Raspberry Pi Zero W
-        - Raspberry Pi 3 Model B+ recommended if run on same system as SimH/PiDP-11
-        - Raspberry Pi 3 Model B+ recommended if run in -full mode on high resolution screens
+        - Raspberry Pi 3 Model B+ or faster recommended if run on same system as SimH/PiDP-11
+        - Raspberry Pi 3 Model B+ or faster recommended if run in -full mode on high resolution screens
+	- Tested with Raspbian Stretch and Raspbian Buster
+	- Tested on Raspberry Pi 4
         - Tested with directly attached HDMI screen and with VNC
 
 **Installation and first tests**
@@ -273,9 +275,14 @@ tek4010 has the following options:
 	-APL		emulate Tektronix 4013/4015 with alternative APL character set.
 			Details see below.
                         
-        -autoClear      erase screen if a line feed is executed at the bottom of the screen.
+	-autoClear      erase screen if a line feed is executed at the bottom of the screen.
                         This makes it sometimes easier to use tek4010 as the only terminal. It
-                        is not the behaviour of the original hardware. 
+                        is not the behaviour of the original hardware.
+
+	-keepsize	tek4010 sets the fontsize to normal whenever the screen is erased.
+			This option keeps the currently selected font size until it is
+			changed with a new escape sequence. Some historic plot files will
+			not reset the font size back to normal if this option is set. 
 
 **APL mode**
 

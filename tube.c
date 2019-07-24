@@ -75,6 +75,7 @@ int argFull = 0;
 int argARDS = 0;
 int argAPL = 0;
 int argAutoClear = 0;
+int argKeepSize = 0;
 
 int refresh_interval;           // after this time in msec next refresh is done
 
@@ -156,6 +157,10 @@ int tube_isInput()
 // is char available on getDataPipe?
 {
         int bytesWaiting;
+        // if (isGinMode)
+        // do not allow any further input from host during GIN mode
+        // this allows to test .plt files with GIN mode
+        //        return 0;
         ioctl(getDataPipe[0], FIONREAD, &bytesWaiting);
         if (DEBUG) {
                 debugCount++;
@@ -274,7 +279,7 @@ void tube_init(int argc, char* argv[])
         char *argv2[20];
         size_t bufsize = 127;
         int firstArg = 1;
-        printf("tek4010 version 1.4.1\n");
+        printf("tek4010 version 1.4.2\n");
         windowName = "Tektronix 4010/4014 emulator";
         if ((argc<2) || (argc>19)) {
                 printf("Error:number of arguments\n");
@@ -310,6 +315,8 @@ void tube_init(int argc, char* argv[])
                         argFull = 1;
                 else if (strcmp(argv[firstArg],"-autoClear") == 0)
                         argAutoClear = 1;
+                else if (strcmp(argv[firstArg],"-keepsize") == 0)
+                        argKeepSize = 1;
                 else if (strcmp(argv[firstArg],"-APL") == 0) {
                         argAPL = 1;
                         windowName = "Tektronix 4013/4015 emulator (APL)";

@@ -1,3 +1,7 @@
+Version 1.4.2 July 24, 2019
+===========================
+- argument -keepsize added
+- going back to alpha mode forces now the end of GIN mode
 
 Version 1.4.1 June 20, 2019
 ===========================

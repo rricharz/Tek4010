@@ -202,7 +202,8 @@ void tek4010_escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
                         tek4010_checkLimits(cr, cr2);
                         mode = 0; break;
                 case 12:// FF during ESC
-                        tube_changeCharacterSize(cr, cr2, 74, 35, efactor);
+                        if (!argKeepSize)
+                                tube_changeCharacterSize(cr, cr2, 74, 35, efactor);
                         tube_clearPersistent(cr,cr2);
                         mode = 0; break;
                 case 13:mode = 0; break;
@@ -300,6 +301,7 @@ int tek4010_checkReturnToAlpha(int ch)
                 }
                 plotPointMode = 0;
                 specialPlotMode = 0;
+                isGinMode = 0;
                 return 1;
         }
         else return 0;
@@ -333,7 +335,8 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
         // clear persistent surface, if necessary
         if (tube_doClearPersistent) {
                 tube_clearPersistent(cr,cr2);
-                tube_changeCharacterSize(cr, cr2, 74, 35, efactor);
+                if (!argKeepSize)
+                        tube_changeCharacterSize(cr, cr2, 74, 35, efactor);
         }
         
         if (aplMode)
