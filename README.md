@@ -403,13 +403,16 @@ I am interested to find any recoverable original software using the graphical in
 Tektronix 4010, 4014 or the ARDS. Please open an issue in this repository or write to
 rricharz77@gmail.com if you are able to help.
 
+Also, any other historically interesting plot files, especially examples of CAD work on the Tektronix
+terminal such as the spacelab antenna system in pltfiles/ICEMD_pltfiles are very much appreciated.
+
 **Contributors**
 
 The storage tube emulator and the Tektronix 4010/4014 decoder were witten by Rene Richarz.
 The ARDS decoder was written by Lars Brinkhoff. He also provided some interesting historical documents
 and the ARDS plot files.
 The historical plot data for the Tektronix 4014 was obtained from Jos Dreesen.
-The historical plot data of the spacelab from from the ICEMDDN CAD package on a CDC Cyber 175 mainframe
+The historical plot data of the spacelab from the ICEMDDN CAD package on a CDC Cyber 175 mainframe
 emulator was obtained from Nick Glazzard.
 Thanks to Ian Schofield for his critical comments and a code snippet for drawing dashed and dotted lines,
 and to Oscar Vermeulen and Mark Matlock for their support.
