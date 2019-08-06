@@ -46,8 +46,8 @@ video of a an [animation using the tek4010](https://youtu.be/7FMewaoEOmk) and a 
         - Stand alone version tested on Raspberry Pi Zero W
         - Raspberry Pi 3 Model B+ or faster recommended if run on same system as SimH/PiDP-11
         - Raspberry Pi 3 Model B+ or faster recommended if run in -full mode on high resolution screens
-	- Tested with Raspbian Stretch and Raspbian Buster
-	- Tested on Raspberry Pi 4
+        - Tested with Raspbian Stretch and Raspbian Buster
+        - Tested on Raspberry Pi 4
         - Tested with directly attached HDMI screen and with VNC
 
 **Installation and first tests**
@@ -409,6 +409,8 @@ The storage tube emulator and the Tektronix 4010/4014 decoder were witten by Ren
 The ARDS decoder was written by Lars Brinkhoff. He also provided some interesting historical documents
 and the ARDS plot files.
 The historical plot data for the Tektronix 4014 was obtained from Jos Dreesen.
+The historical plot data of the spacelab from from the ICEMDDN CAD package on a CDC Cyber 175 mainframe
+emulator was obtained from Nick Glazzard.
 Thanks to Ian Schofield for his critical comments and a code snippet for drawing dashed and dotted lines,
 and to Oscar Vermeulen and Mark Matlock for their support.
 The manuals were obtained from bitsavers.org.
