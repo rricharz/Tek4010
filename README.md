@@ -7,6 +7,11 @@ terminal emulator for the Raspberry Pi and other Linux systems.
 
 ![screen_shot](screendump.png?raw=true "tek4010 screendump")
 
+Below is a screen shot of the spacelab from the ICEMDDN CAD package made on a CDC Cyber 175 mainframe
+emulator.
+
+![spacelab](spacelab.png?raw=true "spacelab screendump")
+
 It can also display historical data for the
 [MIT Project MAC](https://en.wikipedia.org/wiki/MIT_Computer_Science_and_Artificial_Intelligence_Laboratory#Project_MAC)
 's ARDS (Advanced Remote Display Station):
