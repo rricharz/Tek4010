@@ -12,13 +12,13 @@ emulator.
 
 ![spacelab](spacelab.png?raw=true "spacelab screendump")
 
-It can also display historical data for the
+tek4010 can also display historical data for the
 [MIT Project MAC](https://en.wikipedia.org/wiki/MIT_Computer_Science_and_Artificial_Intelligence_Laboratory#Project_MAC)
 's ARDS (Advanced Remote Display Station):
 
 ![ARDS_screen_shot](trek.png?raw=true "tek4010 ARDS screendump")
 
-It makes an effort to emulate the [storage tube display](https://en.wikipedia.org/wiki/Storage_tube)
+tek4010 makes an effort to emulate the [storage tube display](https://en.wikipedia.org/wiki/Storage_tube)
 of the Tektronix 4010, including the bright drawing spot. If the look and feel is not important, you can
 use ["xterm"](https://en.wikipedia.org/wiki/Xterm) instead. "xterm" does not support all
 graphics modes of the 4014.
@@ -48,6 +48,7 @@ video of a an [animation using the tek4010](https://youtu.be/7FMewaoEOmk) and a 
         - Compiled binary for Raspbian included
         - Can be compiled for other Linux distributions such as Ubuntu
         - Tested with SimH, PiDP-11, PDP-11/93, VAXstation 4000/90a, 2.11 BSD, RSX-11M+, PLOT10
+        - GIN mode tested with ICEMDDN CAD package on a CDC Cyber 175 mainframe emulator
         - Stand alone version tested on Raspberry Pi Zero W
         - Raspberry Pi 3 Model B+ or faster recommended if run on same system as SimH/PiDP-11
         - Raspberry Pi 3 Model B+ or faster recommended if run in -full mode on high resolution screens
@@ -418,7 +419,7 @@ The ARDS decoder was written by Lars Brinkhoff. He also provided some interestin
 and the ARDS plot files.
 The historical plot data for the Tektronix 4014 was obtained from Jos Dreesen.
 The historical plot data of the spacelab from the ICEMDDN CAD package on a CDC Cyber 175 mainframe
-emulator was obtained from Nick Glazzard.
+emulator was obtained from Nick Glazzard. He also helped to improve the GIN mode substantially.
 Thanks to Ian Schofield for his critical comments and a code snippet for drawing dashed and dotted lines,
 and to Oscar Vermeulen and Mark Matlock for their support.
 The manuals were obtained from bitsavers.org.

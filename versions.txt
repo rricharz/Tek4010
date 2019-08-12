@@ -1,3 +1,7 @@
+Version 1.4.3 August 12, 2019
+=============================
+- Properly ignores characters echoed by the host in GIN mode (normally no characters should be echoed)
+
 Version 1.4.2 July 24, 2019
 ===========================
 - argument -keepsize added

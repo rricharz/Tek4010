@@ -25,6 +25,7 @@
  */
  
 #define DEBUG    0              // print debug info
+
  
 #define TODO  (long)(16)   // draw multiple objects until screen updates
 
@@ -76,6 +77,8 @@ static int xh,xl,yh,yl,xy4014;
 static long todo;
 static double efactor;
 
+int ginCharacter[6] = {0, 0, 0, 0, 0, 0};
+
 // table for special plot point mode
 // 4014 manual page F-9
 int intensityTable[] = {14,16,17,19,  20,22,23,25,  28,31,34,38,  41,33,47,50,
@@ -121,32 +124,42 @@ void tek4010_bell()
 void sendCoordinates()
 {
         // send 4 coordinate bytes
-        int x,y;
+        int x,y,ch;
         x = (int)((double)tube_x0 / efactor);
         y = (int)((double)tube_y0 / efactor);
-        putc((x >> 5) + 0xa0,putKeys);
-        putc((x & 31) + 0xa0,putKeys);
-        putc((y >> 5) + 0xa0,putKeys);
-        putc((y & 31) + 0xa0,putKeys);
+        
+        if (DEBUG) printf("sendCoordinates, x=%d, y=%d\n", x, y);
+        
+        ch = (x >> 5) + 0x20;
+        putc(ch, putKeys);
+        ginCharacter[4] = ch;       // save to check for echo
+        ch = (x & 31) + 0x20;
+        putc(ch,putKeys);
+        ginCharacter[3] = ch;       // save to check for echo
+        ch = (y >> 5) + 0x20;
+        putc(ch, putKeys);
+        ginCharacter[2] = ch;       // save to check for echo
+        ch = (y & 31) + 0x20;
+        putc(ch,putKeys);
+        ginCharacter[1] = ch;       // save to check for echo
 }
 
 void enqMode()
 {
         // activated by sending ESC ENQ
         int status;
-        status = 0xa0;
+        status = 0x20;
         if (leftmargin == 0) status += 2;
         if (mode == 0) status += 4;
         putc(status,putKeys);           // send status byte
         sendCoordinates();
-        putc(13 + 128, putKeys);        // cr, bit 8 set
-                                        // cannot send a EOT here       
+        putc(13, putKeys);              // cannot send a EOT here 
 }
 
 void ginMode(cairo_t *cr, cairo_t *cr2)
 {
         // activated by sending ESC SUB
-        if (DEBUG) printf("GIN, mode = %d\n", mode);
+        if (DEBUG) printf("GIN, mode = %d, isGinMode = %d\n", mode, isGinMode);
         tube_crosshair(cr, cr2);
         mode = 60;
         todo = 0;
@@ -158,10 +171,16 @@ void ginSend(int ch)
 {
         // user has stoken a key during GIN mode
         if (DEBUG) printf("ginSend, ch = %d\n", ch);
-        putc(ch + 128,putKeys);
-        sendCoordinates();
-        putc(13+128,putKeys);           // cr, bit 8 set
-                                        // cannot send a EOT here
+        putc(ch,putKeys);           // user key stroke character
+        ginCharacter[5] = ch;       // save to check for echo
+        sendCoordinates();          // 4 characters of packed coordinates
+        // cannot send a EOT here
+        // wait 5 ms, then send CR.
+        usleep(5000);
+        putc(13,putKeys);           // cr
+        ginCharacter[0] = 13;
+        // prepare to suppress unwanted echoed characters.
+        isGinSuppress = 6;      
 }
 
 void tek4010_clicked(int x, int y)
@@ -301,6 +320,8 @@ int tek4010_checkReturnToAlpha(int ch)
                 }
                 plotPointMode = 0;
                 specialPlotMode = 0;
+                if (isGinMode && DEBUG)
+                        printf("clearing isGinMode, char = %d\n", ch);
                 isGinMode = 0;
                 return 1;
         }
@@ -364,6 +385,23 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                         if ((mode == 0) && showCursor) tube_doCursor(cr2);
                         if (mode != 60) return;         // no char available, need to allow for updates
                 }
+
+		// Try suppressing GIN echoed characters here.
+		if (isGinSuppress){
+                        if (ch == 10) // additional line feed may be echoed if cr is typed
+                                return;
+                        if ((ch & 0x7F) == ginCharacter[isGinSuppress - 1]) {
+                                if (DEBUG) printf( "isGinSuppress (%d): suppressing: %d\n",
+                                        isGinSuppress, ch);
+                                isGinSuppress --;
+                                return;
+                        }
+                        else {
+                                if (DEBUG) printf("isGinSuppress, characters are different (%d,%d)\n",
+                                        ch & 0x7F, ginCharacter[isGinSuppress - 1]);
+                                isGinSuppress = 0;
+                        }
+		}
                 
                 // if (aplMode) printf("Receiving character %d from host\n", ch);
                 
@@ -600,6 +638,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                         ginSend(isGinMode);
                                         mode = 0;
                                         todo = 0;
+                                        if (DEBUG) printf("GIN: key stroken by user, exiting GIN mode\n");
                                         isGinMode = 0;
                                 }
                                 else

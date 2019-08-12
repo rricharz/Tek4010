@@ -28,7 +28,8 @@ extern long refreshCount;
 
 extern int showCursor;                 // set of cursor is shown (not set in graphics mode)
 extern int isBrightSpot;               // set if there is currently a bright spot on the screen
-extern int isGinMode;                    // set if GIN mode is active
+extern int isGinMode;                  // set if GIN mode is active
+extern int isGinSuppress;              // set if suppressing echoed chars in/after GIN.
 
 extern int specialPlotMode;
 extern int defocussed;

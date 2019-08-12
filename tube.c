@@ -89,7 +89,8 @@ double dashset[] = {2,6,2,2,6,3,3,3,6,6};
 
 int plotPointMode = 0;           // plot point mode
 int writeThroughMode = 0;        // write through mode
-int isGinMode = 0;                 // set if GIN mode is active
+int isGinMode = 0;               // set if GIN mode is active
+int isGinSuppress = 0;           // suppressing characters after GIN.
 int tube_doClearPersistent;
 
 int specialPlotMode = 0;
@@ -157,10 +158,10 @@ int tube_isInput()
 // is char available on getDataPipe?
 {
         int bytesWaiting;
-        // if (isGinMode)
-        // do not allow any further input from host during GIN mode
-        // this allows to test .plt files with GIN mode
-        //        return 0;
+        if (isGinMode)
+                // delay any input from host during GIN mode
+                // this allows to test .plt files with GIN mode
+                return 0;
         ioctl(getDataPipe[0], FIONREAD, &bytesWaiting);
         if (DEBUG) {
                 debugCount++;
@@ -279,7 +280,7 @@ void tube_init(int argc, char* argv[])
         char *argv2[20];
         size_t bufsize = 127;
         int firstArg = 1;
-        printf("tek4010 version 1.4.2\n");
+        printf("tek4010 version 1.4.3\n");
         windowName = "Tektronix 4010/4014 emulator";
         if ((argc<2) || (argc>19)) {
                 printf("Error:number of arguments\n");
