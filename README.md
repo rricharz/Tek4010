@@ -391,10 +391,6 @@ Rhine, George Irvin Jr., "A hardware and software interface between a graphics
 terminal and the SCC 650 computer" (1971), Masters Theses, 5508, page 21,
 http://scholarsmine.mst.edu/masters_theses/5508
 
-A picture of an ARDS I display with a quite modern looking mouse was published in Computing
-Surveys, Vol. 2, No. 4, December 1970, page 272,
-http://sci-hub.tw/https://dl.acm.org/citation.cfm?id=356582&dl=ACM&coll=DL
-
 Detailed pictures of the terminal and the original mouse built by CDI can be found in the 1968
 ARDS manual (see manuals folder)
 
