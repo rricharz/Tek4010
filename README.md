@@ -251,15 +251,15 @@ system and simh properly, before detaching the terminal emulator!
 
 **Using tek4010 with a serial link**
 
-Teunis van Beelen has written a helper program to use tek4010 with a serial link. This is beta-test
-software at the moment. Feedback to rricharz77@gmail.com is very much appreciated.
+Teunis van Beelen has written a [helper program](https://gitlab.com/Teuniz/rs232-console) to use tek4010 with
+a serial link. This is beta-test software at the moment. Feedback to rricharz77@gmail.com is very much appreciated.
 
 First, install the helper program. The helper program is on gitlab, not github.
 
-        cd
-        git clone git://gitlab.com/Teuniz/rs232-console
+	cd
+	git clone git://gitlab.com/Teuniz/rs232-console
 	cd rs232-console
-        make
+	make
         
 Put a copy of the executable file rs232-console somewhere where your shell will find it, for example
 in /home/pi/bin or /usr/bin.
