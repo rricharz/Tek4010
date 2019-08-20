@@ -280,7 +280,7 @@ void tube_init(int argc, char* argv[])
         char *argv2[20];
         size_t bufsize = 127;
         int firstArg = 1;
-        printf("tek4010 version 1.4.3\n");
+        printf("tek4010 version 1.4.4\n");
         windowName = "Tektronix 4010/4014 emulator";
         if ((argc<2) || (argc>19)) {
                 printf("Error:number of arguments\n");
@@ -498,10 +498,11 @@ int tube_clicked(int button, int x, int y)
 }
 
 void tube_quit()
-// is called if the main window is called bevore the tek4010 exits
+// is called if the main window is quit bevore the tek4010 exits
 // put any code here which needs to be called on exit
 {
         pclose(getData);
+        system("pkill rs232-console");
 }
 
 void tube_doCursor(cairo_t *cr2)

@@ -1,3 +1,7 @@
+Version 1.4.4 August 20, 2019
+=============================
+- Added description on how to connect to the host using a serial connection
+
 Version 1.4.3 August 12, 2019
 =============================
 - Properly ignores characters echoed by the host in GIN mode (normally no characters should be echoed)

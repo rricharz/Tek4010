@@ -249,6 +249,38 @@ NOT detach or quit the terminal while your historical operating system is runnin
 this will kill the PiDP-11 simh emulator right away. First run down your historical operating
 system and simh properly, before detaching the terminal emulator!
 
+**Using tek4010 with a serial link**
+
+Teunis van Beelen has written a helper program to use tek4010 with a serial link. This is beta-test
+software at the moment. Feedback to rricharz77@gmail.com is very much appreciated.
+
+First, install the helper program. The helper program is on gitlab, not github.
+
+        cd
+        git clone git://gitlab.com/Teuniz/rs232-console
+	cd rs232-console
+        make
+        
+Put a copy of the executable file rs232-console somewhere where your shell will find it, for example
+in /home/pi/bin or /usr/bin.
+
+Test the serial connection to your host using rs232-console with
+
+        rs232-console <-p port> <-b baudrate> <-m mode> <-f hardware>
+        
+Details of the command line parameters of rs232-console can be found in its README file.
+
+Once this works, you can use it with tek4010 as follows:
+
+        ./tek4010 [options of tek4010] rs232-console [options of rs232-console]
+        
+It has happened that the serial port remained locked after tek4010 is quit. I think this has
+been fixed, but if it still happens, please report details to rricharz77@gmail.com, and use,
+
+        pkill rs232-console
+        
+to kill any still running rs232-console process and unlock the serial port.
+
 **Options of the command tek4010**
 
 Call the command tek4010 using the following syntax:
@@ -413,6 +445,8 @@ terminal such as the spacelab antenna system in pltfiles/ICEMD_pltfiles are very
 The storage tube emulator and the Tektronix 4010/4014 decoder were witten by Rene Richarz.
 The ARDS decoder was written by Lars Brinkhoff. He also provided some interesting historical documents
 and the ARDS plot files.
+Teunis van Beelen has written the helper program "rs232-console" to connect to a host
+using a serial link.
 The historical plot data for the Tektronix 4014 was obtained from Jos Dreesen.
 The historical plot data of the spacelab from the ICEMDDN CAD package on a CDC Cyber 175 mainframe
 emulator was obtained from Nick Glazzard. He also helped to improve the GIN mode substantially.
