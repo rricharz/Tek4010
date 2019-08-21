@@ -30,8 +30,9 @@ or a real historical system. It can also be used to display historical plot data
 
 This [video of a tek4010 demo](https://youtu.be/ioYiu6oUT88) was generated using
 [simplescreenrecorder](https://www.maartenbaert.be/simplescreenrecorder). There is also a
-video of a an [animation using the tek4010](https://youtu.be/7FMewaoEOmk) and a video showing
-[tek4010 alongside the PiDP-11](https://youtu.be/4jZzypvxoHU).
+video of a an [animation using the tek4010](https://youtu.be/7FMewaoEOmk), a video showing
+[tek4010 alongside the PiDP-11](https://youtu.be/4jZzypvxoHU) and a video of
+[tek4010 connected to a historical PDP-11/73](https://youtu.be/rYwOLYE4DVQ) over a serial link.
 
 **Important features of tek4010**
 
@@ -281,7 +282,7 @@ been fixed, but if it still happens, please report details to rricharz77@gmail.c
         
 to kill any still running rs232-console process and unlock the serial port.
 
-The serial connection was tested on a PiDP-11 and a historical PDP-11/73 using RT11. The
+The serial connection was tested by Dave Ault on a PiDP-11 and a historical PDP-11/73 using RT11. The
 COPY FILENAME.PLT TT: command was used in RT11 to avoid the filtering of some control codes
 in TYPE. The tests were made using MX-Linux and a FTDI USB to RS232 converter to connect to
 the serial port of the PDP-11.
@@ -451,7 +452,7 @@ The storage tube emulator and the Tektronix 4010/4014 decoder were witten by Ren
 The ARDS decoder was written by Lars Brinkhoff. He also provided some interesting historical documents
 and the ARDS plot files.
 Teunis van Beelen has written the helper program "rs232-console" to connect to a host
-using a serial link.
+using a serial link. Dave Ault tested the serial link to his PDP-11/73.
 The historical plot data for the Tektronix 4014 was obtained from Jos Dreesen.
 The historical plot data of the spacelab from the ICEMDDN CAD package on a CDC Cyber 175 mainframe
 emulator was obtained from Nick Glazzard. He also helped to improve the GIN mode substantially.
