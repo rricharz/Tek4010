@@ -78,9 +78,9 @@ and the original manuals, you can also go to the
 The compiled "tek4010" program is for a Raspberry Pi. If you are on Ubuntu, do the following to recompile
 the program. On the Raspberry Pi you can skip this step.
 
-        sudo apt-get install libgtk-3-dev
-        rm tek4010
-        make
+	sudo apt-get install libgtk-3-dev
+	rm tek4010
+	make
         
 Thanks to Lars Brinkhoff (lars@nocrew.org) to pointing out how easy it is to compile tek4010
 on Ubuntu. He also helped me to fix some bugs and proposed many nice features. Don't forget to
@@ -251,13 +251,13 @@ system and simh properly, before detaching the terminal emulator!
 
 **Using tek4010 with a serial link**
 
-Teunis van Beelen has written a [helper program](https://gitlab.com/Teuniz/rs232-console) to use tek4010 with
+Teunis van Beelen has written a nice [helper program](https://gitlab.com/Teuniz/rs232-console) to use tek4010 with
 a serial link. This is beta-test software at the moment. Feedback to rricharz77@gmail.com is very much appreciated.
 
 First, install the helper program. The helper program is on gitlab, not github.
 
 	cd
-	git clone git://gitlab.com/Teuniz/rs232-console
+	git clone https://gitlab.com/Teuniz/rs232-console
 	cd rs232-console
 	make
         
@@ -266,20 +266,25 @@ in /home/pi/bin or /usr/bin.
 
 Test the serial connection to your host using rs232-console with
 
-        rs232-console <-p port> <-b baudrate> <-m mode> <-f hardware>
+	rs232-console <-p port> <-b baudrate> <-m mode> <-f hardware>
         
-Details of the command line parameters of rs232-console can be found in its README file.
+Details of the command line parameters of rs232-console can be found in the README file of rs232-console.
 
 Once this works, you can use it with tek4010 as follows:
 
-        ./tek4010 [options of tek4010] rs232-console [options of rs232-console]
+	./tek4010 [options of tek4010] rs232-console [options of rs232-console]
         
 It has happened that the serial port remained locked after tek4010 is quit. I think this has
 been fixed, but if it still happens, please report details to rricharz77@gmail.com, and use,
 
-        pkill rs232-console
+	pkill rs232-console
         
 to kill any still running rs232-console process and unlock the serial port.
+
+The serial connection was tested on a PiDP-11 and a historical PDP-11/73 using RT11. The
+COPY FILENAME.PLT TT: command was used in RT11 to avoid the filtering of some control codes
+in TYPE. The tests were made using MX-Linux and a FTDI USB to RS232 converter to connect to
+the serial port of the PDP-11.
 
 **Options of the command tek4010**
 
