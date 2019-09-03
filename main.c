@@ -47,6 +47,7 @@ char *windowName;
 static int global_firstcall;
 
 extern int argFull;
+extern int argFullV;
 extern int argARDS;
 
 static GtkWidget *window;
@@ -290,13 +291,7 @@ int main (int argc, char *argv[])
  
         else {
                 // DISPLAY DECORATED WINDOW
-#define BORDER 64       // we need to make an educated guess here what the window manager will accept
-                        // otherwise we will have a decorated window with wrong aspect ratio
-                        // if BORDER is too small, we end up with small black stripes at the left and right
-                        // if BORDER is too large, the decorated window will  be smaller than possible
-                        // with a reasonable size BORDER, both are acceptable
-                        // ideally, one could force the window manager to use a certain aspect ratio
-                if (askWindowHeight > (screenHeight - BORDER)) {
+                if (argFullV || (askWindowHeight > (screenHeight - BORDER))) {
                         askWindowWidth = (int)((double)(screenHeight - BORDER) * aspectRatio);
                         askWindowHeight = screenHeight - BORDER;
                 }

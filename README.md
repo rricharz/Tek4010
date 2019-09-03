@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/rricharz/Tek4010.svg?branch=master)](https://travis-ci.org/rricharz/Tek4010)
 
-# Tektronix 4010 and 4014 Storage Tube Terminal Emulator (version 1.4)
+# Tektronix 4010 and 4014 Storage Tube Terminal Emulator (version 1.5)
 
 This is a [Tektronix 4010, 4013, 4014 and 4015](https://en.wikipedia.org/wiki/Tektronix_4010)
 terminal emulator for the Raspberry Pi and other Linux systems.
@@ -313,6 +313,11 @@ tek4010 has the following options:
 			uses the full resolution of the 4014 with the enhanced graphics module
 			installed, scaled down to the actual window size. Use ctrl-q to
 			close the tek4010 window.
+                        
+        -fullv          in this mode the tek4010 emulator creates a decorated window
+                        using the maximal vertical space available. The full resolution of
+                        the 4014 with the enhanced graphics module installed is used,
+                        scaled down to the actual window size
 
 	-ARDS		display ARDS data
 
@@ -392,10 +397,13 @@ graphics codes can be displayed using this terminal emulator, but the lowest two
 each axis are not used in this case, as in the Tektronix 4014 without the enhanced graphics
 module.
 
-If called with the -full option, the tek4010 emulator creates creates a full screen window,
-and uses the full 4K resolution of the 4014 with enhanced graphics
+If called with the -full or -fullv options, the tek4010 emulator uses the full 4K resolution of the 4014 with enhanced graphics
 module installed, scaled down to the actual window size.
-Use ctrl-q to close the tek4010 window.
+
+You can use ctrl-q to close the tek4010 window.
+
+The BORDER constant in main.h can be used to adjust the space left for the window decoration
+and the desktop panel bar.
 
 **Compiling the tek4010 project**
 

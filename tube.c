@@ -72,6 +72,7 @@ int argRaw = 0;
 int argBaud = 19200;
 int argTab1 = 0;
 int argFull = 0;
+int argFullV = 0;
 int argARDS = 0;
 int argAPL = 0;
 int argAutoClear = 0;
@@ -280,7 +281,7 @@ void tube_init(int argc, char* argv[])
         char *argv2[20];
         size_t bufsize = 127;
         int firstArg = 1;
-        printf("tek4010 version 1.4.4\n");
+        printf("tek4010 version 1.5\n");
         windowName = "Tektronix 4010/4014 emulator";
         if ((argc<2) || (argc>19)) {
                 printf("Error:number of arguments\n");
@@ -314,6 +315,8 @@ void tube_init(int argc, char* argv[])
                         argTab1 = 1;
                 else if (strcmp(argv[firstArg],"-full") == 0)
                         argFull = 1;
+                else if (strcmp(argv[firstArg],"-fullv") == 0)
+                        argFullV = 1;
                 else if (strcmp(argv[firstArg],"-autoClear") == 0)
                         argAutoClear = 1;
                 else if (strcmp(argv[firstArg],"-keepsize") == 0)
