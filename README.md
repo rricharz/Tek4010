@@ -1,4 +1,3 @@
-[![Build Status](https://travis-ci.org/rricharz/Tek4010.svg?branch=master)](https://travis-ci.org/rricharz/Tek4010)
 
 # Tektronix 4010 and 4014 Storage Tube Terminal Emulator (version 1.5)
 
