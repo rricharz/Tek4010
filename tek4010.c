@@ -62,7 +62,7 @@
 // mode 31      received in ANSI escape sequence, escape sequence continues if next char is digit
 //
 // mode 40      incremental plot mode; is ignored until exit from incremental plot received
-// mode 50      special point plot mode; not yet implemented
+// mode 50      special point plot mode
 // mode 60      crosshair mode
 // mode 101     ignore until group separator
 
@@ -251,6 +251,7 @@ void tek4010_escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
                 case 28: // record separator
                         if (DEBUG) printf("Special point plot mode, mode=%d\n",savemode);
                         mode = 50; // for the intensity/focus character
+                        plotPointMode = 1;
                         specialPlotMode = 1;
                         double intensity = 1.0;
                         int defocussed = 0;

@@ -314,7 +314,7 @@ tek4010 has the following options:
 			installed, scaled down to the actual window size. Use ctrl-q to
 			close the tek4010 window.
                         
-        -fullv          in this mode the tek4010 emulator creates a decorated window
+	-fullv          in this mode the tek4010 emulator creates a decorated window
                         using the maximal vertical space available. The full resolution of
                         the 4014 with the enhanced graphics module installed is used,
                         scaled down to the actual window size
@@ -461,9 +461,11 @@ The ARDS decoder was written by Lars Brinkhoff. He also provided some interestin
 and the ARDS plot files.
 Teunis van Beelen has written the helper program "rs232-console" to connect to a host
 using a serial link. Dave Ault tested the serial link to his PDP-11/73.
-The historical plot data for the Tektronix 4014 was obtained from Jos Dreesen.
+The historical plot data for the Tektronix 4014 was obtained from Jos Dreesen. The special plot mode
+pictures with variable brightness were obtained from Monty McGraw. He also helped to debug the special
+plot point mode.
 The historical plot data of the spacelab from the ICEMDDN CAD package on a CDC Cyber 175 mainframe
-emulator was obtained from Nick Glazzard. He also helped to improve the GIN mode substantially.
+emulator was obtained from Nick Glazzard. He also helped to improve the GIN mode substantially. 
 Thanks to Ian Schofield for his critical comments and a code snippet for drawing dashed and dotted lines,
 and to Oscar Vermeulen and Mark Matlock for their support.
 The manuals were obtained from bitsavers.org.

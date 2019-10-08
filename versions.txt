@@ -1,5 +1,10 @@
-Version 1.5 of September 3
-==========================
+Version 1.5.1 of October 8, 2019
+================================
+- Fixed a bug preventing the proper display of pictures with variable brightness
+- Added pictures with variable brightness in pltfiles/PointPlot
+
+Version 1.5 of September 3, 2019
+================================
 - Added -fullv option to maximize vertical window size
 
 Version 1.4.4 August 20, 2019

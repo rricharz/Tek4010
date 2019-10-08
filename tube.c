@@ -281,7 +281,7 @@ void tube_init(int argc, char* argv[])
         char *argv2[20];
         size_t bufsize = 127;
         int firstArg = 1;
-        printf("tek4010 version 1.5\n");
+        printf("tek4010 version 1.5.1\n");
         windowName = "Tektronix 4010/4014 emulator";
         if ((argc<2) || (argc>19)) {
                 printf("Error:number of arguments\n");
@@ -767,9 +767,10 @@ void tube_emulateDeflectionTime()
 void tube_drawPoint(cairo_t *cr, cairo_t *cr2)
 {
 #define PI2 6.283185307
+        int i1;
         cairo_set_line_width (cr, 1 + defocussed);
-        cairo_set_source_rgb(cr, 0, BLACK_COLOR + ((NORMAL_INTENSITY - BLACK_COLOR) * intensity) / 100, 0);
-        cairo_move_to(cr, tube_x2, windowHeight - tube_y2);
+        cairo_set_source_rgb(cr, 0, BLACK_COLOR + ((1.0 - BLACK_COLOR) * intensity) / 100, 0);
+        cairo_move_to(cr, tube_x2 - 1, windowHeight - tube_y2);
         cairo_line_to(cr, tube_x2 + 1, windowHeight - tube_y2);
         cairo_stroke (cr);
                                         
@@ -782,6 +783,7 @@ void tube_drawPoint(cairo_t *cr, cairo_t *cr2)
                 // draw the bright spot
                 cairo_set_line_width (cr2, 0.1);
                 double bsc = (BRIGHT_SPOT_COLOR * intensity) / 100;
+                              
                 cairo_set_source_rgb(cr2, bsc, bsc, bsc);                        
                 cairo_arc(cr2, tube_x2, windowHeight - tube_y2, 2 + defocussed, 0, PI2);
                 cairo_fill(cr2);
