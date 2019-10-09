@@ -286,6 +286,24 @@ COPY FILENAME.PLT TT: command was used in RT11 to avoid the filtering of some co
 in TYPE. The tests were made using MX-Linux and a FTDI USB to RS232 converter to connect to
 the serial port of the PDP-11.
 
+**Using tek4010 as a plotting device**
+
+Some simulators do not allow to attach a terminal for standard input and output, but are able to
+send data to a file. An example of such a simulator is my own simulator based on a home built 6502 system
+[R65 simulator](https://github.com/rricharz/R65.git). The original system was not made for attaching
+a terminal, but could send formatted and raw data to an attached printer or plotter.
+
+tek4010 can be attached to such a simulator as a pure plotter or printer, by monitoring the file
+created on the fly, and printing or plotting everything sent to that file while it is appended. The
+command to use in this case is
+
+	./tek4010 tail -f printout.txt
+
+where printout.txt is the output file created. The file needs to exist when tek4010 is started,
+and tek4010 displays whatever is already in that file, and keeps monitoring that file and displaying
+anything which is appended. Note that it is essential that the data is not filtered during the
+output process, because the tek4010 plotting code is 7 bits binary. Bit 8, the parity bit, is ignored.
+
 **Options of the command tek4010**
 
 Call the command tek4010 using the following syntax:
