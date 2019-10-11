@@ -281,7 +281,7 @@ void tube_init(int argc, char* argv[])
         char *argv2[20];
         size_t bufsize = 127;
         int firstArg = 1;
-        printf("tek4010 version 1.5.1\n");
+        printf("tek4010 version 1.5.2\n");
         windowName = "Tektronix 4010/4014 emulator";
         if ((argc<2) || (argc>19)) {
                 printf("Error:number of arguments\n");
@@ -299,6 +299,12 @@ void tube_init(int argc, char* argv[])
                         argRaw = 1;
                 else if (strcmp(argv[firstArg],"-noexit") == 0)
                         argNoexit = 1;
+                else if (strcmp(argv[firstArg],"-b100000") == 0)
+                        argBaud = 100000;
+                else if (strcmp(argv[firstArg],"-b38400") == 0)
+                        argBaud = 38400;
+                else if (strcmp(argv[firstArg],"-b19200") == 0)
+                        argBaud = 19200;
                 else if (strcmp(argv[firstArg],"-b9600") == 0)
                         argBaud = 9600;
                 else if (strcmp(argv[firstArg],"-b4800") == 0)

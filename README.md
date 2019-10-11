@@ -320,10 +320,11 @@ tek4010 has the following options:
 
 	-tab1		execute a blank	instead of a tab to the next 8-character column
 
-	-b9600, -b4800, -b2400, -b1200, -b600, -b300
+	-b100000, -b38400, -b19200, -b9600, -b4800, -b2400, -b1200, -b600, -b300
 			Emulate a baud rate. Without one of these arguments, the baud rate
 			is 19200 baud. The original Tektronix 4010 had a maximal baud rate
-			of 9600 baud. With the small baud rates you can emulate 1970s 
+			of 9600 baud. The 4014 could support up to 100000 baud with a special
+                        interface. With the small baud rates you can emulate 1970s 
 			style modem performance. Early modems had a baud rate of 300.
 
 	-full		in this mode the tek4010 emulator creates a full screen window, and

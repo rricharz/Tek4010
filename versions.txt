@@ -1,3 +1,7 @@
+Version 1.5.2 of October 11, 2019
+================================
+- Simulate higher baud rates up to 100000 (Raspberry Pi 4 required)
+
 Version 1.5.1 of October 8, 2019
 ================================
 - Fixed a bug preventing the proper display of pictures with variable brightness
