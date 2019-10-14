@@ -42,6 +42,7 @@ video of a an [animation using the tek4010](https://youtu.be/7FMewaoEOmk), a vid
         - Full screen resolution in -full mode
         - Coordinate system: 1024 x 780 and 4096 x 3072 tek points
         - All Tektronix 4014 modes, including graphical input mode (GIN) and write-through mode
+	- Supports grayscale images (Tektronix 4014 intensity chart)
         - APL character set and keyboard for Tektronix 4013 and Tektronix 4015
         - telnet and rsh connection to host and direct display of plot files
         - baud rates: 300 to 19200
@@ -324,7 +325,7 @@ tek4010 has the following options:
 			Emulate a baud rate. Without one of these arguments, the baud rate
 			is 19200 baud. The original Tektronix 4010 had a maximal baud rate
 			of 9600 baud. The 4014 could support up to 100000 baud with a special
-                        interface. With the small baud rates you can emulate 1970s 
+			interface. With the small baud rates you can emulate 1970s 
 			style modem performance. Early modems had a baud rate of 300.
 
 	-full		in this mode the tek4010 emulator creates a full screen window, and
@@ -333,9 +334,9 @@ tek4010 has the following options:
 			close the tek4010 window.
                         
 	-fullv          in this mode the tek4010 emulator creates a decorated window
-                        using the maximal vertical space available. The full resolution of
-                        the 4014 with the enhanced graphics module installed is used,
-                        scaled down to the actual window size
+			using the maximal vertical space available. The full resolution of
+			the 4014 with the enhanced graphics module installed is used,
+			scaled down to the actual window size
 
 	-ARDS		display ARDS data
 
@@ -343,8 +344,8 @@ tek4010 has the following options:
 			Details see below.
                         
 	-autoClear      erase screen if a line feed is executed at the bottom of the screen.
-                        This makes it sometimes easier to use tek4010 as the only terminal. It
-                        is not the behaviour of the original hardware.
+			This makes it sometimes easier to use tek4010 as the only terminal. It
+			is not the behaviour of the original hardware.
 
 	-keepsize	tek4010 sets the fontsize to normal whenever the screen is erased.
 			This option keeps the currently selected font size until it is
@@ -371,7 +372,7 @@ directory, type
 
 You should see the following line displayed:
 
-        /usr/share/fonts/truetype/apl385/Apl385.ttf: APL385 Unicode:style=Regular
+	/usr/share/fonts/truetype/apl385/Apl385.ttf: APL385 Unicode:style=Regular
 
 While still being in the apl directory, you can test the APL character set using
 
@@ -462,6 +463,15 @@ ARDS manual (see manuals folder)
 
 The font used by tek4010 is defined in tube.h. If you prefer to use a different font (for example a
 dotted font), define STANDARD_FONT and STANDARD_FONT_SIZE in tube.h and recompile the program.
+
+**Making grayscale images for tek4010**
+
+The Tektronix 4014 was able to display grayscale images using the "special point plot mode", which was
+state of the art for the 1970s. The grayscale had only 64 values and was very nonlinear. There are
+very few such grayscale images still available, but you can make your own images using my tool
+[make-tek-image](https://github.com/rricharz/make-tek-image).
+
+![screen_shot](spock.png?raw=true "tek4010 screendump")
 
 **Help wanted**
 
