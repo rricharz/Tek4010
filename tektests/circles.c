@@ -1,5 +1,5 @@
 #define MAXX 1024
-#define MAXY 680
+#define MAXY 780
 
 #include <stdio.h>
 #include <math.h>
