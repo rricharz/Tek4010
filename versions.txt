@@ -1,3 +1,10 @@
+Version 1.5.3 of November 15, 2019
+==================================
+- No scaling on fullscreen 1024x768 monitors (original 4010 was 1024x780).
+- Added pictures with variable brightness in pltfiles/PointPlot
+- Hide cursor in full screen mode
+- -hidecursor hides the cursor, do not use for GIN mode
+
 Version 1.5.2 of October 11, 2019
 ================================
 - Simulate higher baud rates up to 100000 (Raspberry Pi 4 required)

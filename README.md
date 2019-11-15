@@ -33,6 +33,11 @@ video of a an [animation using the tek4010](https://youtu.be/7FMewaoEOmk), a vid
 [tek4010 alongside the PiDP-11](https://youtu.be/4jZzypvxoHU) and a video of
 [tek4010 connected to a historical PDP-11/73](https://youtu.be/rYwOLYE4DVQ) over a serial link.
 
+The following picture shows a scale model of the Tektronix 4010 crafted by
+Dave Ault using tek4010.
+
+![scale model](scalemodel.jpg?raw=true "scale model of Tektronix 4010")
+
 **Important features of tek4010**
 
         - Emulation of Tektronix 4010, Tektronix 4013, Tektronix 4014, Tektronix 4015 and ARDS
@@ -42,7 +47,7 @@ video of a an [animation using the tek4010](https://youtu.be/7FMewaoEOmk), a vid
         - Full screen resolution in -full mode
         - Coordinate system: 1024 x 780 and 4096 x 3072 tek points
         - All Tektronix 4014 modes, including graphical input mode (GIN) and write-through mode
-	- Supports grayscale images (Tektronix 4014 intensity chart)
+        - Supports grayscale images (Tektronix 4014 intensity chart)
         - APL character set and keyboard for Tektronix 4013 and Tektronix 4015
         - telnet and rsh connection to host and direct display of plot files
         - baud rates: 300 to 19200
@@ -351,6 +356,8 @@ tek4010 has the following options:
 			This option keeps the currently selected font size until it is
 			changed with a new escape sequence. Some historic plot files will
 			not reset the font size back to normal if this option is set. 
+
+	-hidecursor	hides the cursor. Do not set while using GIN mode.
 
 **APL mode**
 

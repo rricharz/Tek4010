@@ -9,14 +9,17 @@ for i in {1..100}
   done
 }
 
-for filename in pltfiles/ICEMD_pltfiles/*.plt
+while true
 do
+
+  for filename in pltfiles/ICEMD_pltfiles/*.plt
+  do
     # erase screen
     printf '\033\014'
     echo tek4010 is displaying "$filename"
     cat "$filename"
     wait5s
+  done
+
 done
-
-
 

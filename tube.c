@@ -77,6 +77,7 @@ int argARDS = 0;
 int argAPL = 0;
 int argAutoClear = 0;
 int argKeepSize = 0;
+int argHideCursor = 0;
 
 int refresh_interval;           // after this time in msec next refresh is done
 
@@ -281,7 +282,7 @@ void tube_init(int argc, char* argv[])
         char *argv2[20];
         size_t bufsize = 127;
         int firstArg = 1;
-        printf("tek4010 version 1.5.2\n");
+        printf("tek4010 version 1.5.3\n");
         windowName = "Tektronix 4010/4014 emulator";
         if ((argc<2) || (argc>19)) {
                 printf("Error:number of arguments\n");
@@ -327,6 +328,8 @@ void tube_init(int argc, char* argv[])
                         argAutoClear = 1;
                 else if (strcmp(argv[firstArg],"-keepsize") == 0)
                         argKeepSize = 1;
+                else if (strcmp(argv[firstArg],"-hidecursor") == 0)
+                        argHideCursor = 1;
                 else if (strcmp(argv[firstArg],"-APL") == 0) {
                         argAPL = 1;
                         windowName = "Tektronix 4013/4015 emulator (APL)";
