@@ -343,6 +343,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                 efactor = windowWidth / 1024.0;
                 refresh_interval = 30;
                 tube_changeCharacterSize(cr, cr2, 74, 35, efactor);
+                if (efactor > 0.8) pensize = efactor * 1.25;
                 if (windowWidth != 1024) printf("Scaling: %0.3f\n", efactor / 4.0);
         }
         
@@ -367,7 +368,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                 tube_setupPainting(cr, cr2, STANDARD_FONT);
         
         if (plotPointMode)
-                todo = 16 * TODO;
+                todo = 100 * TODO;
         else if (writeThroughMode)
                 todo = 8 * TODO;
         else if (mode == 0)
@@ -381,7 +382,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                 if (tube_isInput() == 0) {
                         todo = 0;
                 }
-
+                
                 if (ch == -1) {
                         if ((mode == 0) && showCursor) tube_doCursor(cr2);
                         if (mode != 60) return;         // no char available, need to allow for updates

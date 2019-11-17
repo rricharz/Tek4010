@@ -42,6 +42,8 @@ extern int writeThroughMode;
 
 extern int tube_x0, tube_x2, tube_y0, tube_y2;
 
+extern double pensize;
+
 extern long tube_mSeconds();
 extern long tube_u100ResetSeconds(int reset);
 extern int tube_translateKeyCode(int ch);

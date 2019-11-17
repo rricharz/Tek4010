@@ -102,6 +102,8 @@ int aplMode = 0;
 
 int tube_x0, tube_x2,tube_y0, tube_y2;
 
+double pensize = 1.0;
+
 static int debugCount = 0;
 
 long refreshCount = 0;           // variables for baud rate and refresh rate measurements
@@ -777,10 +779,10 @@ void tube_drawPoint(cairo_t *cr, cairo_t *cr2)
 {
 #define PI2 6.283185307
         int i1;
-        cairo_set_line_width (cr, 1 + defocussed);
+        cairo_set_line_width (cr, pensize + defocussed);
         cairo_set_source_rgb(cr, 0, BLACK_COLOR + ((1.0 - BLACK_COLOR) * intensity) / 100, 0);
-        cairo_move_to(cr, tube_x2 - 1, windowHeight - tube_y2);
-        cairo_line_to(cr, tube_x2 + 1, windowHeight - tube_y2);
+        cairo_move_to(cr, tube_x2, windowHeight - tube_y2);
+        cairo_line_to(cr, tube_x2 + 1, windowHeight - tube_y2 + 1);
         cairo_stroke (cr);
                                         
         // speed is a problem here
@@ -828,7 +830,7 @@ void tube_drawVector(cairo_t *cr, cairo_t *cr2)
         if ((tube_x2 == tube_x0) && (tube_y2 == tube_y0)) tube_x0++; // cairo cannot draw a dot
 
         if (writeThroughMode) {
-                cairo_set_line_width (cr2, 2);
+                cairo_set_line_width (cr2, pensize + 1);
                 cairo_set_source_rgb(cr2, 0.0, WRITE_TROUGH_INTENSITY, 0.0);
                 cairo_move_to(cr2, tube_x0, windowHeight - tube_y0);
                 cairo_line_to(cr2, tube_x2, windowHeight - tube_y2);
@@ -837,7 +839,7 @@ void tube_drawVector(cairo_t *cr, cairo_t *cr2)
         
         else {
                 // draw the actual vector on permanent surface
-                cairo_set_line_width (cr, 1 + defocussed);
+                cairo_set_line_width (cr, pensize + defocussed);
                 cairo_set_source_rgb(cr, 0, BLACK_COLOR + ((NORMAL_INTENSITY - BLACK_COLOR) * intensity) / 100, 0);
                 tube_line_type(cr, cr2, ltype);
                 cairo_move_to(cr, tube_x0, windowHeight - tube_y0);
@@ -845,7 +847,7 @@ void tube_drawVector(cairo_t *cr, cairo_t *cr2)
                 cairo_stroke (cr);
         
                 //draw the bright spot, half intensity
-                cairo_set_line_width (cr2, 6 + 2 * defocussed);
+                cairo_set_line_width (cr2, 6 + pensize + 1 * defocussed);
                 double bsc = (BRIGHT_SPOT_COLOR_HALF * intensity) / 100;
                 cairo_set_source_rgb(cr2, bsc, bsc, bsc);                        
                 cairo_move_to(cr2, tube_x0, windowHeight - tube_y0);
@@ -853,7 +855,7 @@ void tube_drawVector(cairo_t *cr, cairo_t *cr2)
                 cairo_stroke (cr2);
                                         
                 // draw the bright spot, high intensity
-                cairo_set_line_width (cr2, 3 + 2 * defocussed);
+                cairo_set_line_width (cr2, pensize + 2 + 2 * defocussed);
                 bsc = (BRIGHT_SPOT_COLOR * intensity) / 100;
                 cairo_set_source_rgb(cr2, bsc, bsc, bsc);                        
                 cairo_move_to(cr2, tube_x0, windowHeight - tube_y0);
@@ -867,7 +869,7 @@ void tube_drawVector(cairo_t *cr, cairo_t *cr2)
 void tube_setupPainting(cairo_t *cr, cairo_t *cr2, char *fontName)
 {
         cairo_set_antialias(cr, CAIRO_ANTIALIAS_BEST);      
-	cairo_set_line_width (cr, 1);
+	cairo_set_line_width (cr, pensize);
         cairo_set_source_rgb(cr, 0, NORMAL_INTENSITY, 0);        
         cairo_select_font_face(cr, fontName, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
         cairo_select_font_face(cr2, fontName, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);        
