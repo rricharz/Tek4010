@@ -262,7 +262,8 @@ void tek4010_escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
                 case ':': tube_changeCharacterSize(cr, cr2, 121, 58, efactor * 0.65); mode = 0; break;
                 case ';': tube_changeCharacterSize(cr, cr2, 133, 64, efactor * 0.55); mode = 0; break;
                 
-                case '[':   // a second escape code follows, do not reset mode
+                case '[': printf("Ignoring ANSI escape sequence: [");
+                          mode=31;
                           break;
                 
                 // normal mode
@@ -297,7 +298,7 @@ void tek4010_escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
                 case 'w': ltype = SOLID;    writeThroughMode = 1; mode = 101; showCursor = 0; break; 
                         
                 default: 
-                        if (DEBUG) printf("ESC %d not supported, ignored\n",ch);
+                        printf("Ignoring escape code: 0x%02x\n",ch);
                         mode = 0;
                         break;                                               
         }         
@@ -327,6 +328,11 @@ int tek4010_checkReturnToAlpha(int ch)
                 return 1;
         }
         else return 0;
+}
+
+int digit(char ch)
+{
+        return ((ch>='0') && (ch<='9'));
 }
 
 void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
@@ -608,7 +614,13 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 break;
                         case 30: // escape code handler
                                 tek4010_escapeCodeHandler(cr, cr2, ch);
-                                break;               
+                                break;
+                        case 31: // ANSI CSI sequence
+                                printf("%c",ch);
+                                if ((ch<0x20) || (ch>0x3F)) {
+                                  mode=0;
+                                  printf("\n");
+                                }
                         case 40: // incremental plot mode
                                 tek4010_checkReturnToAlpha(ch);  // check for exit
                                 if (DEBUG) printf("Incremental plot mode, ch = %d, penDown = %d\n",ch, penDown);
