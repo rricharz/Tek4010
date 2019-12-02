@@ -1,3 +1,8 @@
+Version 1.5.6 of December 2, 2019
+=================================
+- Improved handling of PLOT 10 data
+- Fixed a bug displaying vectors at certain boundaries
+
 Version 1.5.5 of November 25, 2019
 ==================================
 - Properly ignore ANSI CSI escape sequencies,

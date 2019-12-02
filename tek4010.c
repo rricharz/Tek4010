@@ -196,6 +196,7 @@ void tek4010_escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
 // handle escape sequencies, see 4014 user manual, table page G-1
 // codes identical for all modes are handled elsewhere
 {
+        if (DEBUG) printf("Escape %02X, savemode=%d\n",ch,savemode);
         switch (ch) {
                 case 0: break; // ignore filler 0
 
@@ -267,14 +268,14 @@ void tek4010_escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
                           break;
                 
                 // normal mode
-                case '`': ltype = SOLID;    writeThroughMode = 0; mode = 0; break;
-                case 'a': ltype = DOTTED;   writeThroughMode = 0; mode = 0; break;
-                case 'b': ltype = DOTDASH;  writeThroughMode = 0; mode = 0; break;
-                case 'c': ltype = SHORTDASH;writeThroughMode = 0; mode = 0; break;
-                case 'd': ltype = LONGDASH; writeThroughMode = 0; mode = 0; break;
-                case 'e': ltype = SOLID;    writeThroughMode = 0; mode = 0; break;
-                case 'f': ltype = SOLID;    writeThroughMode = 0; mode = 0; break;                
-                case 'g': ltype = SOLID;    writeThroughMode = 0; mode = 0; break;
+                case '`': ltype = SOLID;    writeThroughMode = 0; mode = savemode; break;
+                case 'a': ltype = DOTTED;   writeThroughMode = 0; mode = savemode; break;
+                case 'b': ltype = DOTDASH;  writeThroughMode = 0; mode = savemode; break;
+                case 'c': ltype = SHORTDASH;writeThroughMode = 0; mode = savemode; break;
+                case 'd': ltype = LONGDASH; writeThroughMode = 0; mode = savemode; break;
+                case 'e': ltype = SOLID;    writeThroughMode = 0; mode = savemode; break;
+                case 'f': ltype = SOLID;    writeThroughMode = 0; mode = savemode; break;                
+                case 'g': ltype = SOLID;    writeThroughMode = 0; mode = savemode; break;
                         
                 // defocussed mode
                 case 'h':
@@ -308,6 +309,8 @@ int tek4010_checkReturnToAlpha(int ch)
 // test for return to alpha character set
 // see 4014 manual, page F-10, note 1
 {
+        if (ch == 27)
+                savemode = mode;
         if ((ch==31) || (ch==13) || (ch==27) || (ch==12)) {
                 if (DEBUG && mode) printf("Going to alpha mode\n");
                 mode = 0;
@@ -540,11 +543,6 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 if (DEBUG) printf("setting yh to %d\n", yh);
                                 break;
                         case 2: yl = (ch & 31);
-                                if (windowWidth != 1024) {
-                                        int yb = (xy4014 >> 2) & 3;
-                                        tube_y0 = (int)(efactor * (double)(((yh+yl) << 2) + yb) / 4.0);
-                                }
-                                else tube_y0 = yh + yl;
                                 mode++;
                                 if (DEBUG) printf("setting yl to %d\n", yl);
                                 break;
@@ -555,8 +553,13 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 if (windowWidth != 1024) {
                                         int xb = xy4014 & 3;
                                         tube_x0 = (int)(efactor * (double)(((xh+xl) << 2) + xb) / 4.0);
+                                        int yb = (xy4014 >> 2) & 3;
+                                        tube_y0 = (int)(efactor * (double)(((yh+yl) << 2) + yb) / 4.0);
                                 }
-                                else tube_x0 = xh + xl;
+                                else {
+                                        tube_x0 = xh + xl;
+                                        tube_y0 = yh + yl;
+                                }
                                 mode++;
                                 tube_emulateDeflectionTime();
                                 if (DEBUG) printf("setting xl to %d\n", xl);
