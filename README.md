@@ -197,15 +197,17 @@ You can also use the following ctrl key function to close tek4010:
 
 This makes sense, if you have set up a virtual DZ11 for multiple user login, opening a
 telnet port for multiplexed terminals. On the PiDP-11 using 2.11 BSD, the distribution software has
-already set up port 4000 for 8 multiuser terminals. First, you need to install and test
-telnet (2.11 BSD needs to be up and running in multiuser mode):
+already set up port 4000 for 8 multiuser terminals. For RSX-11M+ a port at the address 10001
+is already set up in the distribution software. Use therefore 10001 instead of 4000 if you
+are using RSX-11M+. First, you need to install and test telnet (2.11 BSD needs to be up and
+running in multiuser mode):
 
 	sudo apt-get install telnet
-	telnet raspi_hostname 4000
+	telnet raspi_hostname 4000	(or 10001 for RSX11M+)
 
 or
 
-	telnet localhost 4000
+	telnet localhost 4000	(or 10001 for RSX11M+)
 
 where "raspi_hostname" is the hostname of your system running simh. If you are using telnet
 and tek4010 on the same system as the system running simh, use "localhost" instead of
@@ -214,11 +216,11 @@ attached keyboard and mouse.
 
 Once this works, you can start tek4010 as follows:
 
-	tek4010 telnet raspi_hostname 4000
+	tek4010 telnet raspi_hostname 4000	(or 10001 for RSX11M+)
 
 or
 
-	tek4010 telnet localhost 4000	
+	tek4010 telnet localhost 4000	(or 10001 for RSX11M+)	
 
 **Log into PiDP-11 running on the same Raspberry Pi, using the console**
 
