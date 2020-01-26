@@ -1,3 +1,7 @@
+Version 1.5.7 of January 25, 2020
+=================================
+- FF does not clear screen, only ESC FF does
+
 Version 1.5.6 of December 2, 2019
 =================================
 - Improved handling of PLOT 10 data
