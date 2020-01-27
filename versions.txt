@@ -1,3 +1,8 @@
+Version 1.5.7b of January 27, 2020
+==================================
+- ESC FF clears the screen, FF alone does not, as in the original hardware
+  Note that version 1.5.7 (without the b) had a bug never clearing the screen
+
 Version 1.5.6 of December 2, 2019
 =================================
 - Improved handling of PLOT 10 data

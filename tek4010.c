@@ -311,14 +311,14 @@ int tek4010_checkReturnToAlpha(int ch)
 {
         if (ch == 27)
                 savemode = mode;
-        if ((ch==31) || (ch==13) || (ch==27) || (ch==12)) {
+        if ((ch==31) || (ch==13) || (ch==27) /*|| (ch==12)*/) {
                 if (DEBUG && mode) printf("Going to alpha mode\n");
                 mode = 0;
                 showCursor = 0;
-                if (ch == 12) {
-                        tube_doClearPersistent = 1;
-                        todo = 0;
-                }
+                //if (ch == 12) {
+                //        tube_doClearPersistent = 1;
+                //        todo = 0;
+                //}
                 if (ch == 27) {
                         mode = 30;
                         todo = 0;
