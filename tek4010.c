@@ -316,7 +316,7 @@ int tek4010_checkReturnToAlpha(int ch)
                 mode = 0;
                 showCursor = 0;
                 if (ch == 12) {
-                        // tube_doClearPersistent = 1;
+                        tube_doClearPersistent = 1;
                         todo = 0;
                 }
                 if (ch == 27) {
