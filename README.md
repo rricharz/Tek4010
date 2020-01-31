@@ -502,7 +502,8 @@ The historical plot data for the Tektronix 4014 was obtained from Jos Dreesen. T
 pictures with variable brightness were obtained from Monty McGraw. He also helped to debug the special
 plot point mode.
 The historical plot data of the spacelab from the ICEMDDN CAD package on a CDC Cyber 175 mainframe
-emulator was obtained from Nick Glazzard. He also helped to improve the GIN mode substantially. 
+emulator was obtained from Nick Glazzard. He also helped to improve the GIN mode substantially.
+The CP/M GSXBASIC plot files are from Udo Munk.
 Thanks to Ian Schofield for his critical comments and a code snippet for drawing dashed and dotted lines,
 and to Oscar Vermeulen and Mark Matlock for their support.
 The manuals were obtained from bitsavers.org.
