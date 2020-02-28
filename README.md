@@ -312,6 +312,11 @@ and tek4010 displays whatever is already in that file, and keeps monitoring that
 anything which is appended. Note that it is essential that the data is not filtered during the
 output process, because the tek4010 plotting code is 7 bits binary. Bit 8, the parity bit, is ignored.
 
+**Using tek4010 on the PiDP-8**
+
+Details, programs and plot files for the PiDP-8 are available at
+[tek4010-pidp8](https://github.com/rricharz/tek4010-pidp8i)
+
 **Options of the command tek4010**
 
 Call the command tek4010 using the following syntax:
