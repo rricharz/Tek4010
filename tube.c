@@ -48,6 +48,9 @@
 #include <sys/time.h>
 #include <locale.h>
 #include <pwd.h>
+#ifndef FIONREAD
+#include <sys/socket.h>
+#endif
 
 #include "main.h"
 #include "tube.h"
