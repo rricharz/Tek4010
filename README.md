@@ -1,5 +1,5 @@
 
-# Tektronix 4010 and 4014 Storage Tube Terminal Emulator (version 1.5)
+# Tektronix 4010 and 4014 Storage Tube Terminal Emulator
 
 This is a [Tektronix 4010, 4013, 4014 and 4015](https://en.wikipedia.org/wiki/Tektronix_4010)
 terminal emulator for the Raspberry Pi and other Linux systems.
