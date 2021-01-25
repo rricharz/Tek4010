@@ -1,3 +1,7 @@
+Version 1.6 of January 25, 2021
+===============================
+- Cygwin defines FIONREAD in <sys/socket.h>.
+
 Version 1.5.7b of January 27, 2020
 ==================================
 - ESC FF clears the screen, FF alone does not, as in the original hardware
