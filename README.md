@@ -85,7 +85,7 @@ The compiled "tek4010" program is for a Raspberry Pi. If you are on Ubuntu, do t
 the program. On the Raspberry Pi you can skip this step.
 
 	sudo apt-get install libgtk-3-dev
-	rm tek4010
+	make clean
 	make
         
 Thanks to Lars Brinkhoff (lars@nocrew.org) to pointing out how easy it is to compile tek4010

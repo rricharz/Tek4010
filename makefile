@@ -9,3 +9,7 @@ tek4010: main.c main.h tube.c tube.h tek4010.c ards.c
 
 install: tek4010
 	./install
+
+.PHONY : clean
+clean :
+	-rm -f tek4010
