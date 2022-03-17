@@ -68,7 +68,7 @@ Install the tek4010 emulator from this repo on a Raspberry Pi (desktop version r
 I propose using
 
 	sudo apt-get install git
-	git clone git://github.com/rricharz/Tek4010
+	git clone https://github.com/rricharz/Tek4010
 	cd Tek4010
 
 This allows you to get updates later easily as follows:
