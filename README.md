@@ -260,7 +260,7 @@ system and simh properly, before detaching the terminal emulator!
 **Using tek4010 with a serial link**
 
 Teunis van Beelen has written a nice [helper program](https://gitlab.com/Teuniz/rs232-console) to use tek4010 with
-a serial link. This is beta-test software at the moment. Feedback to rricharz77@gmail.com is very much appreciated.
+a serial link.
 
 First, install the helper program. The helper program is on gitlab, not github.
 
@@ -486,6 +486,11 @@ very few such grayscale images still available, but you can make your own images
 [make-tek-image](https://github.com/rricharz/make-tek-image).
 
 ![screen_shot](spock.png?raw=true "tek4010 screendump")
+
+**Further examples of using tek4010**
+
+[Moonlight Special MicroMouse Simulator](https://youtu.be/Q5y5QX3IiuM). Details and credits
+are in the description of this youtube video.
 
 **Help wanted**
 
