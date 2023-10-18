@@ -499,7 +499,7 @@ int tube_on_timer_event()
         // is child process still running?
         
         int status;
-        if (argWait) {
+        if (argWait && (tube_isInput() == 0) && (waitpid(-1, &status, WNOHANG))) {
                 if (firstWait == 0)
                         firstWait = tube_mSeconds();
                 else {
