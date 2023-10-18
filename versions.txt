@@ -168,3 +168,9 @@ New features:
 - Added versions.txt
 Bug fixes:
 - fixed demo.sh to display dodekagon.plt instead of captured_data
+
+Version 1.7 October 18, 2023
+============================
+Added -wait n seconds as argument, staying alive n seconds after
+completion.
+

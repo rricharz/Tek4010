@@ -82,6 +82,7 @@ int argAPL = 0;
 int argAutoClear = 0;
 int argKeepSize = 0;
 int argHideCursor = 0;
+int argWait = 0;
 
 int refresh_interval;           // after this time in msec next refresh is done
 
@@ -119,6 +120,7 @@ static int currentFontSize = 18;
 static int currentCharacterOffset = 0;
 
 long startPaintTime;
+long firstWait;
 
 int leftmargin;
 
@@ -288,7 +290,7 @@ void tube_init(int argc, char* argv[])
         char *argv2[20];
         size_t bufsize = 127;
         int firstArg = 1;
-        printf("tek4010 version 1.6\n");
+        printf("tek4010 version 1.7\n");
         windowName = "Tektronix 4010/4014 emulator";
         if ((argc<2) || (argc>19)) {
                 printf("Error:number of arguments\n");
@@ -301,7 +303,7 @@ void tube_init(int argc, char* argv[])
                 argc--;
         }
         
-        while ((argv[firstArg][0] == '-') && firstArg < argc-1) {
+        while ((argv[firstArg][0] == '-') && (firstArg < argc-1)) {
                 if (strcmp(argv[firstArg],"-raw") == 0)
                         argRaw = 1;
                 else if (strcmp(argv[firstArg],"-noexit") == 0)
@@ -345,6 +347,17 @@ void tube_init(int argc, char* argv[])
                 else if (strcmp(argv[firstArg],"-ARDS") == 0) {
                         argARDS = 1;
                         windowName = "ARDS emulator";
+                }
+                else if (strcmp(argv[firstArg],"-wait") == 0) {
+                        argWait = 3;
+                        if (firstArg < argc-2) {
+				if ((argv[firstArg+1][0] >= '0') &&
+					 (argv[firstArg+1][0] <= '9')) {
+                                        firstArg++;
+                                        argWait = atoi(argv[firstArg]);
+                                }
+			}
+			// printf("Waiting %d seconds after end of plot\n", argWait);
                 }
                 else {
                         printf("tek4010: unknown argument %s\n", argv[firstArg]);
@@ -486,7 +499,19 @@ int tube_on_timer_event()
         // is child process still running?
         
         int status;
-        if ((!argNoexit) && (tube_isInput() == 0) && (waitpid(-1, &status, WNOHANG))) {
+        if (argWait) {
+                if (firstWait == 0)
+                        firstWait = tube_mSeconds();
+                else {
+                        if ((int)((tube_mSeconds() - firstWait) / 1000) > argWait) {
+                                tube_quit();
+                                gtk_main_quit();
+                                printf("Process has been terminated after %d seconds\n", argWait);
+                                exit(0);
+                        }
+                }       
+        }
+        else if ((!argNoexit) && (tube_isInput() == 0) && (waitpid(-1, &status, WNOHANG))) {
                 long t = tube_mSeconds();
                 // printf("Execution time: %0.3f sec\n", (double)t/1000.0);
                 // if (t > 0) {

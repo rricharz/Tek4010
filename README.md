@@ -366,6 +366,9 @@ tek4010 has the following options:
 
 	-hidecursor	hides the cursor. Do not set while using GIN mode.
 
+	-wait n		Close window n seconds after completion of "command".
+			It does not make sense to use -noexit together with -wait.
+
 **APL mode**
 
 If tek4010 is called with the -APL argument, a Tektronix 4013 and Tektronix 4015 is emulated
