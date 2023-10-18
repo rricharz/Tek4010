@@ -1,3 +1,8 @@
+Version 1.7 October 18, 2023
+============================
+Added -wait n seconds as argument, staying alive n seconds after
+completion.
+
 Version 1.6 of January 25, 2021
 ===============================
 - Cygwin defines FIONREAD in <sys/socket.h>.
@@ -169,8 +174,4 @@ New features:
 Bug fixes:
 - fixed demo.sh to display dodekagon.plt instead of captured_data
 
-Version 1.7 October 18, 2023
-============================
-Added -wait n seconds as argument, staying alive n seconds after
-completion.
 
