@@ -59,7 +59,7 @@ Dave Ault using tek4010.
         - Raspberry Pi 3 Model B+ or faster recommended if run on same system as SimH/PiDP-11
         - Raspberry Pi 3 Model B+ or faster recommended if run in -full mode on high resolution screens
         - Tested with Raspbian Stretch and Raspbian Buster
-        - Tested on Raspberry Pi 4
+        - Tested on Raspberry Pi 3, 4 and 5.
         - Tested with directly attached HDMI screen and with VNC
 
 **Installation and first tests**
@@ -75,14 +75,11 @@ This allows you to get updates later easily as follows:
 
 	cd Tek4010
 	git pull
-
-If you just want the "tek4010" program for the Raspberry Pi, without the source, the original plot files
-and the original manuals, you can also go to the
-[releases page](https://github.com/rricharz/Tek4010/releases), and just download the latest
-"tek4010" program.
         
-The compiled "tek4010" program is for a Raspberry Pi. If you are on Ubuntu, do the following to recompile
-the program. On the Raspberry Pi you can skip this step.
+The compiled "tek4010" program is for a Raspberry Pi 3 and 4 with 32-bit
+Raspberry Pi OS. If you are on a Raspberry Pi 5 or Ubuntu, do the following to
+recompile the program on the target system. On the Raspberry Pi 3 and 4 with
+32-bit Raspberry Pi OS you can skip this step.
 
 	sudo apt-get install libgtk-3-dev
 	make clean
@@ -90,7 +87,8 @@ the program. On the Raspberry Pi you can skip this step.
         
 Thanks to Lars Brinkhoff (lars@nocrew.org) to pointing out how easy it is to compile tek4010
 on Ubuntu. He also helped me to fix some bugs and proposed many nice features. Don't forget to
-recompile the program each time you update from the repository if you are using Ubuntu. In this
+recompile the program each time you update from the repository if you are using a Raspberry
+Pi 5 or Ubuntu. In this
 case, you will also have to delete the compiled "tek4010" program before you can do a new pull.
 
 There is a file "dodekagon.plt" in the repo, which you can use to test the tek4010 emulator.
