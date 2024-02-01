@@ -163,6 +163,14 @@ static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_da
                 return;
         }
         
+        if (event->keyval == 0x8BF) {           // "option b" sends break code to target
+                if (putKeys) {
+                printf("sending break code\n");
+                putc(0xFF, putKeys);
+                putc(0xF3, putKeys);
+                }
+        }
+        
         // control keys
         else if ((event->keyval >= 0xFF00) && (event->keyval <= 0xFF1F))
                 ch = event->keyval & 0x1F;
