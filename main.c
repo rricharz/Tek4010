@@ -279,9 +279,10 @@ int main (int argc, char *argv[])
 	gtk_widget_add_events(window, GDK_BUTTON_PRESS_MASK);
         gtk_widget_add_events(window, GDK_KEY_PRESS_MASK);
 
+        gtk_widget_set_events(darea,gtk_widget_get_events(darea) | GDK_BUTTON_PRESS_MASK | GDK_POINTER_MOTION_MASK);
 	g_signal_connect(G_OBJECT(darea),  "draw",  G_CALLBACK(on_draw_event), NULL);
-	g_signal_connect(G_OBJECT(window), "destroy", G_CALLBACK(on_quit_event), NULL);
-	g_signal_connect(G_OBJECT(window), "button-press-event", G_CALLBACK(clicked), NULL);
+	g_signal_connect(G_OBJECT(darea), "destroy", G_CALLBACK(on_quit_event), NULL);
+	g_signal_connect(G_OBJECT(darea), "button-press-event", G_CALLBACK(clicked), NULL);
         g_signal_connect(G_OBJECT(window), "key_press_event", G_CALLBACK(on_key_press), NULL);
         
         GdkScreen *screen = gtk_window_get_screen(GTK_WINDOW(window));
