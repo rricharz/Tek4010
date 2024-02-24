@@ -1,3 +1,8 @@
+Version 1.8 February 24, 2024
+=============================
+Much improved color and fading of the bright spot
+
+
 Version 1.7 October 18, 2023
 ============================
 Added -wait n seconds as argument, staying alive n seconds after

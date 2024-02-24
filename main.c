@@ -140,8 +140,10 @@ static void do_drawing(cairo_t *cr, GtkWidget *widget)
 
 	cairo_set_source_surface(cr, permanent_surface, windowWidthOffset, windowHeightOffset);
 	cairo_paint(cr);
-        cairo_set_source_surface(cr, temporary_surface, windowWidthOffset, windowHeightOffset);
+	cairo_set_operator(cr, CAIRO_OPERATOR_LIGHTEN);
+    cairo_set_source_surface(cr, temporary_surface, windowWidthOffset, windowHeightOffset);
 	cairo_paint(cr);
+	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
          
 	cairo_destroy(permanent_cr);
         cairo_destroy(temporary_cr);
