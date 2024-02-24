@@ -571,7 +571,7 @@ void tube_clearPersistent(cairo_t *cr, cairo_t *cr2)
         tube_y2 = tube_y0;
         leftmargin = 0;
         cairo_set_source_rgb(cr, 0, NORMAL_INTENSITY, 0);
-        cairo_set_source_rgb(cr2, BRIGHT_SPOT_COLOR, BRIGHT_SPOT_COLOR, BRIGHT_SPOT_COLOR);
+        cairo_set_source_rgb(cr2, 0, BRIGHT_SPOT_COLOR / 2, 0);
         cairo_paint(cr2);
         isBrightSpot = 1;
         plotPointMode = 0;
