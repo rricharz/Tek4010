@@ -591,6 +591,7 @@ void tube_clearSecond(cairo_t *cr2)
         cairo_set_operator(cr2, CAIRO_OPERATOR_MULTIPLY);
         cairo_paint(cr2);
         cairo_set_operator(cr2, CAIRO_OPERATOR_OVER);
+        isBrightSpot = 1;
 }
 
 void tube_line_type(cairo_t *cr, cairo_t *cr2, enum LineType ln)
