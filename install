@@ -7,4 +7,5 @@
 cp tek4010 ~/bin
 chmod +x ~/bin/tek4010
 
-echo "tek4010 installed"
+echo "tek4010 installed."
+echo "Reboot if this is the first time tek4010 is installed"

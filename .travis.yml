@@ -1,5 +1,0 @@
-language: c
-dist: trusty
-sudo: required
-install: sudo apt-get -y update && sudo apt-get install libgtk-3-dev
-script: rm -f tek4010 && make

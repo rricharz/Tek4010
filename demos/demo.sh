@@ -1,27 +1,33 @@
 #!/bin/bash
-# idemo, run with tek4010 to display ICEMD vector data
 # rricharz 2019
 
-wait2s() {
+wait1s() {
 # let tek4010 wait 2 seconds (not this script, which just shuffles stuff into the buffer!)
-for i in {1..30}
+for i in {1..15}
   do
     printf '\007'
   done
 }
 
-while true
-do
+# erase screen
+    printf '\033\014'
 
-  for filename in pltfiles/ICEMD_pltfiles/*.plt
-  do
+cat pltfiles/00README.txt
+
+wait1s
+
+cat dodekagon.plt
+
+wait1s
+
+for filename in pltfiles/*.plt
+do
     # erase screen
     printf '\033\014'
-    printf '<033:'
     echo tek4010 is displaying "$filename"
     cat "$filename"
-    wait2s
-  done
-
+    wait1s
 done
+
+
 
