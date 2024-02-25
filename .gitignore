@@ -36,6 +36,7 @@
 *.x86_64
 *.hex
 tek4010
+previous_version/tek4010
 
 # Debug files
 *.dSYM/
