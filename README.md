@@ -32,4 +32,4 @@ Dave Ault using tek4010.
 
 ![scale model](scalemodel.jpg?raw=true "scale model of Tektronix 4010")
 
-All instructions can now be found in Manual.pdf in the main Tek4010 directory.
+All instructions can now be found in [Manual.pdf](https://github.com/rricharz/Tek4010/blob/master/Manual.pdf) in the main Tek4010 directory.
