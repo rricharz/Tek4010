@@ -35,7 +35,8 @@ Dave Ault using tek4010.
 All instructions can now be found in [Manual.pdf](https://github.com/rricharz/Tek4010/blob/master/Manual.pdf)
 in the main Tek4010 directory.
 
-Version 1.8 or above has a much improved handling of the bright drawing spot, but requires also more
-computer power. See chapter 14 of the manual if tek4010 runs sluggish on your system. This might be the case if
-you run tek4010 remotely using vnc, or on a Raspberry Pi 3.
+    Version 1.8 or above includes a much improved handling of the bright drawing spot, 
+    but requires also much more computer power. See chapter 14 of the manual on how
+    to install it. The standard version installed is 1.7, which works on all
+    Raspberry Pi models.
 

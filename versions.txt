@@ -1,10 +1,10 @@
-Version 1.8 February 24, 2024
-=============================
+Version 1.8 February 24, 2024 for Raspberry Pi 5 8GB only
+=========================================================
 Much improved color and fading of the bright spot
 
 
-Version 1.7 October 18, 2023
-============================
+Version 1.7 October 18, 2023 STABLE VERSION FOR ALL SYSTEMS
+===========================================================
 Added -wait n seconds as argument, staying alive n seconds after
 completion.
 

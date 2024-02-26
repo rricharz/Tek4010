@@ -10,5 +10,5 @@ tek4010: src/main.c src/main.h src/tube.c src/tube.h src/tek4010.c src/ards.c
 install: tek4010
 	./install
 
-.PHONY : clean
+clean: tek4010
 	-rm -f tek4010

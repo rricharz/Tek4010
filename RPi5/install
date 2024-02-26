@@ -4,7 +4,8 @@
 [ ! -d ~/bin  ] && mkdir ~/bin
 
 # copy the file to ~/bin, make it executable
-cp tek4010 ~/bin
+cp ../tek4010 ~/bin
 chmod +x ~/bin/tek4010
 
-echo "tek4010 version 1.7 installed"
+echo "tek4010 installed."
+echo "Reboot if this is the first time tek4010 is installed"
