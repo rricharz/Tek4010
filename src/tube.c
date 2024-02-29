@@ -28,8 +28,8 @@
 #define DEBUGMAX 0              // exit after DEBUGMAX chars, 0 means no exit
 
 #define WRITE_TROUGH_INTENSITY  0.5             // green only
-#define NORMAL_INTENSITY        0.7
-#define CURSOR_INTENSITY        0.7
+#define NORMAL_INTENSITY        0.75
+#define CURSOR_INTENSITY        0.75
 #define BRIGHT_SPOT_COLOR       1.0
 #define BRIGHT_SPOT_COLOR_HALF  0.6
 #define BLACK_COLOR             0.08            // effect of flood gun
@@ -825,7 +825,7 @@ void tube_drawPoint(cairo_t *cr, cairo_t *cr2)
                 double bsc = (BRIGHT_SPOT_COLOR * intensity) / 100;
                               
                 cairo_set_source_rgb(cr2, 0, bsc, 0);                        
-                cairo_arc(cr2, tube_x2, windowHeight - tube_y2, 2 + defocussed, 0, PI2);
+                cairo_arc(cr2, tube_x2, windowHeight - tube_y2, 1 + defocussed, 0, PI2);
                 cairo_fill(cr2);
                                                 
                 xlast = tube_x2;
@@ -874,18 +874,10 @@ void tube_drawVector(cairo_t *cr, cairo_t *cr2)
                 cairo_move_to(cr, tube_x0, windowHeight - tube_y0);
                 cairo_line_to(cr, tube_x2, windowHeight - tube_y2);
                 cairo_stroke (cr);
-        
-                //draw the bright spot, half intensity
-                cairo_set_line_width (cr2, 6 + pensize + 1 * defocussed);
-                double bsc = (BRIGHT_SPOT_COLOR_HALF * intensity) / 100;
-                cairo_set_source_rgb(cr2, 0, bsc, 0);                        
-                cairo_move_to(cr2, tube_x0, windowHeight - tube_y0);
-                cairo_line_to(cr2, tube_x2, windowHeight - tube_y2);
-                cairo_stroke (cr2);
-                                        
+                                                
                 // draw the bright spot, high intensity
-                cairo_set_line_width (cr2, pensize + 2 + 2 * defocussed);
-                bsc = (BRIGHT_SPOT_COLOR * intensity) / 100;
+                // cairo_set_line_width (cr2, pensize + 2 + 2 * defocussed);
+                double bsc = (BRIGHT_SPOT_COLOR * intensity) / 100;
                 cairo_set_source_rgb(cr2, 0, bsc, 0);                        
                 cairo_move_to(cr2, tube_x0, windowHeight - tube_y0);
                 cairo_line_to(cr2, tube_x2, windowHeight - tube_y2);

@@ -35,8 +35,7 @@ Dave Ault using tek4010.
 All instructions can now be found in [Manual.pdf](https://github.com/rricharz/Tek4010/blob/master/Manual.pdf)
 in the main Tek4010 directory.
 
-**Version 1.8 or above includes a much improved handling of the bright drawing spot, 
-but requires also much more computer power. See chapter 14 of the manual on how
-to install it. The standard version installed is 1.7, which works on all
-Raspberry Pi models.**
+**Version 1.8 for the Raspberry Pi 5 includes a somewhat improved handling of the fading of the bright
+drawing spot at the expense of requiring much more computer power. See chapter 14 of the manual on how
+to switch to it. The standard version is 1.7, which works on all Raspberry Pi models.**
 
