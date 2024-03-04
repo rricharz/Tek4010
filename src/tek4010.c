@@ -27,7 +27,7 @@
 #define DEBUG    0              // print debug info
 
  
-#define TODO  (long)(16)   // draw multiple objects until screen updates
+#define TODO  (long)(32)   // draw multiple objects until screen updates
 
 #define _GNU_SOURCE
  
@@ -350,7 +350,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
         if (first) {
                 first = 0; 
                 efactor = windowWidth / 1024.0;
-                refresh_interval = 30;
+                refresh_interval = 50;
                 tube_changeCharacterSize(cr, cr2, 74, 35, efactor);
                 if (efactor > 0.8) pensize = efactor * 1.25;
                 if (windowWidth != 1024) printf("Scaling: %0.3f\n", efactor / 4.0);

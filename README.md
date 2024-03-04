@@ -32,10 +32,22 @@ Dave Ault using tek4010.
 
 ![scale model](scalemodel.jpg?raw=true "scale model of Tektronix 4010")
 
-All instructions can now be found in [Manual.pdf](https://github.com/rricharz/Tek4010/blob/master/Manual.pdf)
+All instructions can be found in [Manual.pdf](https://github.com/rricharz/Tek4010/blob/master/Manual.pdf)
 in the main Tek4010 directory.
 
-**Version 1.8 for the Raspberry Pi 5 includes a somewhat improved handling of the fading of the bright
-drawing spot at the expense of requiring much more computer power. See chapter 14 of the manual on how
-to switch to it. The standard version is 1.7, which works on all Raspberry Pi models.**
+The storage tube emulator and the Tektronix 4010/4014 decoder were witten by Rene Richarz. The ARDS
+decoder was written by Lars Brinkhoff. He also provided some interesting historical documents and
+the ARDS plot files. Teunis van Beelen has written the helper program “rs232-console” to connect
+to a host using a serial link. Dave Ault tested the serial link to his PDP-11/73. The historical
+plot data for the Tektronix 4014 was obtained from Jos Dreesen. The special plot mode pictures
+with variable brightness were obtained from Monty McGraw. He also helped to debug the special
+plot point mode. The historical plot data of the spacelab from the ICEMDDN CAD package on a CDC
+Cyber 175 mainframe emulator was obtained from Nick Glazzard. He also helped to improve the GIN
+mode substantially. The CP/M GSXBASIC plot files are from Udo Munk. Thanks to Ian Schofield for
+his critical comments and a code snippet for drawing dashed and dotted lines, and to Oscar Vermeulen
+and Mark Matlock for their support. The manuals were obtained from bitsavers.org. Thanks also to all
+others who contributed important ideas, helped with the debugging and preserved the historical data.
+This program is the result of a community effort.
 
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.

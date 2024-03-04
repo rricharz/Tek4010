@@ -28,11 +28,12 @@
 #define DEBUGMAX 0              // exit after DEBUGMAX chars, 0 means no exit
 
 #define WRITE_TROUGH_INTENSITY  0.5             // green only
-#define NORMAL_INTENSITY        0.75
-#define CURSOR_INTENSITY        0.75
+#define NORMAL_INTENSITY        0.7
+#define CURSOR_INTENSITY        0.7
 #define BRIGHT_SPOT_COLOR       1.0
 #define BRIGHT_SPOT_COLOR_HALF  0.6
 #define BLACK_COLOR             0.08            // effect of flood gun
+#define FADE                    0.3				// lower value means slower fading
 
 #define _GNU_SOURCE
 
@@ -290,7 +291,7 @@ void tube_init(int argc, char* argv[])
         char *argv2[20];
         size_t bufsize = 127;
         int firstArg = 1;
-        printf("tek4010 version 1.7\n");
+        printf("tek4010 version 1.8\n");
         windowName = "Tektronix 4010/4014 emulator";
         if ((argc<2) || (argc>19)) {
                 printf("Error:number of arguments\n");
@@ -571,7 +572,7 @@ void tube_clearPersistent(cairo_t *cr, cairo_t *cr2)
         tube_y2 = tube_y0;
         leftmargin = 0;
         cairo_set_source_rgb(cr, 0, NORMAL_INTENSITY, 0);
-        cairo_set_source_rgb(cr2, 0, BRIGHT_SPOT_COLOR, 0);
+        cairo_set_source_rgb(cr2, 0, BRIGHT_SPOT_COLOR / 2, 0);
         cairo_paint(cr2);
         isBrightSpot = 1;
         plotPointMode = 0;
@@ -586,10 +587,11 @@ void tube_clearPersistent(cairo_t *cr, cairo_t *cr2)
 void tube_clearSecond(cairo_t *cr2)
 // clear second surface
 { 
-        cairo_set_source_rgba(cr2, 0, 0, 0, 0);
-        cairo_set_operator(cr2, CAIRO_OPERATOR_SOURCE);
+        cairo_set_source_rgba(cr2, 0, 0, 0, FADE);
+        cairo_set_operator(cr2, CAIRO_OPERATOR_MULTIPLY);
         cairo_paint(cr2);
         cairo_set_operator(cr2, CAIRO_OPERATOR_OVER);
+        isBrightSpot = 1;
 }
 
 void tube_line_type(cairo_t *cr, cairo_t *cr2, enum LineType ln)
@@ -825,7 +827,7 @@ void tube_drawPoint(cairo_t *cr, cairo_t *cr2)
                 double bsc = (BRIGHT_SPOT_COLOR * intensity) / 100;
                               
                 cairo_set_source_rgb(cr2, 0, bsc, 0);                        
-                cairo_arc(cr2, tube_x2, windowHeight - tube_y2, 1 + defocussed, 0, PI2);
+                cairo_arc(cr2, tube_x2, windowHeight - tube_y2, 2 + defocussed, 0, PI2);
                 cairo_fill(cr2);
                                                 
                 xlast = tube_x2;
@@ -874,11 +876,11 @@ void tube_drawVector(cairo_t *cr, cairo_t *cr2)
                 cairo_move_to(cr, tube_x0, windowHeight - tube_y0);
                 cairo_line_to(cr, tube_x2, windowHeight - tube_y2);
                 cairo_stroke (cr);
-                                                
+        
+                                        
                 // draw the bright spot, high intensity
-                // cairo_set_line_width (cr2, pensize + 2 + 2 * defocussed);
-                double bsc = (BRIGHT_SPOT_COLOR * intensity) / 100;
-                cairo_set_source_rgb(cr2, 0, bsc, 0);                        
+                cairo_set_line_width (cr, (pensize+1) + defocussed);
+                cairo_set_source_rgb(cr2, 0, BRIGHT_SPOT_COLOR, 0);                       
                 cairo_move_to(cr2, tube_x0, windowHeight - tube_y0);
                 cairo_line_to(cr2, tube_x2, windowHeight - tube_y2);
                 cairo_stroke(cr2);
