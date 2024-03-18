@@ -83,6 +83,7 @@ int argAutoClear = 0;
 int argKeepSize = 0;
 int argHideCursor = 0;
 int argWait = 0;
+int argFast = 0;
 
 int refresh_interval;           // after this time in msec next refresh is done
 
@@ -290,7 +291,7 @@ void tube_init(int argc, char* argv[])
         char *argv2[20];
         size_t bufsize = 127;
         int firstArg = 1;
-        printf("tek4010 version 1.8\n");
+        printf("tek4010 version 1.9\n");
         windowName = "Tektronix 4010/4014 emulator";
         if ((argc<2) || (argc>19)) {
                 printf("Error:number of arguments\n");
@@ -347,6 +348,10 @@ void tube_init(int argc, char* argv[])
                 else if (strcmp(argv[firstArg],"-ARDS") == 0) {
                         argARDS = 1;
                         windowName = "ARDS emulator";
+                }
+                else if (strcmp(argv[firstArg],"-fast") == 0) {
+                        printf("Fast refresh without fading\n");
+                        argFast = 1;
                 }
                 else if (strcmp(argv[firstArg],"-wait") == 0) {
                         argWait = 3;
@@ -586,11 +591,19 @@ void tube_clearPersistent(cairo_t *cr, cairo_t *cr2)
 void tube_clearSecond(cairo_t *cr2)
 // clear second surface
 { 
-        cairo_set_source_rgba(cr2, 0, 0, 0, FADE);
-        cairo_set_operator(cr2, CAIRO_OPERATOR_MULTIPLY);
-        cairo_paint(cr2);
-        cairo_set_operator(cr2, CAIRO_OPERATOR_OVER);
-        isBrightSpot = 1;
+        if (argFast) {
+                cairo_set_source_rgba(cr2, 0, 0, 0, 0);
+                cairo_set_operator(cr2, CAIRO_OPERATOR_SOURCE);
+                cairo_paint(cr2);
+                cairo_set_operator(cr2, CAIRO_OPERATOR_OVER);
+        }
+        else {
+                cairo_set_source_rgba(cr2, 0, 0, 0, FADE);
+                cairo_set_operator(cr2, CAIRO_OPERATOR_MULTIPLY);
+                cairo_paint(cr2);
+                cairo_set_operator(cr2, CAIRO_OPERATOR_OVER);
+                isBrightSpot = 1;
+        }
 }
 
 void tube_line_type(cairo_t *cr, cairo_t *cr2, enum LineType ln)

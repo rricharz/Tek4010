@@ -21,6 +21,7 @@ extern int argAutoClear;
 extern int argKeepSize;
 extern int argHideCursor;
 extern int argWait;
+extern int argFast;
 
 extern int hDotsPerChar;
 extern int vDotsPerChar;

@@ -1,3 +1,7 @@
+Version 1.9 March 18, 2024
+==========================
+Added -fast option without fading for slower computers
+
 Version 1.8 March 4, 2024
 =========================
 Improved bright spot with proper fading
