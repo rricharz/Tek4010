@@ -371,6 +371,8 @@ void tube_init(int argc, char* argv[])
                 firstArg++;
                 
         }
+        
+        if (argBaud > 20000) argFast = 1; 
                 
         // A child process for rsh is forked and communication
         // between parent and child are established
