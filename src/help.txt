@@ -1,0 +1,50 @@
+Usage: ./tek4010 [options] COMMAND [...]
+
+    -h, --help      Print this help and exit.
+
+    -noexit         do not close window after completion of "command"
+
+    -raw            do not execute an automatic CR (carriage return) after a
+                    LF (line feed)
+
+    -tab1           execute a blank instead of a tab to the next 8-character column
+
+    -b100000, -b38400, -b19200, -b9600, -b4800, -b2400, -b1200, -b600, -b300
+                    Emulate a baud rate. Without one of these arguments, the baud rate
+                    is 19200 baud. The original Tektronix 4010 had a maximal baud rate
+                    of 9600 baud. The 4014 could support up to 100000 baud with a special
+                    interface. With the small baud rates you can emulate 1970s
+                    style modem performance. Early modems had a baud rate of 300.
+
+    -full           in this mode the tek4010 emulator creates a full screen window and
+                    uses the full resolution of the 4014 with the enhanced graphics
+                    module installed, scaled down to the actual window size.
+                    Use ctrl-q to close the tek4010 window.
+
+    -fullv          in this mode the tek4010 emulator creates a decorated window
+                    using the maximal vertical space available. The full resolution of
+                    the 4014 with the enhanced graphics module installed is used,
+                    scaled down to the actual window size
+
+    -ARDS           display ARDS data
+
+    -APL            emulate Tektronix 4013/4015 with alternative APL character set.
+                    Details see below.
+
+    -autoClear      erase screen if a line feed is executed at the bottom of the screen.
+                    This makes it sometimes easier to use tek4010 as the only terminal.
+                    It is not the behaviour of the original hardware.
+
+    -keepsize       tek4010 sets the fontsize to normal whenever the screen is erased.
+                    This option keeps the currently selected font size until it is
+                    changed with a new escape sequence. Some historic plot files will
+                    not reset the font size back to normal if this option is set.
+
+    -hidecursor     hides the cursor. Do not set while using GIN mode.
+
+    -wait n         Close window n seconds after completion of "command".
+                    It does not make sense to use -noexit together with -wait.
+
+    -fast           Use fast rendering without fading. Recommended on slower systems.
+                    This mode can be used to avoid a slow and choppy display.
+                    -fast is automatically used for baud rates above 19200.

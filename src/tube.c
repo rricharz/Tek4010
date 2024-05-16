@@ -55,6 +55,7 @@
 
 #include "main.h"
 #include "tube.h"
+#include "help.h"
 
 extern void gtk_main_quit();
 extern int windowWidth;
@@ -298,6 +299,11 @@ void tube_init(int argc, char* argv[])
                 exit(1);
         }
         
+        if ((strcmp(argv[firstArg],"-h") == 0) || (strcmp(argv[firstArg],"--help") == 0)){
+                printf(helpStr);
+                exit(0);
+        }
+
         // this stays here for compatibility with early versions of tek4010
         if (strcmp(argv[argc-1],"-noexit") == 0) {
                 argNoexit = 1;
