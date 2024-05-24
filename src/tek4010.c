@@ -193,7 +193,7 @@ void tek4010_clicked(int x, int y)
 }
 
 void tek4010_escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
-// handle escape sequencies, see 4014 user manual, table page G-1
+// handle escape sequences, see 4014 user manual, table page G-1
 // codes identical for all modes are handled elsewhere
 {
         if (DEBUG) printf("Escape %02X, savemode=%d\n",ch,savemode);
@@ -500,7 +500,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 
                                 if ((mode == 3) && (tag == 3)) {
                                         // this overwrites the extra data byte of the 4014 for the
-                                        // persistent mode ccordinates and stores it for further use
+                                        // persistent mode coordinates and stores it for further use
                                         mode = 2;
                                         xy4014 = yl;
                                         if (DEBUG)
@@ -514,7 +514,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
 
                                 if ((mode == 7) && (tag == 3)) {
                                         // this overwrites the extra data byte of the 4014 for the
-                                        // persistent mode ccordinates and stores it for further use
+                                        // persistent mode coordinates and stores it for further use
                                         mode = 6;
                                         xy4014 = yl;
                                         if (DEBUG)
@@ -666,7 +666,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 if (ch == 29) mode = 1;
                                 break;
                         case 0: // handle ALPHA mode; 4014 user manual, table page G-1
-                                // some characters are indentical for all modes and handled elsewhere
+                                // some characters are identical for all modes and handled elsewhere
                                 switch (ch) {
                                 case 0:     break;
                                 case 8:     // backspace

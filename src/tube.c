@@ -505,7 +505,7 @@ int tube_on_timer_event()
 // is called every TIMER-INTERVAL milliseconds
 // if the function returns 1, the window is redrawn by calling applicatin_draw
 {
-        // if there is a char available on the imput stream
+        // if there is a char available on the input stream
         // or there is still a bright spot, return 1 to ask for
         // one more redraw
        
@@ -554,7 +554,7 @@ int tube_clicked(int button, int x, int y)
 }
 
 void tube_quit()
-// is called if the main window is quit bevore the tek4010 exits
+// is called if the main window is quit before the tek4010 exits
 // put any code here which needs to be called on exit
 {
         pclose(getData);
@@ -572,7 +572,7 @@ void tube_doCursor(cairo_t *cr2)
 }
 
 void tube_clearPersistent(cairo_t *cr, cairo_t *cr2)
-// clear the persistant surface
+// clear the persistent surface
 // flash using the second surface
 {
         cairo_set_source_rgb(cr, 0.0, BLACK_INTENSITY, 0.0);
