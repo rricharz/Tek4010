@@ -54,4 +54,4 @@ Mkfile.old
 dkms.conf
 
 # Temporary files
-src/help.h
+src/help.txt
