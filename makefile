@@ -6,13 +6,10 @@ all: tek4010
 
 tek4010: src/help.txt src/main.c src/main.h src/tube.c src/tube.h src/tek4010.c src/ards.c
 	sed 's/\"/\\\"/g; s/$$/\\n"/; s/^/"/; 1s/^/const char *helpStr =\n/; $$a;' src/help.txt > src/help.h
-	$(CC) -o $@ src/main.c src/tube.c src/tek4010.c src/ards.c $(LIBS) $(CFLAGS)
-
-man: tek4010
-	help2man --output=$?.1 --name="Tektronix 4010 and 4014 storage tube terminal emulator" --no-info $?
+	$(CC) -o tek4010 src/main.c src/tube.c src/tek4010.c src/ards.c $(LIBS) $(CFLAGS)
 
 install: tek4010
 	./install
 
-clean:
+clean: tek4010
 	-rm -f tek4010
