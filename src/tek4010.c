@@ -1,39 +1,39 @@
 /*
  * tek4010.c
- * 
+ *
  * A tek4010/4014 graphics emulator
- * 
+ *
  * Copyright 2019  rricharz
- * 
+ *
  * https://github.com/rricharz/Tek4010
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301, USA.
  *
  */
- 
+
 #define DEBUG    0              // print debug info
 
- 
+
 #define TODO  (long)(32)   // draw multiple objects until screen updates
 
 #define _GNU_SOURCE
- 
+
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h> 
+#include <string.h>
 #include <termios.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
@@ -87,14 +87,14 @@ int intensityTable[] = {14,16,17,19,  20,22,23,25,  28,31,34,38,  41,33,47,50,
                          4, 4, 4, 5,   5, 5, 6, 6,   7, 8, 9,10,  11,12,12,13,
                         14,16,17,19,  20,22,23,25,  28,31,34,38,  41,44,47,50,
                         56,62,69,75,  81,88,94,100, 56,63,69,75,  81,88};
-                     
+
 
 void tek4010_checkLimits(cairo_t *cr, cairo_t *cr2)
 /* check whether char is in visibel space */
 {
         /* don't check here for leftmargin, graphics needs to write characters to the whole screen */
         if (tube_x0 < 0) tube_x0 = 0;
-        
+
         if (tube_x0 > windowWidth - hDotsPerChar) {
                 tube_x0 = leftmargin; tube_y0 -= vDotsPerChar;
         }
@@ -127,9 +127,9 @@ void sendCoordinates()
         int x,y,ch;
         x = (int)((double)tube_x0 / efactor);
         y = (int)((double)tube_y0 / efactor);
-        
+
         if (DEBUG) printf("sendCoordinates, x=%d, y=%d\n", x, y);
-        
+
         ch = (x >> 5) + 0x20;
         putc(ch, putKeys);
         ginCharacter[4] = ch;       // save to check for echo
@@ -153,7 +153,7 @@ void enqMode()
         if (mode == 0) status += 4;
         putc(status,putKeys);           // send status byte
         sendCoordinates();
-        putc(13, putKeys);              // cannot send a EOT here 
+        putc(13, putKeys);              // cannot send a EOT here
 }
 
 void ginMode(cairo_t *cr, cairo_t *cr2)
@@ -180,7 +180,7 @@ void ginSend(int ch)
         putc(13,putKeys);           // cr
         ginCharacter[0] = 13;
         // prepare to suppress unwanted echoed characters.
-        isGinSuppress = 6;      
+        isGinSuppress = 6;
 }
 
 void tek4010_clicked(int x, int y)
@@ -204,7 +204,7 @@ void tek4010_escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
                         enqMode();
                         mode = 0; break;
                 case 6: break;
-                
+
                 case 8: // backspace during ESC
                         tube_x0 -= hDotsPerChar;
                         tek4010_checkLimits(cr, cr2);
@@ -241,13 +241,13 @@ void tek4010_escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
                         todo = 0;
                         // printf("Setting APL mode to 0 from computer\n");
                         break;
-                
+
                 case 23: system("scrot --focussed"); mode= 0; break;
-                
+
                 case 26: // sub
                         ginMode(cr, cr2);
                         break;
-                        
+
                 // modes 27 and 29 - 31 are identical in all modes
                 case 28: // record separator
                         if (DEBUG) printf("Special point plot mode, mode=%d\n",savemode);
@@ -262,11 +262,11 @@ void tek4010_escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
                 case '9': tube_changeCharacterSize(cr, cr2, 81, 38, efactor * 0.9); mode = 0; break;
                 case ':': tube_changeCharacterSize(cr, cr2, 121, 58, efactor * 0.65); mode = 0; break;
                 case ';': tube_changeCharacterSize(cr, cr2, 133, 64, efactor * 0.55); mode = 0; break;
-                
+
                 case '[': printf("Ignoring ANSI escape sequence: [");
                           mode=31;
                           break;
-                
+
                 // normal mode
                 case '`': ltype = SOLID;    writeThroughMode = 0; mode = savemode; break;
                 case 'a': ltype = DOTTED;   writeThroughMode = 0; mode = savemode; break;
@@ -274,12 +274,12 @@ void tek4010_escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
                 case 'c': ltype = SHORTDASH;writeThroughMode = 0; mode = savemode; break;
                 case 'd': ltype = LONGDASH; writeThroughMode = 0; mode = savemode; break;
                 case 'e': ltype = SOLID;    writeThroughMode = 0; mode = savemode; break;
-                case 'f': ltype = SOLID;    writeThroughMode = 0; mode = savemode; break;                
+                case 'f': ltype = SOLID;    writeThroughMode = 0; mode = savemode; break;
                 case 'g': ltype = SOLID;    writeThroughMode = 0; mode = savemode; break;
-                        
+
                 // defocussed mode
                 case 'h':
-                case 'i': 
+                case 'i':
                 case 'j':
                 case 'k':
                 case 'l':
@@ -287,7 +287,7 @@ void tek4010_escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
                 case 'n':
                 case 'o': if (DEBUG) printf("Defocussed mode ESC %c not supported, ignored\n", ch);
                           mode = 101;  break;
-                                
+
                 // write-trough mode
                 case 'p': ltype = SOLID;    writeThroughMode = 1; mode = 101; showCursor = 0; break;
                 case 'q': ltype = DOTTED;   writeThroughMode = 1; mode = 101; showCursor = 0; break;
@@ -296,13 +296,13 @@ void tek4010_escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
                 case 't': ltype = LONGDASH; writeThroughMode = 1; mode = 101; showCursor = 0; break;
                 case 'u': ltype = SOLID;    writeThroughMode = 1; mode = 101; showCursor = 0; break;
                 case 'v': ltype = SOLID;    writeThroughMode = 1; mode = 101; showCursor = 0; break;
-                case 'w': ltype = SOLID;    writeThroughMode = 1; mode = 101; showCursor = 0; break; 
-                        
-                default: 
+                case 'w': ltype = SOLID;    writeThroughMode = 1; mode = 101; showCursor = 0; break;
+
+                default:
                         printf("Ignoring escape code: 0x%02x\n",ch);
                         mode = 0;
-                        break;                                               
-        }         
+                        break;
+        }
 }
 
 int tek4010_checkReturnToAlpha(int ch)
@@ -340,42 +340,42 @@ int digit(char ch)
 
 void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
 // draw onto the main window using cairo
-// cr is used for persistent drawing, cr2 for temporary drawing 
+// cr is used for persistent drawing, cr2 for temporary drawing
 
-{	
+{
         int ch, tag;
-        
+
         refreshCount++;
-        
+
         if (first) {
-                first = 0; 
+                first = 0;
                 efactor = windowWidth / 1024.0;
                 refresh_interval = 50;
                 tube_changeCharacterSize(cr, cr2, 74, 35, efactor);
                 if (efactor > 0.8) pensize = efactor * 1.25;
                 if (windowWidth != 1024) printf("Scaling: %0.3f\n", efactor / 4.0);
         }
-        
+
         startPaintTime = tube_mSeconds(); // start to measure time for this draw operation
 
         showCursor = 1;
         isBrightSpot = 0;
-        
+
         // clear the second surface
         tube_clearSecond(cr2);
-        
+
         // clear persistent surface, if necessary
         if (tube_doClearPersistent) {
                 tube_clearPersistent(cr,cr2);
                 if (!argKeepSize)
                         tube_changeCharacterSize(cr, cr2, 74, 35, efactor);
         }
-        
+
         if (aplMode)
                 tube_setupPainting(cr, cr2, APL_FONT);
         else
                 tube_setupPainting(cr, cr2, STANDARD_FONT);
-        
+
         if (plotPointMode)
                 todo = 100 * TODO;
         else if (writeThroughMode)
@@ -387,18 +387,18 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
 
         do {
                 ch = tube_getInputChar();
-                
+
                 if (tube_isInput() == 0) {
                         todo = 0;
                 }
-                
+
                 if (ch == -1) {
                         if ((mode == 0) && showCursor) tube_doCursor(cr2);
                         if (mode != 60) return;         // no char available, need to allow for updates
                 }
 
-		// Try suppressing GIN echoed characters here.
-		if (isGinSuppress){
+                // Try suppressing GIN echoed characters here.
+                if (isGinSuppress){
                         if (ch == 10) // additional line feed may be echoed if cr is typed
                                 return;
                         if ((ch & 0x7F) == ginCharacter[isGinSuppress - 1]) {
@@ -412,10 +412,10 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                         ch & 0x7F, ginCharacter[isGinSuppress - 1]);
                                 isGinSuppress = 0;
                         }
-		}
-                
+                }
+
                 // if (aplMode) printf("Receiving character %d from host\n", ch);
-                
+
                 if (DEBUG) {
                         printf("mode=%d, ch code %02X",mode,ch);
                         if ((ch>0x20)&&(ch<=0x7E)) printf(" (%c)",ch);
@@ -429,9 +429,9 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
 
                 // the following chars are identical in all modes (with exception: 13,28)
                 // see 4014 user manual, table on page G1 ff
-                
+
                 switch (ch) {
-                        case 7:         tek4010_bell();        
+                        case 7:         tek4010_bell();
                                         goto endDo;
                         case 10:        // new line
                                         tube_y0 -= vDotsPerChar;
@@ -446,8 +446,8 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                         break;
                         case 27:        // escape code, all modes
                                         savemode = mode;
-                                        mode = 30; 
-                                        goto endDo; 
+                                        mode = 30;
+                                        goto endDo;
                         case 28:        // file separator  >> point plot mode
                                         if (mode != 30) { // special handling in ESC mode
                                                 mode = 5;
@@ -468,22 +468,22 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                         mode = 0;
                                         goto endDo;
                 }
-                
-                
+
+
                 // handle skipping coordinate bytes
                 // this cannot be done in switch(mode) below, because multiple bytes
                 // can be skipped and the current byte must be executed after a mode change
-                
+
                 tag = (ch >> 5) & 3;
-                                
+
                 if ((mode >= 1) && (mode <= 8)) {
-                        
+
                         if ((mode == 5) && (ch == 29)) {
                                 if (DEBUG) printf("group separator, go from mode 5 to mode 1\n");
                                 mode = 1;
                                 goto endDo; // goto end of do loop
                         }
-                        
+
                         if (DEBUG) {
                                 if (mode & 1)
                                         printf("    mode=%d,tag=%d-H-val=%d,",
@@ -491,13 +491,13 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 else
                                         printf("    mode=%d,tag=%d-L-val=%d,",
                                                 mode,tag, ch & 31);
-                                printf("xh=%d,xl=%d,yh=%d,yl=%d\n",xh,xl,yh,yl);                
+                                printf("xh=%d,xl=%d,yh=%d,yl=%d\n",xh,xl,yh,yl);
                         }
-                        
+
                         if (tag != 0) {
- 
+
                                 if ((mode == 1) && (tag != 1)) mode = 2;
-                                
+
                                 if ((mode == 3) && (tag == 3)) {
                                         // this overwrites the extra data byte of the 4014 for the
                                         // persistent mode coordinates and stores it for further use
@@ -506,11 +506,11 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                         if (DEBUG)
                                                 printf("4014 coordinates, overwrite last value\n");
                                 }
-                                
+
                                 if ((mode == 2) && (tag != 3)) mode = 3;
                                 if ((mode == 3) && (tag != 1)) mode = 4;
-                                
-                                if ((mode == 5) && (tag != 1)) mode = 6;                                
+
+                                if ((mode == 5) && (tag != 1)) mode = 6;
 
                                 if ((mode == 7) && (tag == 3)) {
                                         // this overwrites the extra data byte of the 4014 for the
@@ -520,8 +520,8 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                         if (DEBUG)
                                                 printf("4014 coordinates, overwrite last value\n");
                                 }
-                                                              
-                                if ((mode == 6) && (tag != 3)) mode = 7;                                                        
+
+                                if ((mode == 6) && (tag != 3)) mode = 7;
                                 if ((mode == 7) && (tag != 1)) mode = 8;
                         }
                         else {
@@ -531,13 +531,13 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 else if (DEBUG) printf("Plot mode, unknown char %d, plotPointMode = %d\n",ch,plotPointMode);
                                 return;
                         }
-                                
+
                 }
 
-                
+
                 // handling anything specific to a mode
-                
-                switch (mode) {                                
+
+                switch (mode) {
                         case 1: plotPointMode = 0; // normal graphics mode, starting coordinates
                                 yh = 32 * (ch & 31); mode++;
                                 if (DEBUG) printf("setting yh to %d\n", yh);
@@ -593,27 +593,27 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                         tube_y2 = yh + yl;
                                 }
                                 if (DEBUG) printf(">>>>>xl=%d\n",xl);
-                                
+
                                 if (plotPointMode>0.0) {
-                                        
+
                                         // draw the point
                                         tube_drawPoint(cr, cr2);
-                                        
+
                                         todo--;
                                 }
-                                
+
                                 else {
                                         tube_drawVector(cr,cr2);
-                                        
-                                        todo--;                                        
+
+                                        todo--;
                                 }
-                                
+
                                 showCursor = 0;
-                                
+
                                 tube_x0 = tube_x2;        // prepare for additional vectors
                                 tube_y0 = tube_y2;
-                                if (specialPlotMode) mode = 50;  // another intensity/focus char follows                             
-                                else mode = 5;                                
+                                if (specialPlotMode) mode = 50;  // another intensity/focus char follows
+                                else mode = 5;
                                 break;
                         case 30: // escape code handler
                                 tek4010_escapeCodeHandler(cr, cr2, ch);
@@ -639,7 +639,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                         tube_y2 = tube_y0;
                                         if (penDown) tube_drawPoint(cr, cr2);
                                 }
-                                else if (DEBUG) printf("Illegal byte 0x%02X in incremental plot\n", ch);  
+                                else if (DEBUG) printf("Illegal byte 0x%02X in incremental plot\n", ch);
                                 break;
                         case 50:// special plot mode
                                 tag = ch >> 5;
@@ -648,7 +648,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 defocussed = (tag == 1);
                                 intensity = intensityTable[ch - 32];
                                 if (DEBUG) printf("defocussed = %d, intensity = %d%%\n", defocussed, intensity);
-                                mode = 5; // coordinates follow                                
+                                mode = 5; // coordinates follow
                                 break;
                         case 60:// crosshair mode
                                 if (isGinMode > 1) { // key stroken by user
@@ -661,7 +661,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 else
                                         ginMode(cr, cr2);
                                 break;
-                        case 101: 
+                        case 101:
                                 if (DEBUG) printf("Ignore until group separator, ch = %02x\n", ch);
                                 if (ch == 29) mode = 1;
                                 break;
@@ -690,7 +690,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
 
                                 default:    if ((ch >= 32) && (ch <127)) { // printable character
                                                 tek4010_checkLimits(cr, cr2);
-                                                tube_drawCharacter(cr,cr2, ch);                                                
+                                                tube_drawCharacter(cr,cr2, ch);
                                                 todo-= 2;
                                             }
                                             break;
@@ -702,9 +702,9 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                 endDo:;
         }
         while ((todo > 0) && ((tube_mSeconds() - startPaintTime) < refresh_interval));
-        
+
         // display cursor
-        
+
         if (showCursor && (tube_isInput() == 0)) tube_doCursor(cr2);
-        
+
 }
