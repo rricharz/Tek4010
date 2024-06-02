@@ -1,44 +1,44 @@
 /*
  * tube.c
- * 
+ *
  * A tek4010/4014 graphics emulator
- * 
+ *
  * Copyright 2019  rricharz
- * 
+ *
  * https://github.com/rricharz/Tek4010
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301, USA.
  *
  */
- 
+
 #define DEBUG    0              // print debug info
 #define DEBUGMAX 0              // exit after DEBUGMAX chars, 0 means no exit
 
 #define WRITE_TROUGH_INTENSITY  0.5             // green only
 #define NORMAL_INTENSITY        0.7             // green only
 #define CURSOR_INTENSITY        0.7             // green only
-#define BRIGHT_SPOT_INTENSITY   1.0			    // light green
+#define BRIGHT_SPOT_INTENSITY   1.0             // light green
 #define BLACK_INTENSITY         0.08            // effect of flood gun
-#define FADE                    0.3				// lower value means slower fading
+#define FADE                    0.3             // lower value means slower fading
 
 #define _GNU_SOURCE
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h> 
+#include <string.h>
 #include <termios.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
@@ -146,7 +146,7 @@ long tube_mSeconds()
         if (!initialized) startTime = t;
         initialized = 1;
         t = t - startTime;
-        if (t < 0) t += 86400000;        
+        if (t < 0) t += 86400000;
         return t;
 }
 
@@ -162,7 +162,7 @@ long tube_u100ResetSeconds(int reset)
                 charResetCount = 0;
         }
         t = t - startTime;
-        if (t < 0) t += 864000000;       
+        if (t < 0) t += 864000000;
         return t;
 }
 
@@ -191,7 +191,7 @@ int tube_getInputChar()
 // get a char from getDataPipe, if available, otherwise return -1
 {
         static long lastTime = 0;
-        
+
         long t = tube_u100ResetSeconds(0);
         if (tube_isInput()) {
                 // handle baud rate since last no input available
@@ -240,11 +240,11 @@ void readKeyTranslationTable()
 {
         FILE *confFile;
         int code1, code2, i;
-        char *homedir = getpwuid(getuid())->pw_dir;	
-	char s[255];
-        
+        char *homedir = getpwuid(getuid())->pw_dir;
+        char s[255];
+
         memset(keyTable, 0, sizeof(keyTable));
-        
+
         strcpy(s, homedir);
         strcat(s, "/.tek4010conf/aplkeys" );
         // printf("Looking for conf file %s\n",s);
@@ -264,7 +264,7 @@ void readKeyTranslationTable()
                                         exit(1);
                                 }
                         }
-                        else 
+                        else
                                 fscanf(confFile,"%s\n",s); // skip comment line
                 }
                 fclose(confFile);
@@ -298,7 +298,7 @@ void tube_init(int argc, char* argv[])
                 printf("Error:number of arguments\n");
                 exit(1);
         }
-        
+
         if ((strcmp(argv[firstArg],"-h") == 0) || (strcmp(argv[firstArg],"--help") == 0)){
                 printf(helpStr);
                 exit(0);
@@ -309,7 +309,7 @@ void tube_init(int argc, char* argv[])
                 argNoexit = 1;
                 argc--;
         }
-        
+
         while ((argv[firstArg][0] == '-') && (firstArg < argc-1)) {
                 if (strcmp(argv[firstArg],"-raw") == 0)
                         argRaw = 1;
@@ -362,27 +362,27 @@ void tube_init(int argc, char* argv[])
                 else if (strcmp(argv[firstArg],"-wait") == 0) {
                         argWait = 3;
                         if (firstArg < argc-2) {
-				if ((argv[firstArg+1][0] >= '0') &&
-					 (argv[firstArg+1][0] <= '9')) {
+                            if ((argv[firstArg+1][0] >= '0') &&
+                                (argv[firstArg+1][0] <= '9')) {
                                         firstArg++;
                                         argWait = atoi(argv[firstArg]);
                                 }
-			}
-			// printf("Waiting %d seconds after end of plot\n", argWait);
+                        }
+                        // printf("Waiting %d seconds after end of plot\n", argWait);
                 }
                 else {
                         printf("tek4010: unknown argument %s\n", argv[firstArg]);
                         exit(1);
                 }
                 firstArg++;
-                
+
         }
-        
-        if (argBaud > 20000) argFast = 1; 
-                
+
+        if (argBaud > 20000) argFast = 1;
+
         // A child process for rsh is forked and communication
         // between parent and child are established
-        
+
         // expand argv[firstArg] to full path and check, whether it exists
         char *str = (char *) malloc(bufsize * sizeof(char));
         if (str == NULL) {
@@ -394,15 +394,15 @@ void tube_init(int argc, char* argv[])
         FILE *fullPath = popen(str,"r");
         if (fullPath) {
                 getline(&str, &bufsize,fullPath);
-                
+
                 // remove the endline character
                 str[strlen(str)-1] = 0;
-                
+
                 if (strncmp(str,"which",5) == 0) {
                         printf("Unknown command %s\n", argv[firstArg]);
                         exit(1);
                 }
-                
+
                 argv[firstArg] = str;
                 pclose(fullPath);
         }
@@ -410,24 +410,24 @@ void tube_init(int argc, char* argv[])
                 printf("Unknown command %s\n", argv[firstArg]);
                 exit(1);
         }
-        
+
         characterInterval = 100000 / argBaud; // in 100 usecs, assuming 1 start and 1 stop bit.
-        
+
         if (DEBUG) printf("character_interval = %0.1f msec\n",(double)characterInterval/10.0);
-                
+
         tube_doClearPersistent = 1;
-                
+
         // create pipes for communication between parent and child
         if (pipe(getDataPipe) == -1) {
                 printf("Cannot initialize data pipe\n");
                 exit(1);
         }
-                
+
         if (pipe(putKeysPipe) == -1) {
                 printf("Cannot initialize key pipe\n");
                 exit(1);
         }
-                
+
         // now fork a child process
         pid_t pid = fork();
         if (pid == -1) {
@@ -435,43 +435,43 @@ void tube_init(int argc, char* argv[])
                 exit(1);
         }
         else if (pid == 0) {  // child process
-                
+
                 // we need a second string array with an empty string as last item!
                 argv2[0] = argv[firstArg];
                 for (int i = 1; i < argc; i++)
                         argv2[i] = argv[firstArg+i-1];
                 argv2[argc-firstArg+1] = (char*) NULL;
-                
+
                 // int i = 0;
                 // do {
                 //        printf("argv2[%d] = %s\n",i,argv2[i]);
                 //        i++;
                 // }
                 // while (argv2[i] != (char*) NULL);
-                        
+
                 // set stdout of child process to getDataPipe
                 while ((dup2(getDataPipe[1], STDOUT_FILENO) == -1) && (errno == EINTR)) {}
                 close(getDataPipe[1]); // not used anymore
                 close(getDataPipe[0]); // not used
-                        
+
                 // set stdin of child process to putKeysPipe
                 while ((dup2(putKeysPipe[0], STDIN_FILENO) == -1) && (errno == EINTR)) {}
                 close(putKeysPipe[1]); // not used
                 close(putKeysPipe[0]); // not used anymore
-                
+
                 // run rsh in the child process
                 execv(argv2[0],argv2+1);
                 free(str);
                 exit(0);
         }
-                
+
         // parent process
-        
+
         free(str);
-        
+
         close(getDataPipe[1]); // not used
         close(putKeysPipe[0]); // not used
-                
+
         // use termios to turn off line buffering for both pipes
         // struct termios term;
         // tcgetattr(getDataPipe[0], &term);
@@ -479,7 +479,7 @@ void tube_init(int argc, char* argv[])
         // tcsetattr(getDataPipe[0], TCSANOW,&term);
         // tcgetattr(putKeysPipe[1], &term);
         // tcsetattr(putKeysPipe[0], TCSANOW,&term);
-                
+
         // open now a stream from the getDataPipe descriptor
         getData = fdopen(getDataPipe[0],"r");
         if (getData == 0) {
@@ -487,7 +487,7 @@ void tube_init(int argc, char* argv[])
                 exit(1);
         }
         setbuf(getData,0);
-                
+
         // open now a stream from the putKeysPipe descriptor
         putKeys = fdopen(putKeysPipe[1],"w");
         if (putKeys == 0) {
@@ -495,9 +495,9 @@ void tube_init(int argc, char* argv[])
                 exit(1);
         }
         setbuf(putKeys,0);
-        
+
         tube_mSeconds();             // initialize the timer
-        tube_u100ResetSeconds(1);                        
+        tube_u100ResetSeconds(1);
 }
 
 int tube_on_timer_event()
@@ -508,9 +508,9 @@ int tube_on_timer_event()
         // if there is a char available on the input stream
         // or there is still a bright spot, return 1 to ask for
         // one more redraw
-       
+
         // is child process still running?
-        
+
         int status;
         if (argWait && (tube_isInput() == 0) && (waitpid(-1, &status, WNOHANG))) {
                 if (firstWait == 0)
@@ -522,7 +522,7 @@ int tube_on_timer_event()
                                 printf("Process has been terminated after %d seconds\n", argWait);
                                 exit(0);
                         }
-                }       
+                }
         }
         else if ((!argNoexit) && (tube_isInput() == 0) && (waitpid(-1, &status, WNOHANG))) {
                 long t = tube_mSeconds();
@@ -538,7 +538,7 @@ int tube_on_timer_event()
         }
         return (isBrightSpot || tube_isInput());
 }
- 
+
 int tube_clicked(int button, int x, int y)
 // is called if a mouse button is clicked in the window
 // button = 1: means left mouse button; button = 3 means right mouse button
@@ -550,7 +550,7 @@ int tube_clicked(int button, int x, int y)
                 tek4010_clicked(x, windowHeight - y);
                 return 1;
         }
-	return 0;
+        return 0;
 }
 
 void tube_quit()
@@ -593,12 +593,12 @@ void tube_clearPersistent(cairo_t *cr, cairo_t *cr2)
         ylast = 0;
         specialPlotMode = 0;
         defocussed = 0;
-        intensity = 100; 
+        intensity = 100;
 }
 
 void tube_clearSecond(cairo_t *cr2)
 // clear second surface
-{ 
+{
         if (argFast) {
                 cairo_set_source_rgba(cr2, 0, 0, 0, 0);
                 cairo_set_operator(cr2, CAIRO_OPERATOR_SOURCE);
@@ -648,9 +648,9 @@ void tube_line_type(cairo_t *cr, cairo_t *cr2, enum LineType ln)
 void tube_drawCharacter(cairo_t *cr, cairo_t *cr2, char ch)
 {
         char s[8];
-        
+
         if (ch < 32) return; // non printable control character
-        
+
         if (aplMode) {
                 switch (ch) {
                         case 32: sprintf(s," ");
@@ -669,7 +669,7 @@ void tube_drawCharacter(cairo_t *cr, cairo_t *cr2, char ch)
                                  break;
                         case 39: sprintf(s,"]");
                                  break;
-                        case 40: sprintf(s,"\u2228");           
+                        case 40: sprintf(s,"\u2228");
                                  break;
                         case 41: sprintf(s,"\u2227");
                                  break;
@@ -685,9 +685,9 @@ void tube_drawCharacter(cairo_t *cr, cairo_t *cr2, char ch)
                                  break;
                         case 47: sprintf(s,"/");
                                  break;
-                                 
+
                         // 48 - 57: Digits
-                                 
+
                         case 58: sprintf(s,"(");
                                  break;
                         case 59: sprintf(s,"[");
@@ -699,7 +699,7 @@ void tube_drawCharacter(cairo_t *cr, cairo_t *cr2, char ch)
                         case 62: sprintf(s,":");
                                  break;
                         case 63: sprintf(s,"\\");
-                                 break;                                 
+                                 break;
                         case 64: sprintf(s,"\u00AF");
                                  break;
                         case 65: sprintf(s,"\u237A");
@@ -732,7 +732,7 @@ void tube_drawCharacter(cairo_t *cr, cairo_t *cr2, char ch)
                                  break;
                         case 79: sprintf(s,"\u25CB");
                                  break;
-                        
+
                         case 80: sprintf(s,"\u22c6");
                                  break;
                         case 81: sprintf(s,"?");
@@ -767,9 +767,9 @@ void tube_drawCharacter(cairo_t *cr, cairo_t *cr2, char ch)
                                  break;
                         case 96: sprintf(s,"\u22C4");
                                  break;
-                                 
+
                         // 97 - 122 capital letters
-                                 
+
                         case 123: sprintf(s,"{");
                                  break;
                         case 124: sprintf(s,"\u22A3");
@@ -778,38 +778,38 @@ void tube_drawCharacter(cairo_t *cr, cairo_t *cr2, char ch)
                                  break;
                         case 126: sprintf(s,"$");
                                  break;
-                                 
+
                         default: if ((ch>=48) && (ch<=57)) sprintf(s,"%c", ch); // digits
                                  else if ((ch>=97) && (ch<=122)) sprintf(s,"%c", ch - 32); // capital letters
                                  else sprintf(s," ");
                                  break;
-                } 
+                }
         }
         else {
                 s[0] = ch;
                 s[1] = 0;
         }
         cairo_set_font_size(cr, currentFontSize);
-        cairo_set_font_size(cr2,currentFontSize); 
+        cairo_set_font_size(cr2,currentFontSize);
 
         if (writeThroughMode) {  // draw the write-through character
                 cairo_set_source_rgb(cr2, 0, WRITE_TROUGH_INTENSITY, 0);
                 cairo_move_to(cr2, tube_x0, windowHeight - tube_y0 + currentCharacterOffset);
                 cairo_show_text(cr2, s);
         }
-                                                
+
         else {
                 // draw the character
                 cairo_set_source_rgb(cr, 0, BLACK_INTENSITY + ((NORMAL_INTENSITY - BLACK_INTENSITY) * intensity) / 100, 0);
                 cairo_move_to(cr, tube_x0, windowHeight - tube_y0 + currentCharacterOffset);
                 cairo_show_text(cr, s);
-                                                
+
                 // draw the bright spot
                 cairo_set_source_rgb(cr2, BRIGHT_SPOT_INTENSITY/2, BRIGHT_SPOT_INTENSITY, BRIGHT_SPOT_INTENSITY/2);
                 cairo_move_to(cr2, tube_x0, windowHeight - tube_y0 + currentCharacterOffset);
-                cairo_show_text(cr2, s);                        
+                cairo_show_text(cr2, s);
         }
-                                                
+
         tube_x0 += hDotsPerChar;
         isBrightSpot = 1;
 }
@@ -835,26 +835,26 @@ void tube_drawPoint(cairo_t *cr, cairo_t *cr2)
         cairo_move_to(cr, tube_x2, windowHeight - tube_y2);
         cairo_line_to(cr, tube_x2 + 1, windowHeight - tube_y2 + 1);
         cairo_stroke (cr);
-                                        
+
         // speed is a problem here
         // do not draw adjacent bright spots
-                                        
+
         if (((tube_x2 - xlast) > 2) || ((xlast - tube_x2) > 2) ||
                 ((tube_y2 - ylast) > 2) || ((ylast - tube_y2) > 2))  {
-                                        
+
                 // draw the bright spot
                 cairo_set_line_width (cr2, 0.1);
                 double bsc = (BRIGHT_SPOT_INTENSITY * intensity) / 100;
-                              
-                cairo_set_source_rgb(cr2, bsc/2, bsc, bsc/2);                        
+
+                cairo_set_source_rgb(cr2, bsc/2, bsc, bsc/2);
                 cairo_arc(cr2, tube_x2, windowHeight - tube_y2, 2 + defocussed, 0, PI2);
                 cairo_fill(cr2);
-                                                
+
                 xlast = tube_x2;
                 ylast = tube_y2;
         }
-                                        
-        isBrightSpot = 1;      
+
+        isBrightSpot = 1;
 }
 
 void tube_crosshair(cairo_t *cr, cairo_t *cr2)
@@ -866,7 +866,7 @@ void tube_crosshair(cairo_t *cr, cairo_t *cr2)
         cairo_line_to(cr2, tube_x0, windowHeight);
         cairo_move_to(cr2, 0, windowHeight - tube_y0);
         cairo_line_to(cr2, windowWidth, windowHeight - tube_y0);
-        cairo_stroke (cr2);        
+        cairo_stroke (cr2);
 }
 
 void tube_drawVector(cairo_t *cr, cairo_t *cr2)
@@ -887,7 +887,7 @@ void tube_drawVector(cairo_t *cr, cairo_t *cr2)
                 cairo_line_to(cr2, tube_x2, windowHeight - tube_y2);
                 cairo_stroke (cr2);
         }
-        
+
         else {
                 // draw the actual vector on permanent surface
                 cairo_set_line_width (cr, pensize + defocussed);
@@ -896,11 +896,11 @@ void tube_drawVector(cairo_t *cr, cairo_t *cr2)
                 cairo_move_to(cr, tube_x0, windowHeight - tube_y0);
                 cairo_line_to(cr, tube_x2, windowHeight - tube_y2);
                 cairo_stroke (cr);
-        
-                                        
+
+
                 // draw the bright spot
                 cairo_set_line_width (cr, (pensize+1) + defocussed);
-                cairo_set_source_rgb(cr2, BRIGHT_SPOT_INTENSITY/2, BRIGHT_SPOT_INTENSITY, BRIGHT_SPOT_INTENSITY/2);                       
+                cairo_set_source_rgb(cr2, BRIGHT_SPOT_INTENSITY/2, BRIGHT_SPOT_INTENSITY, BRIGHT_SPOT_INTENSITY/2);
                 cairo_move_to(cr2, tube_x0, windowHeight - tube_y0);
                 cairo_line_to(cr2, tube_x2, windowHeight - tube_y2);
                 cairo_stroke(cr2);
@@ -911,11 +911,11 @@ void tube_drawVector(cairo_t *cr, cairo_t *cr2)
 
 void tube_setupPainting(cairo_t *cr, cairo_t *cr2, char *fontName)
 {
-        cairo_set_antialias(cr, CAIRO_ANTIALIAS_BEST);      
-	cairo_set_line_width (cr, pensize);
-        cairo_set_source_rgb(cr, 0, NORMAL_INTENSITY, 0);        
+        cairo_set_antialias(cr, CAIRO_ANTIALIAS_BEST);
+        cairo_set_line_width (cr, pensize);
+        cairo_set_source_rgb(cr, 0, NORMAL_INTENSITY, 0);
         cairo_select_font_face(cr, fontName, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-        cairo_select_font_face(cr2, fontName, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);        
+        cairo_select_font_face(cr2, fontName, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
 }
 
 void tube_changeCharacterSize(cairo_t *cr, cairo_t *cr2,int charsPerLine, int charsPerPage, double fontSize)
@@ -931,7 +931,7 @@ void tube_changeCharacterSize(cairo_t *cr, cairo_t *cr2,int charsPerLine, int ch
                 currentFontSize = (int) (fontSize * STANDARD_FONT_SIZE);
         }
         cairo_set_font_size(cr, currentFontSize);
-        cairo_set_font_size(cr2,currentFontSize);    
+        cairo_set_font_size(cr2,currentFontSize);
         if (argARDS) {
                cairo_font_extents(cr, &et);
                currentCharacterOffset =(int)et.ascent;
