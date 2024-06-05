@@ -899,7 +899,7 @@ void tube_drawVector(cairo_t *cr, cairo_t *cr2)
 
 
                 // draw the bright spot
-                cairo_set_line_width (cr, (pensize+1) + defocussed);
+                cairo_set_line_width (cr2, (pensize+1) + defocussed);
                 cairo_set_source_rgb(cr2, BRIGHT_SPOT_INTENSITY/2, BRIGHT_SPOT_INTENSITY, BRIGHT_SPOT_INTENSITY/2);
                 cairo_move_to(cr2, tube_x0, windowHeight - tube_y0);
                 cairo_line_to(cr2, tube_x2, windowHeight - tube_y2);
