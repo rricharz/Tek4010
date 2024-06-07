@@ -1,4 +1,4 @@
-Usage: ./tek4010 [options] COMMAND [...]
+Usage: tek4010 [options] COMMAND [...]
 
     -h, --help      Print this help and exit.
 
