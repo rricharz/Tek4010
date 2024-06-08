@@ -2,7 +2,12 @@
 # Tektronix 4010 and 4014 Storage Tube Terminal Emulator
 
 This is a [Tektronix 4010, 4013, 4014 and 4015](https://en.wikipedia.org/wiki/Tektronix_4010)
-terminal emulator for the Raspberry Pi and other Linux systems.
+terminal emulator for the Raspberry Pi, Linux and MacOS (Macintosh). A version for Windows is
+not available.
+
+All instructions can be found in [Manual.pdf](https://github.com/rricharz/Tek4010/blob/master/Manual.pdf)
+in the main Tek4010 directory. The installation is described there, except for MacOS, see the
+macintosh.txt file in the repository.
 
 ![screen_shot](screendump.png?raw=true "tek4010 screendump")
 
@@ -31,9 +36,6 @@ The following picture shows a scale model of the Tektronix 4010 crafted by
 Dave Ault using tek4010.
 
 ![scale model](scalemodel.jpg?raw=true "scale model of Tektronix 4010")
-
-All instructions can be found in [Manual.pdf](https://github.com/rricharz/Tek4010/blob/master/Manual.pdf)
-in the main Tek4010 directory.
 
 The storage tube emulator and the Tektronix 4010/4014 decoder were witten by Rene Richarz. The ARDS
 decoder was written by Lars Brinkhoff. He also provided some interesting historical documents and

@@ -1,0 +1,41 @@
+Tek4010 on Macos
+================
+
+tek4010 can also be built on MacOS. This is experimental
+at present and any help to make the installation easier is
+appreciated. At present this is only for experienced
+command line users.
+
+Open a terminal window and type
+
+1. xcode -select --install
+
+2. Install Mac Ports. See https://macports.org/install.php
+
+3. Reboot your Mac 
+
+Type the following commands in your terminal window:
+
+4. sudo port install gtk3-devel
+
+5. sudo port install git
+
+6. sudo prot install cairo
+
+7. sudo port install pkgconfig
+
+8. Install XQuartz, see https://xquartz.org
+
+9. git clone https://github.com/rricharz/Tek4010
+
+10. make clean
+
+11. make
+
+12. Test with ./tek4010 demos/demo.sh
+
+To use it, type cd ~/Tek4010
+and use ./tek4010 to start tek4010
+
+There are a few minor problems at present, see the
+issues in the github repository
