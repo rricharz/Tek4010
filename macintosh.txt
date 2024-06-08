@@ -32,10 +32,15 @@ Type the following commands in your terminal window:
 
 11. make
 
-12. Test with ./tek4010 demos/demo.sh
+12. make install
 
-To use it, type cd ~/Tek4010
-and use ./tek4010 to start tek4010
+13. Add PATH="$HOME/.local/bin:$PATH" to your ~/.zprofile file
+
+14. Reboot your Mac
+
+15. Test with
+        cd ~/Tek4010
+        tek4010 demos/demo.sh
 
 There are a few minor problems at present, see the
 issues in the github repository
