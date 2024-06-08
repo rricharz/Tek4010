@@ -9,6 +9,9 @@ tek4010: src/help.txt src/main.c src/main.h src/tube.c src/tube.h src/tek4010.c 
 	echo ";" >> src/help.h
 	$(CC) -o tek4010 src/main.c src/tube.c src/tek4010.c src/ards.c $(LIBS) $(CFLAGS)
 
+check: tek4010
+	./tek4010 demos/demo.sh
+
 install: tek4010
 	./install
 
