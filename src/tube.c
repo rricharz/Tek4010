@@ -300,7 +300,7 @@ void tube_init(int argc, char* argv[])
         }
 
         if ((strcmp(argv[firstArg],"-h") == 0) || (strcmp(argv[firstArg],"--help") == 0)){
-                printf(helpStr);
+                printf("%s",helpStr);
                 exit(0);
         }
 
