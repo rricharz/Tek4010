@@ -55,3 +55,7 @@ dkms.conf
 
 # Temporary files
 src/help.h
+
+# MacOS system files
+.DS_Store
+*/.DS_Store

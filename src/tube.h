@@ -1,7 +1,7 @@
 // tube.h
 
 // fonts
-#define STANDARD_FONT "Monospace"
+#define STANDARD_FONT "monospace"
 #define STANDARD_FONT_SIZE 18.0
 #define APL_FONT "APL385 Unicode"
 #define APL_FONT_SIZE 20.0
