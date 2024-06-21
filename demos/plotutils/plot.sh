@@ -4,8 +4,9 @@
 # This script plots certain properties of elements on the periodic table
 
 # Dependency: gnu plotutils https://pkgs.org/search/?q=plotutils
+# This package can be installed by running `apt install plotutils` on debian and its derivatives
 
-# To display the plot, use ./tek4010 demos/plot.sh
+# To display the plot, use ./tek4010 demos/plotuils/plot.sh
 
 # From top to bottom:
 #    - curl: download the periodic table data
