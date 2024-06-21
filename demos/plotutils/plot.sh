@@ -13,13 +13,13 @@
 #            source: https://gist.github.com/GoodmanSciences/c2dd862cd38f21b0ad36b8f96b4bf1ee
 #
 #    - awk: split file by seperator ","
-#           then filter missing values in column 20 (density)
-#           then filter up to element 105
-#           then print atomic mass and density
+#           then filter missing values 
+#           then print atomic mass, then density multiplied by atomic radius
 #
 #    - sed: remove the top row which includes names
 #
-#    - graph: -X x axis title;
+#    - graph: -L plot title
+#             -X x axis title;
 #             -Y y axis title;
 #             -F font;
 #             -m line type;
@@ -28,10 +28,24 @@
 #             -r move horizontally
 #
 #    - plot: -T use tek device
-curl 'https://gist.githubusercontent.com/GoodmanSciences/c2dd862cd38f21b0ad36b8f96b4bf1ee/raw/1d92663004489a5b6926e944c1b3d9ec5c40900e/Periodic%2520Table%2520of%2520Elements.csv' \
-| awk '{split($0,a,","); if(length(a[20])!=0&&a[4]<105){print a[4],a[20]}}' | \
-sed 1d \
-| graph -X "atomic mass" -Y "density" -F "HersheySans" -m 1 -S 2 0.03 -w 1 -r 0 \
+curl -s 'https://gist.githubusercontent.com/GoodmanSciences/c2dd862cd38f21b0ad36b8f96b4bf1ee/raw/1d92663004489a5b6926e944c1b3d9ec5c40900e/Periodic%2520Table%2520of%2520Elements.csv' \
+| awk \
+    '{
+        split($0,a,",");
+        if(a[4]*a[20]*a[17]){       # discard rows with missing columns
+            print a[1],a[20]*a[17]
+        }
+    }' \
+| sed 1d \
+| graph \
+    -L "Density of elements" \
+    -X "atomic number" \
+    -Y "density(g/cm^3) * atomic radius(rcovH)" \
+    -F "HersheySans" \
+    -m 2 \
+    -S 3 0.03 \
+    -w 1 \
+    -r 0 \
 | plot -T tek
 
 # On the line containing `awk`, columns are selected at the print statement.
