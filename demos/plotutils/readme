@@ -2,3 +2,4 @@ This directory contains a plot demo using GNU plotutils.
 
 GNU plotutils is available on most linux distributions as `plotutils`.  
 On Raspberry Pi OS and other Debian derivatives, this package can be installed by `apt install plotutils`.
+On OSX use 'sudo port plotutils'
