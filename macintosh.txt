@@ -1,7 +1,7 @@
-Tek4010 on Macos
+Tek4010 on macOS
 ================
 
-tek4010 can also be built on MacOS. This is experimental
+tek4010 can also be built on macOS. This is experimental
 at present and any help to make the installation easier is
 appreciated. At present this is only for experienced
 command line users.
@@ -10,7 +10,7 @@ Open a terminal window and type
 
 1. xcode -select --install
 
-2. Install Mac Ports. See https://macports.org/install.php
+2. Install MacPorts. See https://macports.org/install.php
 
 3. Reboot your Mac 
 
@@ -20,7 +20,7 @@ Type the following commands in your terminal window:
 
 5. sudo port install git
 
-6. sudo prot install cairo
+6. sudo port install cairo
 
 7. sudo port install pkgconfig
 
