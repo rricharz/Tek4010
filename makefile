@@ -15,5 +15,5 @@ check: tek4010
 install: tek4010
 	./install
 
-clean: tek4010
+clean:
 	-rm -f tek4010 src/help.h
