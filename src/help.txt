@@ -10,21 +10,24 @@ Usage: tek4010 [options] COMMAND [...]
     -tab1           execute a blank instead of a tab to the next 8-character column
 
     -b100000, -b38400, -b19200, -b9600, -b4800, -b2400, -b1200, -b600, -b300
-                    Emulate a baud rate. Without one of these arguments, the baud rate
-                    is 19200 baud. The original Tektronix 4010 had a maximal baud rate
-                    of 9600 baud. The 4014 could support up to 100000 baud with a special
-                    interface. With the small baud rates you can emulate 1970s
-                    style modem performance. Early modems had a baud rate of 300.
+                    Emulate a baud rate. Without one of these arguments,
+                    the baud rate is 19200 baud. The original Tektronix
+                    4010 had a maximal baud rate of 9600 baud. The
+                    4014 could support up to 100000 baud with a special
+                    interface. With the small baud rates you can emulate
+                    1970s style modem performance. Early modems had a
+                    baud rate of 300.
 
     -full           in this mode the tek4010 emulator creates a full screen window and
-                    uses the full resolution of the 4014 with the enhanced graphics
-                    module installed, scaled down to the actual window size.
-                    Use ctrl-q to close the tek4010 window.
+                    uses the full resolution of the 4014 with the enhanced
+                    graphics module installed, scaled down to the actual
+                    window size. Use ctrl-q to close the tek4010 window.
 
     -fullv          in this mode the tek4010 emulator creates a decorated window
-                    using the maximal vertical space available. The full resolution of
-                    the 4014 with the enhanced graphics module installed is used,
-                    scaled down to the actual window size
+                    using the maximal vertical space available. The full
+                    resolution of the 4014 with the enhanced graphics
+                    module installed is used, scaled down to the actual
+                    window size
 
     -ARDS           display ARDS data
 
@@ -32,13 +35,15 @@ Usage: tek4010 [options] COMMAND [...]
                     Details see below.
 
     -autoClear      erase screen if a line feed is executed at the bottom of the screen.
-                    This makes it sometimes easier to use tek4010 as the only terminal.
-                    It is not the behaviour of the original hardware.
+                    This makes it sometimes easier to use tek4010 as
+                    the only terminal. It is not the behaviour of the
+                    original hardware.
 
     -keepsize       tek4010 sets the fontsize to normal whenever the screen is erased.
-                    This option keeps the currently selected font size until it is
-                    changed with a new escape sequence. Some historic plot files will
-                    not reset the font size back to normal if this option is set.
+                    This option keeps the currently selected font size
+                    until it is changed with a new escape sequence. Some
+                    historic plot files will not reset the font size
+                    back to normal if this option is set.
 
     -hidecursor     hides the cursor. Do not set while using GIN mode.
 
