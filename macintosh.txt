@@ -1,10 +1,8 @@
 Tek4010 on macOS
 ================
 
-tek4010 can also be built on macOS. This is experimental
-at present and any help to make the installation easier is
-appreciated. At present this is only for experienced
-command line users.
+tek4010 can also be built on macOS. If you are prepared to
+use the command line interface, proceed as follows.
 
 Open a terminal window and type
 
@@ -28,19 +26,21 @@ Type the following commands in your terminal window:
 
 9. git clone https://github.com/rricharz/Tek4010
 
-10. make clean
+10. cd Tek4010
 
-11. make
+11. make clean
 
-12. make install
+12. make
 
-13. Add PATH="$HOME/.local/bin:$PATH" to your ~/.zprofile file
+13. make install
 
-14. Reboot your Mac
+14. Add PATH="$HOME/.local/bin:$PATH" to your ~/.zprofile file
 
-15. Test with
-        cd ~/Tek4010
-        tek4010 demos/demo.sh
+15. Reboot your PC
+
+16. Test with
+        cd Tek4010
+        make check
 
 There are a few minor problems at present, see the
 issues in the github repository
