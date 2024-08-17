@@ -2,7 +2,8 @@ Tek4010 on macOS
 ================
 
 tek4010 can also be built on macOS. If you are prepared to
-use the command line interface, proceed as follows.
+use the command line interface, proceed as follows. See note
+at the bottom if you are using brew.
 
 Open a terminal window and type
 
@@ -44,3 +45,11 @@ Type the following commands in your terminal window:
 
 There are a few minor problems at present, see the
 issues in the github repository
+
+Note: Thanks to Clem Cole pointed out that users of brew
+instead of MacPorts can replace steps 2 to 7 as follows
+
+  4. brew install gtk3+
+  5. brew install git
+  6. brew install cairo
+  7. brew install pkgconfig
