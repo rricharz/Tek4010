@@ -31,7 +31,7 @@ start menu. Start either one of them.
 
 6. sudo apt-get install gcc
 
-7. sudo apt-get install pkgconfig
+7. sudo apt-get install pkg-config
 
 8. git clone https://github.com/rricharz/Tek4010
 
