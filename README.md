@@ -4,10 +4,10 @@
 This is a [Tektronix 4010, 4013, 4014 and 4015](https://en.wikipedia.org/wiki/Tektronix_4010)
 terminal emulator for the Raspberry Pi, Linux, macOS (Macintosh) and Windows.
 
-All instructions can be found in [Manual.pdf](https://github.com/rricharz/Tek4010/blob/master/Manual.pdf)
-in the main Tek4010 directory. The installation is described there. For macOS, start with the preparation instructions in
-[macintosh.txt](https://github.com/rricharz/Tek4010/blob/master/macintosh.txt) in this repository. For Windows, start with
-the preparation instructions in [windows.txt](https://github.com/rricharz/Tek4010/blob/master/windows.txt) in this repository.
+All instructions can be found in [Manual.pdf](https://github.com/rricharz/Tek4010/blob/master/doc/Manual.pdf)
+in the doc/ directory. The installation is described there. For macOS, start with the preparation instructions in
+[doc/macintosh.txt](https://github.com/rricharz/Tek4010/blob/master/doc/macintosh.txt). For Windows, start with
+the preparation instructions in [doc/windows.txt](https://github.com/rricharz/Tek4010/blob/master/doc/windows.txt).
 
 ![screen_shot](screendump.png?raw=true "tek4010 screendump")
 
