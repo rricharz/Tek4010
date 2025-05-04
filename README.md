@@ -53,3 +53,12 @@ This program is the result of a community effort.
 
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
 even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+**Directory structure**
+- `apl/`: files relating to APL support
+- `ardsfiles/`: ARDS (Computer Displays Inc. Advanced Remote Display Station) graphic files
+- `demos/`: demo scripts
+- `manuals/`: historic manuals of ARDS and Tek hardware
+- `pltfiles/`: plot files in tek format, to display with tek4010
+- `src/`: main code
+- `tektests/`: experiments and verification
