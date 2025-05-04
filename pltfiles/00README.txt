@@ -18,4 +18,4 @@ Many of the .plt files in this directory were copied from
 cassette tapes recorded in the 70s.  Some have errors ("line hits")
 in them.
 
-splash.plt in pltfiles was created 2019 by Dave Ault.
+splash.plt in More_pltfiles/ was created 2019 by Dave Ault.

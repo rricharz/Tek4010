@@ -16,11 +16,11 @@ cat pltfiles/00README.txt
 
 wait1s
 
-cat dodekagon.plt
+cat pltfiles/dodekagon.plt
 
 wait1s
 
-for filename in pltfiles/*.plt
+for filename in pltfiles/demos/*.plt
 do
     # erase screen
     printf '\033\014'

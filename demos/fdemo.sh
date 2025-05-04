@@ -9,11 +9,11 @@ for i in {1..15}
   done
 }
 
-cat dodekagon.plt
+cat pltfiles/dodekagon.plt
 
 wait1s
 
-for filename in pltfiles/*.plt
+for filename in pltfiles/demos/*.plt
 do
     # erase screen
     printf '\033\014'
