@@ -1,8 +1,10 @@
 Tek4010 on Windows
 ==================
 
-tek4010 can also be built on Windows. If you are prepared to
-use the command line interface, proceed as follows:
+tek4010 can also be built on Windows. It uses
+virtualization with WSL, which is available for free
+on most PC systems. If you are prepared to use the
+command line interface, proceed as follows:
 
 Open a terminal window and type
 
