@@ -49,7 +49,7 @@ issues in the github repository
 Note: Thanks to Clem Cole pointed out that users of brew
 instead of MacPorts can replace steps 2 to 7 as follows
 
-  4. brew install gtk3+
+  4. brew install gtk+3
   5. brew install git
   6. brew install cairo
   7. brew install pkgconfig
