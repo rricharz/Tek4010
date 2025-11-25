@@ -49,6 +49,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <errno.h>
 #include <sys/time.h>
 #include <locale.h>
@@ -78,6 +79,7 @@ struct keyCode {
 struct keyCode keyTable[MAXKEYCODES];
 
 int argNoexit = 0;              // options
+int argPty = 0;
 int argRaw = 0;
 int argBaud = 19200;
 int argTab1 = 0;
@@ -320,6 +322,8 @@ void tube_init(int argc, char* argv[])
         while ((argv[firstArg][0] == '-') && (firstArg < argc-1)) {
                 if (strcmp(argv[firstArg],"-raw") == 0)
                         argRaw = 1;
+                else if (strcmp(argv[firstArg],"-pty") == 0)
+                        argPty = 1;
                 else if (strcmp(argv[firstArg],"-noexit") == 0)
                         argNoexit = 1;
                 else if (strcmp(argv[firstArg],"-b100000") == 0)
@@ -424,15 +428,51 @@ void tube_init(int argc, char* argv[])
 
         tube_doClearPersistent = 1;
 
-        // create pipes for communication between parent and child
-        if (pipe(getDataPipe) == -1) {
-                printf("Cannot initialize data pipe\n");
-                exit(1);
-        }
+        if (argPty) {
+                // If a pty was requested it, create one and set it up so that
+                // it appears as though it were created via a pipe.
+                int mfd, sfd;
+                char *pts;
 
-        if (pipe(putKeysPipe) == -1) {
-                printf("Cannot initialize key pipe\n");
-                exit(1);
+                mfd = posix_openpt(O_RDWR | O_NOCTTY);
+                if (mfd == -1) {
+                        printf("Cannot allocate pseudo-terminal device\n");
+                        exit(1);
+                }
+                if (grantpt(mfd) == -1) {
+                        printf("Cannot grant pseudo-terminal\n");
+                        exit(1);
+                }
+                if (unlockpt(mfd) == -1) {
+                        printf("Cannot unlock pseudo-terminal\n");
+                        exit(1);
+                }
+                pts = ptsname(mfd);
+                if (pts == NULL) {
+                        printf("Cannot find pts name\n");
+                        exit(1);
+                }
+                sfd = open(pts, O_RDWR | O_NOCTTY);
+                if (sfd == -1) {
+                        printf("Cannot open pts '%s'\n", pts);
+                        exit(1);
+                }
+                getDataPipe[0] = mfd;
+                getDataPipe[1] = sfd;
+                putKeysPipe[0] = sfd;
+                putKeysPipe[1] = mfd;
+
+        } else {
+                // create pipes for communication between parent and child
+                if (pipe(getDataPipe) == -1) {
+                        printf("Cannot initialize data pipe\n");
+                        exit(1);
+                }
+
+                if (pipe(putKeysPipe) == -1) {
+                        printf("Cannot initialize key pipe\n");
+                        exit(1);
+                }
         }
 
         // now fork a child process
@@ -458,13 +498,34 @@ void tube_init(int argc, char* argv[])
 
                 // set stdout of child process to getDataPipe
                 while ((dup2(getDataPipe[1], STDOUT_FILENO) == -1) && (errno == EINTR)) {}
-                close(getDataPipe[1]); // not used anymore
+                while ((dup2(getDataPipe[1], STDERR_FILENO) == -1) && (errno == EINTR)) {}
                 close(getDataPipe[0]); // not used
 
                 // set stdin of child process to putKeysPipe
                 while ((dup2(putKeysPipe[0], STDIN_FILENO) == -1) && (errno == EINTR)) {}
                 close(putKeysPipe[1]); // not used
-                close(putKeysPipe[0]); // not used anymore
+
+                if (putKeysPipe[0] != getDataPipe[1] && putKeysPipe[0] > STDERR_FILENO)
+                        close(putKeysPipe[0]); // not used anymore
+                if (getDataPipe[1] > STDERR_FILENO)
+                        close(getDataPipe[1]); // not used anymore
+
+                // If we are using a pseudo-terminal, then create a new
+                // session, set the pseudo-terminal slave as our
+                // controlling terminal, and set the `TERM` environment
+                // variable.
+                if (argPty) {
+                        if (setsid() == -1) {
+                                fprintf(stderr, "Cannot create new session");
+                                exit(1);
+                        }
+                        if (ioctl(STDIN_FILENO, TIOCSCTTY, 0) == -1) {
+                                fprintf(stderr, "Cannot set controlling TTY");
+                                perror("Cannot set controlling TTY");
+                                exit(1);
+                        }
+                        setenv("TERM", "tek4014", 1);
+                }
 
                 // run rsh in the child process
                 execv(argv2[0],argv2+1);
