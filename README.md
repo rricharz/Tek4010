@@ -1,6 +1,6 @@
 # Tek4010 Emulator
 
-![Tek4010 example](docs/images/screendump.png
+![Tek4010 example](docs/images/screendump.png)
 
 Tek4010 is an emulator for Tektronix 4010/4014 graphics
 terminals. It reproduces the behavior of the original
