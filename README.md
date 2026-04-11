@@ -64,3 +64,8 @@ Examples and demo files are included in the repository:
 This emulator is designed to support historical
 Unix environments and related hardware projects
 such as PiDP-11 systems.
+
+## Usage
+
+- Quick start → [docs/quickstart.md](docs/quickstart.md)
+- Full manual → [docs/manual.md](docs/manual.md)
