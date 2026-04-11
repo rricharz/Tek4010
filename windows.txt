@@ -1,54 +1,44 @@
 Tek4010 on Windows
 ==================
 
-tek4010 can also be built on Windows. It uses
-virtualization with WSL, which is available for free
-on most PC systems. If you are prepared to use the
-command line interface, proceed as follows:
+This is a quick installation guide for Windows.
 
-Open a terminal window and type
+Tek4010 runs on Windows using WSL (Windows Subsystem
+for Linux) with Ubuntu.
 
-1. wsl --install -d Ubuntu
+Quick start:
 
-2. Then reboot your system.
+1. Open PowerShell and type:
 
-3. After the reboot you will be asked for a user name and
-   a password for Ubuntu. These will be your Linux
-   credentials. They do not need to be identical with
-   your windows credentials.
+   wsl --install -d Ubuntu
 
-Note, on Ubuntu, there is no root password. Use your
-normal password in sudo below.
+2. Reboot your system.
 
-You should now find a Ubuntu and a wsl icon in your
-start menu. Start either one of them.
+3. Start Ubuntu from the Start menu.
 
-4. sudo apt-get update
+4. Install required packages:
 
-5. sudo apt-get upgrade
+   sudo apt-get update
+   sudo apt-get install git libgtk-3-dev make gcc pkg-config
 
-4. sudo apt-get install libgtk-3-dev
+5. Download the source:
 
-5. sudo apt-get install make
+   git clone https://github.com/rricharz/Tek4010
+   cd Tek4010
 
-6. sudo apt-get install gcc
+6. Build and install:
 
-7. sudo apt-get install pkg-config
+   make clean
+   make
+   make install
 
-8. git clone https://github.com/rricharz/Tek4010
+7. Check installation while you are still in the
+   Tek4010 directory:
 
-9. cd Tek4010
+   make check
 
-10. make clean
+This runs a demonstration and verifies that tek4010 works.
 
-11. make
+For full instructions and additional information, see:
 
-12. make install
-
-13. Add PATH="$HOME/.local/bin:$PATH" to your ~/.zprofile file
-
-14. Reboot your PC
-
-15. Test with
-        cd Tek4010
-        make check
+   docs/windows-wsl.md
