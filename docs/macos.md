@@ -6,27 +6,21 @@ This page describes installation on macOS.
 
 ## Quick installation
 
-Open a terminal and install required tools:
+Open a terminal and install command line tools:
 
 ```
 xcode-select --install
 ```
 
-Install MacPorts from:
+Install Homebrew from:
 
-https://macports.org/install.php
-
-Reboot your Mac.
+https://brew.sh
 
 Install required packages:
 
 ```
-sudo port install gtk3-devel git cairo pkgconfig
+brew install gtk+3 cairo pkg-config git
 ```
-
-Install XQuartz from:
-
-https://xquartz.org
 
 Download the source code:
 
@@ -54,16 +48,6 @@ make check
 ```
 
 This runs a demonstration and verifies that tek4010 works.
-
----
-
-## Alternative using Homebrew
-
-Instead of MacPorts, you can use Homebrew:
-
-```
-brew install gtk+3 git cairo pkgconfig
-```
 
 ---
 
