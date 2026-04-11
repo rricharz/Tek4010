@@ -22,14 +22,13 @@ Quick start:
    make
    make install
 
-4. Test:
+4. Check installation while you are still in the
+   Tek4010 directory:
 
-   tek4010 -noexit cat test.plt
+   make check
 
-You should see a graphical display.
+This runs a demonstration and verifies that tek4010 works.
 
-The display speed can be adjusted if needed.
-
-For full instructions, demos, and additional options, see:
+For full instructions and additional information, see:
 
    docs/raspberrypi.md

@@ -1,7 +1,5 @@
 # Tek4010 Emulator
 
-![Tek4010 example](docs/images/screendump.png)
-
 Tek4010 is an emulator for Tektronix 4010/4014 graphics
 terminals. It reproduces the behavior of the original
 storage tube display, including realistic drawing speed
@@ -10,31 +8,33 @@ and the true fading of the drawing spot over time.
 This makes it possible to experience historical plot
 files and legacy Unix systems as they originally behaved.
 
+![Tek4010 example](docs/images/screendump.png)
+
 ---
 
 ## Installation
 
 Choose your platform:
 
-- Raspberry Pi / Linux → raspberrypi.txt
-- macOS → macos.txt
-- Windows (WSL) → windows.txt
+- Raspberry Pi / Linux → [raspberrypi.txt](raspberrypi.txt)
+- macOS → [macos.txt](macos.txt)
+- Windows (WSL) → [windows.txt](windows.txt)
 
 These files contain a short and simple installation guide.
 
 More detailed instructions are available in:
 
-- docs/raspberrypi.md
-- docs/macos.md
-- docs/windows-wsl.md
+- [docs/raspberrypi.md](docs/raspberrypi.md)
+- [docs/macos.md](docs/macos.md)
+- [docs/windows-wsl.md](docs/windows-wsl.md)
 
 ---
 
 ## Quick test
 
-After installation, run:
+After installation, run in your Tek4010 directory:
 
-    tek4010 -noexit cat test.plt
+    make test
 
 You should see a graphical display.
 
@@ -64,7 +64,3 @@ Examples and demo files are included in the repository:
 This emulator is designed to support historical
 Unix environments and related hardware projects
 such as PiDP-11 systems.
-
-This makes it possible to experience historical plot
-files and legacy Unix systems as they originally behaved.
-
