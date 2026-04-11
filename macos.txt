@@ -1,0 +1,42 @@
+Tek4010 on macOS
+=================
+
+This is a quick installation guide for macOS.
+
+Quick start:
+
+1. Open a terminal and type:
+
+   xcode-select --install
+
+2. Install MacPorts. See https://macports.org/install.php
+
+3. Reboot your Mac
+
+4. Install required packages:
+
+   sudo port install gtk3-devel git cairo pkgconfig
+
+5. Install XQuartz. See https://xquartz.org
+
+6. Download the source:
+
+   git clone https://github.com/rricharz/Tek4010
+   cd Tek4010
+
+7. Build and install:
+
+   make clean
+   make
+   make install
+
+8. Check installation while you are still in the
+   Tek4010 directory:
+
+   make check
+
+This runs a demonstration and verifies that tek4010 works.
+
+For full instructions and additional information, see:
+
+   docs/macos.md
