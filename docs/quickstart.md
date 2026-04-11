@@ -11,6 +11,9 @@ telnet, or rsh.
 
 ## Examples
 
+To use the included examples and demos, go to the
+Tek4010 directory first
+
 Display a plot file:
 
     tek4010 -noexit cat test.plt
@@ -55,4 +58,4 @@ Keeps the window open after the command finishes.
 More options and detailed information, including
 usage with historical systems, can be found in:
 
-    docs/manual.md
+    docs/manual.pdf

@@ -68,4 +68,4 @@ such as PiDP-11 systems.
 ## Usage
 
 - Quick start → [docs/quickstart.md](docs/quickstart.md)
-- Full manual → [docs/manual.md](docs/manual.md)
+- Full manual → [docs/manual.pdf](docs/manual.pdf)
