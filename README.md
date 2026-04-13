@@ -8,6 +8,9 @@ and the true fading of the drawing spot over time.
 This makes it possible to experience historical plot
 files and legacy Unix systems as they originally behaved.
 
+▶️ Watch the emulator in action:
+[Tektronix 4010 Emulator – Authentic Storage Tube Graphics at Original Speed](https://youtu.be/vk9uMM8LpFk?si=PhAek8d5fDDl-oHd)
+
 ![Tek4010 example](docs/images/screendump.png)
 
 ---
