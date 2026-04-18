@@ -1,7 +1,24 @@
-# install_apl - install apl font
+#!/bin/sh
+# install_apl - install apl font and build test program
 
-mkdir /usr/share/fonts/truetype/apl385
-cp Apl385.ttf /usr/share/fonts/truetype/apl385
+case `uname` in
+  Darwin)
+    FONTDIR=$HOME/Library/Fonts
+    ;;
+  *)
+    FONTDIR=$HOME/.local/share/fonts
+    ;;
+esac
 
-fc-cache /usr/share/fonts
-fc-list 'APL385 Unicode'
+mkdir -p $FONTDIR
+cp Apl385.ttf $FONTDIR
+
+mkdir -p $HOME/.tek4010conf
+cp aplkeys $HOME/.tek4010conf
+
+if [ "`uname`" != "Darwin" ]; then
+  fc-cache $FONTDIR
+  fc-match "APL385 Unicode"
+fi
+
+make
