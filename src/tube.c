@@ -90,6 +90,7 @@ int argKeepSize = 0;
 int argHideCursor = 0;
 int argWait = 0;
 int argFast = 0;
+int argHalf = 0;
 
 int refresh_interval;           // after this time in msec next refresh is done
 
@@ -377,6 +378,8 @@ void tube_init(int argc, char* argv[])
                         }
                         // printf("Waiting %d seconds after end of plot\n", argWait);
                 }
+                else if (strcmp(argv[firstArg],"-half") == 0)
+                        argHalf = 1;
                 else {
                         printf("tek4010: unknown argument %s\n", argv[firstArg]);
                         exit(1);

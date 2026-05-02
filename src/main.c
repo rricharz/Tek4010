@@ -313,6 +313,11 @@ int main (int argc, char *argv[])
                         askWindowWidth = (int)((double)(screenHeight - BORDER) * aspectRatio);
                         askWindowHeight = screenHeight - BORDER;
                 }
+                else if (argHalf) {
+					printf("Using half of the window width\n");
+					askWindowWidth = screenWidth / 2;
+					askWindowHeight = (int)((double)askWindowWidth / aspectRatio);
+				}
                 gtk_window_set_decorated(GTK_WINDOW(window), TRUE);
                 gtk_window_set_default_size(GTK_WINDOW(window), askWindowWidth, askWindowHeight);
                 windowWidth  = askWindowWidth;
