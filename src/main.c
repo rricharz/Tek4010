@@ -27,8 +27,6 @@
  *
  */
 
-#define TIME_INTERVAL       35              // time interval for timer function in msec (after last refresh)
-
 #define GDK_DISABLE_DEPRECATION_WARNINGS
 
 #include <stdio.h>
@@ -63,6 +61,28 @@ extern int tube_doClearPersistent;
 
 static void do_drawing(cairo_t *, GtkWidget *);
 
+#include <sys/time.h>
+void debug_timer_interval(const char *where)
+{
+        static long last = 0;
+        struct timeval tv;
+        long now;
+        long diff;
+
+        gettimeofday(&tv, NULL);
+        now = tv.tv_sec * 1000L + tv.tv_usec / 1000L;
+
+        if (last != 0) {
+                diff = now - last;
+                if (diff > 100) {
+                        printf("%s gap %ld ms\n", where, diff);
+                        fflush(stdout);
+                }
+        }
+
+        last = now;
+}
+
 static gboolean on_draw_event(GtkWidget *widget, cairo_t *cr,
     gpointer user_data)
 {
@@ -72,9 +92,19 @@ static gboolean on_draw_event(GtkWidget *widget, cairo_t *cr,
 
 static gboolean on_timer_event(GtkWidget *widget)
 {
-        if (tube_on_timer_event())
-                gtk_widget_queue_draw(widget);
-        return TRUE;
+	static int count = 0;
+
+        count++;
+        if (count >= 100) {
+                printf("timer heartbeat\n");
+                fflush(stdout);
+                count = 0;
+        }
+
+	debug_timer_interval("timer");
+    if (tube_on_timer_event())
+        gtk_widget_queue_draw(widget);
+    return TRUE;
 }
 
 static gboolean clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
@@ -95,7 +125,7 @@ static void do_drawing(cairo_t *cr, GtkWidget *widget)
 {
         static cairo_surface_t *permanent_surface, *temporary_surface;
 
-        g_source_remove(global_timeout_ref);    // stop timer, in case do_drawing takes too long
+        // g_source_remove(global_timeout_ref);    // stop timer, in case do_drawing takes too long
 
         if (global_firstcall) {
                 // force aspect ratio by making black stripes at left and right, or top and bottom
@@ -132,6 +162,7 @@ static void do_drawing(cairo_t *cr, GtkWidget *widget)
                 printf("Cannot create drawing surfaces\n");
                 exit(1);
         }
+        
         if (argARDS)
                 ards_draw(permanent_cr, temporary_cr, global_firstcall);
         else
@@ -153,8 +184,8 @@ static void do_drawing(cairo_t *cr, GtkWidget *widget)
 
         cairo_destroy(permanent_cr);
         cairo_destroy(temporary_cr);
-        global_timeout_ref = g_timeout_add(TIME_INTERVAL, (GSourceFunc) on_timer_event,
-                                                (gpointer) window);
+        // global_timeout_ref = g_timeout_add(TIME_INTERVAL, (GSourceFunc) on_timer_event,
+        //                                        (gpointer) window);
 }
 
 static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data)

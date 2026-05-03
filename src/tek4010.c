@@ -344,6 +344,9 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
 
 {
         int ch, tag;
+        
+        printf(".");
+        fflush(stdout);
 
         refreshCount++;
 
@@ -359,7 +362,6 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
         startPaintTime = tube_mSeconds(); // start to measure time for this draw operation
 
         showCursor = 1;
-        isBrightSpot = 0;
 
         // clear the second surface
         tube_clearSecond(cr2);

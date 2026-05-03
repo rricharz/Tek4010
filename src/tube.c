@@ -93,9 +93,9 @@ int argFast = 0;
 int argHalf = 0;
 
 int refresh_interval;           // after this time in msec next refresh is done
+int brightCounter = 0;
 
 int showCursor;                 // set of cursor is shown (not set in graphics mode)
-int isBrightSpot = 0;           // set if there is currently a bright spot on the screen
 
 int xlast, ylast;
 
@@ -546,7 +546,10 @@ int tube_on_timer_event()
                 printf("Process has been terminated\n");
                 exit(0);
         }
-        return (isBrightSpot || tube_isInput());
+        if (brightCounter > 0)
+        brightCounter--;
+
+        return ((brightCounter > 0) || tube_isInput());
 }
 
 int tube_clicked(int button, int x, int y)
@@ -596,7 +599,9 @@ void tube_clearPersistent(cairo_t *cr, cairo_t *cr2)
         tube_set_source_rgb(cr, NORMAL_INTENSITY, NORMAL_SATURATION);
         tube_set_source_rgb(cr2, BRIGHT_SPOT_INTENSITY / 2, BRIGHT_SPOT_SATURATION);
         cairo_paint(cr2);
-        isBrightSpot = 1;
+        printf("brightCounter reset: tubeClearPersistent\n");
+        fflush(stdout);
+        brightCounter = BRIGHT_COUNTER_INIT;
         plotPointMode = 0;
         ltype = SOLID;
         xlast = 0;
@@ -620,7 +625,6 @@ void tube_clearSecond(cairo_t *cr2)
                 cairo_set_operator(cr2, CAIRO_OPERATOR_MULTIPLY);
                 cairo_paint(cr2);
                 cairo_set_operator(cr2, CAIRO_OPERATOR_OVER);
-                isBrightSpot = 1;
         }
 }
 
@@ -821,7 +825,9 @@ void tube_drawCharacter(cairo_t *cr, cairo_t *cr2, char ch)
         }
 
         tube_x0 += hDotsPerChar;
-        isBrightSpot = 1;
+        printf("brightCounter reset: drawCharacter\n");
+        fflush(stdout);
+        brightCounter = BRIGHT_COUNTER_INIT;
 }
 
 void tube_emulateDeflectionTime()
@@ -861,8 +867,9 @@ void tube_drawPoint(cairo_t *cr, cairo_t *cr2)
                 xlast = tube_x2;
                 ylast = tube_y2;
         }
-
-        isBrightSpot = 1;
+printf("brightCounter reset: drawPoint\n");
+fflush(stdout);
+        brightCounter = BRIGHT_COUNTER_INIT;
 }
 
 void tube_crosshair(cairo_t *cr, cairo_t *cr2)
@@ -913,8 +920,9 @@ void tube_drawVector(cairo_t *cr, cairo_t *cr2)
                 cairo_line_to(cr2, tube_x2, windowHeight - tube_y2);
                 cairo_stroke(cr2);
         }
-
-        isBrightSpot = 1; // also to be set if writeThroughMode
+printf("brightCounter reset: drawVector\n");
+fflush(stdout);
+        brightCounter = BRIGHT_COUNTER_INIT; // also to be set if writeThroughMode
 }
 
 void tube_setupPainting(cairo_t *cr, cairo_t *cr2, char *fontName)

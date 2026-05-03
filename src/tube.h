@@ -30,6 +30,11 @@ extern int vDotsPerChar;
 extern int refresh_interval;           // after this time in msec next refresh is done
 extern long refreshCount;
 
+extern int brightCounter;
+#define TIME_INTERVAL       35              // time interval for timer function in msec (after last refresh)
+#define BRIGHT_TIME_MSEC    1000
+#define BRIGHT_COUNTER_INIT ((BRIGHT_TIME_MSEC + TIME_INTERVAL - 1) / TIME_INTERVAL)
+
 extern int showCursor;                 // set of cursor is shown (not set in graphics mode)
 extern int isBrightSpot;               // set if there is currently a bright spot on the screen
 extern int isGinMode;                  // set if GIN mode is active
