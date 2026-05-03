@@ -58,6 +58,13 @@
 #include <sys/socket.h>
 #endif
 
+// include file for terminal path
+#if defined(__APPLE__)
+#include <util.h>
+#else
+#include <pty.h>
+#endif
+
 #include "main.h"
 #include "tube.h"
 #include "help.h"
@@ -177,22 +184,27 @@ long tube_u100ResetSeconds(int reset)
 int tube_isInput()
 // is char available on getDataPipe?
 {
-        int bytesWaiting;
+        fd_set rfds;
+        struct timeval tv;
+        int result;
+
         if (isGinMode)
-                // delay any input from host during GIN mode
-                // this allows to test .plt files with GIN mode
                 return 0;
-        ioctl(getDataPipe[0], FIONREAD, &bytesWaiting);
-        if (DEBUG) {
-                debugCount++;
-                if (DEBUGMAX && (debugCount > DEBUGMAX)) return 0;
-        }
-        if (bytesWaiting == 0) {
-                // reset the baud rate counter
-                // without this, baud rate goal would not work after waiting for chars
+
+        FD_ZERO(&rfds);
+        FD_SET(getDataPipe[0], &rfds);
+
+        tv.tv_sec = 0;
+        tv.tv_usec = 0;
+
+        result = select(getDataPipe[0] + 1, &rfds, NULL, NULL, &tv);
+
+        if (result <= 0) {
                 tube_u100ResetSeconds(1);
+                return 0;
         }
-        return bytesWaiting;
+
+        return 1;
 }
 
 int tube_getInputChar()
@@ -300,25 +312,28 @@ void tube_init(int argc, char* argv[])
         char *argv2[20];
         size_t bufsize = 127;
         int firstArg = 1;
-        printf("tek4010 version 1.9\n");
+        int argPty = 0;
+		int ptyMaster = -1;
+        printf("tek4010 version 2.0\n");
         windowName = "Tektronix 4010/4014 emulator";
-        if ((argc<2) || (argc>19)) {
-                printf("Error:number of arguments\n");
+		if (argc > 19) {
+	            printf("Error: Too many arguments\n");
                 exit(1);
         }
 
-        if ((strcmp(argv[firstArg],"-h") == 0) || (strcmp(argv[firstArg],"--help") == 0)){
-                printf("%s",helpStr);
-                exit(0);
-        }
-
+		if ((argc > firstArg) && ((strcmp(argv[firstArg], "-h") == 0) ||
+				(strcmp(argv[firstArg], "--help") == 0))) {
+				printf("%s", helpStr);
+				exit(0);
+		}
+		
         // this stays here for compatibility with early versions of tek4010
         if (strcmp(argv[argc-1],"-noexit") == 0) {
                 argNoexit = 1;
                 argc--;
         }
 
-        while ((argv[firstArg][0] == '-') && (firstArg < argc-1)) {
+			while ((firstArg < argc) && (argv[firstArg][0] == '-')) {
                 if (strcmp(argv[firstArg],"-raw") == 0)
                         argRaw = 1;
                 else if (strcmp(argv[firstArg],"-noexit") == 0)
@@ -387,128 +402,157 @@ void tube_init(int argc, char* argv[])
                 firstArg++;
 
         }
-
+        
+        argPty = (firstArg >= argc);
         if (argBaud > 20000) argFast = 1;
 
         // A child process for rsh is forked and communication
         // between parent and child are established
+        
+        printf("argc=%d firstArg=%d argPty=%d\n", argc, firstArg, argPty);
+		fflush(stdout);
+        
+        if (argPty) {
+                char *shell;
+                pid_t pid;
+                
+                printf("PTY mode\n");
+				fflush(stdout);
 
-        // expand argv[firstArg] to full path and check, whether it exists
-        char *str = (char *) malloc(bufsize * sizeof(char));
-        if (str == NULL) {
-               printf("Cannot allocate memory for absolute path\n");
-               exit(1);
+                shell = getenv("SHELL");
+                if ((shell == NULL) || (shell[0] == 0))
+                        shell = "/bin/sh";
+
+                pid = forkpty(&ptyMaster, NULL, NULL, NULL);
+                printf("forkpty pid=%d master=%d\n", pid, ptyMaster);
+                fflush(stdout);
+                if (pid == -1) {
+                        printf("Cannot fork pseudo terminal\n");
+                        exit(1);
+                }
+                else if (pid == 0) {
+						setenv("TERM", "dumb", 1);
+						execl(shell, shell, "-i", (char *) NULL);
+							_exit(127);
+				}
+
+                getDataPipe[0] = ptyMaster;
+                putKeysPipe[1] = dup(ptyMaster);
+                if (putKeysPipe[1] == -1) {
+                        printf("Cannot duplicate pseudo terminal\n");
+                        exit(1);
+                }
         }
-        strcpy(str,"which ");
-        strcat(str, argv[firstArg]);
-        FILE *fullPath = popen(str,"r");
-        if (fullPath) {
-                getline(&str, &bufsize,fullPath);
+        else {
+                // expand argv[firstArg] to full path and check, whether it exists
+                char *str = (char *) malloc(bufsize * sizeof(char));
+                if (str == NULL) {
+                        printf("Cannot allocate memory for absolute path\n");
+                        exit(1);
+                }
+                strcpy(str, "which ");
+                strcat(str, argv[firstArg]);
 
-                // remove the endline character
-                str[strlen(str)-1] = 0;
+                FILE *fullPath = popen(str, "r");
+                if (fullPath) {
+                        getline(&str, &bufsize, fullPath);
 
-                if (strncmp(str,"which",5) == 0) {
+                        // remove the endline character
+                        str[strlen(str) - 1] = 0;
+
+                        if (strncmp(str, "which", 5) == 0) {
+                                printf("Unknown command %s\n", argv[firstArg]);
+                                exit(1);
+                        }
+
+                        argv[firstArg] = str;
+                        pclose(fullPath);
+                }
+                else {
                         printf("Unknown command %s\n", argv[firstArg]);
                         exit(1);
                 }
 
-                argv[firstArg] = str;
-                pclose(fullPath);
+                // create pipes for communication between parent and child
+                if (pipe(getDataPipe) == -1) {
+                        printf("Cannot initialize data pipe\n");
+                        exit(1);
+                }
+
+                if (pipe(putKeysPipe) == -1) {
+                        printf("Cannot initialize key pipe\n");
+                        exit(1);
+                }
+
+                // now fork a child process
+                pid_t pid = fork();
+                if (pid == -1) {
+                        printf("Cannot fork child process\n");
+                        exit(1);
+                }
+                else if (pid == 0) {  // child process
+
+                        // we need a second string array with an empty string as last item!
+                        argv2[0] = argv[firstArg];
+                        for (int i = 1; i < argc; i++)
+                                argv2[i] = argv[firstArg + i - 1];
+                        argv2[argc - firstArg + 1] = (char*) NULL;
+
+                        // set stdout of child process to getDataPipe
+                        while ((dup2(getDataPipe[1], STDOUT_FILENO) == -1) && (errno == EINTR)) {}
+                        close(getDataPipe[1]); // not used anymore
+                        close(getDataPipe[0]); // not used
+
+                        // set stdin of child process to putKeysPipe
+                        while ((dup2(putKeysPipe[0], STDIN_FILENO) == -1) && (errno == EINTR)) {}
+                        close(putKeysPipe[1]); // not used
+                        close(putKeysPipe[0]); // not used anymore
+
+                        // run program in the child process
+                        execv(argv2[0], argv2 + 1);
+                        free(str);
+                        exit(0);
+                }
+
+                // parent process
+                free(str);
+
+                close(getDataPipe[1]); // not used
+                close(putKeysPipe[0]); // not used
         }
-        else {
-                printf("Unknown command %s\n", argv[firstArg]);
-                exit(1);
-        }
+
+        // common setup for both PTY and pipe mode
 
         characterInterval = 100000 / argBaud; // in 100 usecs, assuming 1 start and 1 stop bit.
 
-        if (DEBUG) printf("character_interval = %0.1f msec\n",(double)characterInterval/10.0);
+        if (DEBUG) printf("character_interval = %0.1f msec\n", (double)characterInterval / 10.0);
 
         tube_doClearPersistent = 1;
 
-        // create pipes for communication between parent and child
-        if (pipe(getDataPipe) == -1) {
-                printf("Cannot initialize data pipe\n");
-                exit(1);
-        }
-
-        if (pipe(putKeysPipe) == -1) {
-                printf("Cannot initialize key pipe\n");
-                exit(1);
-        }
-
-        // now fork a child process
-        pid_t pid = fork();
-        if (pid == -1) {
-                printf("Cannot fork child process\n");
-                exit(1);
-        }
-        else if (pid == 0) {  // child process
-
-                // we need a second string array with an empty string as last item!
-                argv2[0] = argv[firstArg];
-                for (int i = 1; i < argc; i++)
-                        argv2[i] = argv[firstArg+i-1];
-                argv2[argc-firstArg+1] = (char*) NULL;
-
-                // int i = 0;
-                // do {
-                //        printf("argv2[%d] = %s\n",i,argv2[i]);
-                //        i++;
-                // }
-                // while (argv2[i] != (char*) NULL);
-
-                // set stdout of child process to getDataPipe
-                while ((dup2(getDataPipe[1], STDOUT_FILENO) == -1) && (errno == EINTR)) {}
-                close(getDataPipe[1]); // not used anymore
-                close(getDataPipe[0]); // not used
-
-                // set stdin of child process to putKeysPipe
-                while ((dup2(putKeysPipe[0], STDIN_FILENO) == -1) && (errno == EINTR)) {}
-                close(putKeysPipe[1]); // not used
-                close(putKeysPipe[0]); // not used anymore
-
-                // run rsh in the child process
-                execv(argv2[0],argv2+1);
-                free(str);
-                exit(0);
-        }
-
-        // parent process
-
-        free(str);
-
-        close(getDataPipe[1]); // not used
-        close(putKeysPipe[0]); // not used
-
-        // use termios to turn off line buffering for both pipes
-        // struct termios term;
-        // tcgetattr(getDataPipe[0], &term);
-        // term.c_lflag &= ~ICANON ;
-        // tcsetattr(getDataPipe[0], TCSANOW,&term);
-        // tcgetattr(putKeysPipe[1], &term);
-        // tcsetattr(putKeysPipe[0], TCSANOW,&term);
-
         // open now a stream from the getDataPipe descriptor
-        getData = fdopen(getDataPipe[0],"r");
+        getData = fdopen(getDataPipe[0], "r");
         if (getData == 0) {
                 printf("Parent: Cannot open input stream\n");
                 exit(1);
         }
-        setbuf(getData,0);
+        setbuf(getData, 0);
 
         // open now a stream from the putKeysPipe descriptor
-        putKeys = fdopen(putKeysPipe[1],"w");
+        putKeys = fdopen(putKeysPipe[1], "w");
         if (putKeys == 0) {
                 printf("Parent: Cannot open output stream\n");
                 exit(1);
         }
-        setbuf(putKeys,0);
+        setbuf(putKeys, 0);
+        
+        printf("fdopen complete: getDataPipe[0]=%d putKeysPipe[1]=%d\n",
+       getDataPipe[0], putKeysPipe[1]);
+       fflush(stdout);
 
         tube_mSeconds();             // initialize the timer
         tube_u100ResetSeconds(1);
 }
+
 
 int tube_on_timer_event()
 // if TIMER_INTERVAL in tek4010.h is larger than zero, this function

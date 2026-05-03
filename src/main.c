@@ -207,6 +207,7 @@ static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_da
                 printf("sending break code\n");
                 putc(0xFF, putKeys);
                 putc(0xF3, putKeys);
+                fflush(putKeys);
                 }
         }
 
@@ -265,13 +266,27 @@ static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_da
                 if (aplMode) {
                         ch = tube_translateKeyCode(ch);
                         putc(ch & 0xFF, putKeys);
+                        fflush(putKeys);
                         if (ch >> 8) { // overstrike
                                 putc(8, putKeys);
                                 putc(ch >> 8, putKeys);
+                                fflush(putKeys);
                         }
                 }
-                else
-                        putc(ch,putKeys);
+                else {
+        if (ch == '\r')
+                printf("KEY <CR>\n");
+        else if (ch == '\n')
+                printf("KEY <LF>\n");
+        else if ((ch >= 32) && (ch < 127))
+                printf("KEY %c\n", ch);
+        else
+                printf("KEY <%02X>\n", ch & 0xFF);
+        fflush(stdout);
+
+				putc(ch, putKeys);
+				fflush(putKeys);
+			}
         }
 }
 
