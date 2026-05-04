@@ -119,6 +119,8 @@ int specialPlotMode = 0;
 int defocussed = 0;
 int intensity = 100;
 int aplMode = 0;
+int argPty = 0;
+
 
 int tube_x0, tube_x2,tube_y0, tube_y2;
 
@@ -220,7 +222,7 @@ int tube_getInputChar()
                 int c = getc(getData) & 0x7F;
                 charCount++;
                 charResetCount++;
-                lastTime = t;
+                lastTime = t;                              
                 return c;
         }
         else
@@ -311,7 +313,6 @@ void tube_init(int argc, char* argv[])
         char *argv2[20];
         size_t bufsize = 127;
         int firstArg = 1;
-        int argPty = 0;
 		int ptyMaster = -1;
         printf("tek4010 version 2.0\n");
         windowName = "Tektronix 4010/4014 emulator";
@@ -418,22 +419,22 @@ void tube_init(int argc, char* argv[])
 				printf("Running in terminal mode (PTY)\n");
 				fflush(stdout);
 
-                shell = getenv("SHELL");
-                if ((shell == NULL) || (shell[0] == 0))
-                        shell = "/bin/sh";
+				shell = getenv("SHELL");
+				if ((shell == NULL) || (shell[0] == 0))
+						shell = "/bin/sh";
 
-                pid = forkpty(&ptyMaster, NULL, NULL, NULL);
-                // printf("forkpty pid=%d master=%d\n", pid, ptyMaster);
-                fflush(stdout);
-                if (pid == -1) {
-                        printf("Cannot fork pseudo terminal\n");
-                        exit(1);
-                }
-                else if (pid == 0) {
-						setenv("TERM", "dumb", 1);
-						execl(shell, shell, "-i", (char *) NULL);
-							_exit(127);
+				pid = forkpty(&ptyMaster, NULL, NULL, NULL);
+
+				if (pid == -1) {
+						printf("Cannot fork pseudo terminal\n");
+						exit(1);
 				}
+else if (pid == 0) {
+        setenv("TERM", "vt100", 1);
+        setenv("PS1", "Tek4010$ ", 1);
+        execl("/bin/sh", "sh", "-i", (char *) NULL);
+        _exit(127);
+}
 
                 getDataPipe[0] = ptyMaster;
                 putKeysPipe[1] = dup(ptyMaster);
@@ -441,6 +442,7 @@ void tube_init(int argc, char* argv[])
                         printf("Cannot duplicate pseudo terminal\n");
                         exit(1);
                 }
+                
         }
         else {
                 // expand argv[firstArg] to full path and check, whether it exists

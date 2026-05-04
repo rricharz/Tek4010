@@ -35,6 +35,7 @@
 #include <cairo.h>
 #include <gtk/gtk.h>
 #include <sys/time.h>
+#include <termios.h>
 
 #include "main.h"
 #include "tube.h"
@@ -54,7 +55,8 @@
  * Detection rule:
  *   - count redraws with lag > SLOW_THRESHOLD
  *   - if ≥ 3 such events occur within WINDOW_MSEC
- *     → switch to fast mode
+ *     → switch to fast mod
+ *   - ignore the startup
  *
  * The switch is one-way (no automatic return to normal mode) to avoid
  * unstable or oscillating behavior.
@@ -62,6 +64,7 @@
 
 #define SLOW_THRESHOLD 100      // ms: acceptable redraw latency
 #define WINDOW_MSEC    10000    // ms: time window for detecting slow behavior
+#define STARTUP_IGNORE_MSEC 1000
 
 static long lastQueueDrawTime = 0;
 
@@ -102,7 +105,11 @@ void check_graphics_response(long lag)
         static long firstSlowTime = 0;
         static int fastSwitched = 0;
 
-        long now;
+        long now = tube_mSeconds();
+        
+        // ignore startup phase (first 1000 ms)
+        if (now < STARTUP_IGNORE_MSEC)
+                return;
 
         if (fastSwitched || argFast)
                 return;
@@ -251,8 +258,12 @@ static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_da
         if (event->keyval == 0x8BF) {           // "option b" sends break code to target
                 if (putKeys) {
                 // printf("sending break code\n");
-                putc(0xFF, putKeys);
-                putc(0xF3, putKeys);
+					if (argPty)
+						tcsendbreak(fileno(putKeys), 0);
+					else {
+						putc(0xFF, putKeys);
+						putc(0xF3, putKeys);
+					}
                 fflush(putKeys);
                 }
         }

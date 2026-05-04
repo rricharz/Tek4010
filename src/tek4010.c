@@ -59,8 +59,9 @@
 // mode 8       expecting fourth byte of persistent vector end point address
 //
 // mode 30      expecting escape sequence, escape code received
-// mode 31      received in ANSI escape sequence, escape sequence continues if next char is digit
-//
+// mode 31      ignore ANSI CSI sequence (ESC [ ... final byte)
+// mode 32      ignore ANSI OSC sequence (ESC ] ... BEL)//
+
 // mode 40      incremental plot mode; is ignored until exit from incremental plot received
 // mode 50      special point plot mode
 // mode 60      crosshair mode
@@ -263,9 +264,11 @@ void tek4010_escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
                 case ':': tube_changeCharacterSize(cr, cr2, 121, 58, efactor * 0.65); mode = 0; break;
                 case ';': tube_changeCharacterSize(cr, cr2, 133, 64, efactor * 0.55); mode = 0; break;
 
-                case '[': printf("Ignoring ANSI escape sequence: [");
-                          mode=31;
-                          break;
+                case '[': 	mode = 31;      // ignore ANSI CSI
+							break;
+
+				case ']':	mode = 32;      // ignore ANSI OSC
+							break;
 
                 // normal mode
                 case '`': ltype = SOLID;    writeThroughMode = 0; mode = savemode; break;
@@ -614,16 +617,21 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                 if (specialPlotMode) mode = 50;  // another intensity/focus char follows
                                 else mode = 5;
                                 break;
-                        case 30: // escape code handler
-                                tek4010_escapeCodeHandler(cr, cr2, ch);
-                                break;
-                        case 31: // ANSI CSI sequence
-                                printf("%c",ch);
-                                if ((ch<0x20) || (ch>0x3F)) {
-                                  mode=0;
-                                  printf("\n");
-                                }
-                        case 40: // incremental plot mode
+						case 30: // escape code handler
+								tek4010_escapeCodeHandler(cr, cr2, ch);
+								break;
+
+						case 31: // ignore ANSI CSI sequence ESC [ ... final byte
+								if ((ch >= 0x40) && (ch <= 0x7E))
+									mode = 0;
+								break;
+
+						case 32: // ignore ANSI OSC sequence ESC ] ... BEL
+								if (ch == 7)
+									mode = 0;
+								break;
+
+						case 40: // incremental plot mode
                                 tek4010_checkReturnToAlpha(ch);  // check for exit
                                 if (DEBUG) printf("Incremental plot mode, ch = %d, penDown = %d\n",ch, penDown);
                                 if (ch == 32) penDown = 0;
