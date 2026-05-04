@@ -344,9 +344,6 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
 
 {
         int ch, tag;
-        
-        printf(".");
-        fflush(stdout);
 
         refreshCount++;
 

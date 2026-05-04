@@ -63,6 +63,8 @@
 #define SLOW_THRESHOLD 100      // ms: acceptable redraw latency
 #define WINDOW_MSEC    10000    // ms: time window for detecting slow behavior
 
+static long lastQueueDrawTime = 0;
+
 extern FILE *putKeys;
 
 char *windowName;
@@ -86,48 +88,50 @@ extern int tube_doClearPersistent;
 
 static void do_drawing(cairo_t *, GtkWidget *);
 
-void check_timer_interval(void)
+long now_msec(void)
 {
-        static long last = 0;
+        struct timeval tv;
+
+        gettimeofday(&tv, NULL);
+        return tv.tv_sec * 1000L + tv.tv_usec / 1000L;
+}
+
+void check_graphics_response(long lag)
+{
         static int slowCount = 0;
         static long firstSlowTime = 0;
         static int fastSwitched = 0;
 
-        struct timeval tv;
         long now;
-        long diff;
 
-        gettimeofday(&tv, NULL);
-        now = tv.tv_sec * 1000L + tv.tv_usec / 1000L;
+        if (fastSwitched || argFast)
+                return;
 
-        if (last != 0) {
-                diff = now - last;
+        if (lag <= SLOW_THRESHOLD)
+                return;
 
-                if (!fastSwitched && diff > SLOW_THRESHOLD) {
-                        if (slowCount == 0) {
-                                firstSlowTime = now;
-                                slowCount = 1;
-                        }
-                        else if ((now - firstSlowTime) <= WINDOW_MSEC) {
-                                slowCount++;
-                        }
-                        else {
-                                // restart detection window
-                                firstSlowTime = now;
-                                slowCount = 1;
-                        }
+        now = tube_mSeconds();
 
-                        if (slowCount >= 3) {
-                                argFast = 1;
-                                fastSwitched = 1;
-
-                                printf("Slow graphics response -> switched to fast mode\n");
-                                fflush(stdout);
-                        }
-                }
+        if (slowCount == 0) {
+                firstSlowTime = now;
+                slowCount = 1;
+        }
+        else if ((now - firstSlowTime) <= WINDOW_MSEC) {
+                slowCount++;
+        }
+        else {
+                // restart detection window
+                firstSlowTime = now;
+                slowCount = 1;
         }
 
-        last = now;
+        if (slowCount >= 3) {
+                argFast = 1;
+                fastSwitched = 1;
+
+                printf("Slow graphics response -> switched to fast mode\n");
+                fflush(stdout);
+        }
 }
 
 static gboolean on_draw_event(GtkWidget *widget, cairo_t *cr,
@@ -139,19 +143,12 @@ static gboolean on_draw_event(GtkWidget *widget, cairo_t *cr,
 
 static gboolean on_timer_event(GtkWidget *widget)
 {
-/*	static int count = 0;
-        count++;
-        if (count >= 100) {
-                printf("timer heartbeat\n");
-                fflush(stdout);
-                count = 0;
+        if (tube_on_timer_event()) {
+                lastQueueDrawTime = now_msec();
+                gtk_widget_queue_draw(widget);
         }
-*/
 
-	check_timer_interval();
-    if (tube_on_timer_event())
-        gtk_widget_queue_draw(widget);
-    return TRUE;
+        return TRUE;
 }
 
 static gboolean clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
@@ -173,6 +170,8 @@ static void do_drawing(cairo_t *cr, GtkWidget *widget)
         static cairo_surface_t *permanent_surface, *temporary_surface;
 
         // g_source_remove(global_timeout_ref);    // stop timer, in case do_drawing takes too long
+
+		check_graphics_response(now_msec() - lastQueueDrawTime);
 
         if (global_firstcall) {
                 // force aspect ratio by making black stripes at left and right, or top and bottom
@@ -321,7 +320,8 @@ static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_da
                         }
                 }
                 else {
-        if (ch == '\r')
+ 
+/*       if (ch == '\r')
                 printf("KEY <CR>\n");
         else if (ch == '\n')
                 printf("KEY <LF>\n");
@@ -330,6 +330,7 @@ static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_da
         else
                 printf("KEY <%02X>\n", ch & 0xFF);
         fflush(stdout);
+*/
 
 				putc(ch, putKeys);
 				fflush(putKeys);
