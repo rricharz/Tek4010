@@ -251,7 +251,6 @@ void checkFont(char *fontName)
        }
        pclose(f);
        printf("Error: APL font \'%s\' not installed. This font is required for the APL mode.\n", fontName);
-       printf("See github.com/rricharz/tek4010 paragraph \'APL mode\'\n");
        exit(1);
 }
 
@@ -302,7 +301,7 @@ int tube_translateKeyCode(int ch)
                 }
                 i++;
         }
-        printf("\n");
+        // printf("\n");
         return ch;
 }
 
@@ -379,7 +378,7 @@ void tube_init(int argc, char* argv[])
                         windowName = "ARDS emulator";
                 }
                 else if (strcmp(argv[firstArg],"-fast") == 0) {
-                        printf("Fast refresh without fading\n");
+                        printf("Fast mode refresh without fading\n");
                         argFast = 1;
                 }
                 else if (strcmp(argv[firstArg],"-wait") == 0) {
@@ -409,14 +408,14 @@ void tube_init(int argc, char* argv[])
         // A child process for rsh is forked and communication
         // between parent and child are established
         
-        printf("argc=%d firstArg=%d argPty=%d\n", argc, firstArg, argPty);
+        // printf("argc=%d firstArg=%d argPty=%d\n", argc, firstArg, argPty);
 		fflush(stdout);
         
         if (argPty) {
                 char *shell;
                 pid_t pid;
                 
-                printf("PTY mode\n");
+				printf("Running in terminal mode (PTY)\n");
 				fflush(stdout);
 
                 shell = getenv("SHELL");
@@ -424,7 +423,7 @@ void tube_init(int argc, char* argv[])
                         shell = "/bin/sh";
 
                 pid = forkpty(&ptyMaster, NULL, NULL, NULL);
-                printf("forkpty pid=%d master=%d\n", pid, ptyMaster);
+                // printf("forkpty pid=%d master=%d\n", pid, ptyMaster);
                 fflush(stdout);
                 if (pid == -1) {
                         printf("Cannot fork pseudo terminal\n");
@@ -525,7 +524,7 @@ void tube_init(int argc, char* argv[])
 
         characterInterval = 100000 / argBaud; // in 100 usecs, assuming 1 start and 1 stop bit.
 
-        if (DEBUG) printf("character_interval = %0.1f msec\n", (double)characterInterval / 10.0);
+        // printf("character_interval = %0.1f msec\n", (double)characterInterval / 10.0);
 
         tube_doClearPersistent = 1;
 
@@ -545,8 +544,8 @@ void tube_init(int argc, char* argv[])
         }
         setbuf(putKeys, 0);
         
-        printf("fdopen complete: getDataPipe[0]=%d putKeysPipe[1]=%d\n",
-       getDataPipe[0], putKeysPipe[1]);
+       // printf("fdopen complete: getDataPipe[0]=%d putKeysPipe[1]=%d\n");
+       //  getDataPipe[0], putKeysPipe[1]);
        fflush(stdout);
 
         tube_mSeconds();             // initialize the timer
@@ -643,7 +642,7 @@ void tube_clearPersistent(cairo_t *cr, cairo_t *cr2)
         tube_set_source_rgb(cr, NORMAL_INTENSITY, NORMAL_SATURATION);
         tube_set_source_rgb(cr2, BRIGHT_SPOT_INTENSITY / 2, BRIGHT_SPOT_SATURATION);
         cairo_paint(cr2);
-        printf("brightCounter reset: tubeClearPersistent\n");
+        // printf("brightCounter reset: tubeClearPersistent\n");
         fflush(stdout);
         brightCounter = BRIGHT_COUNTER_INIT;
         plotPointMode = 0;
@@ -869,7 +868,7 @@ void tube_drawCharacter(cairo_t *cr, cairo_t *cr2, char ch)
         }
 
         tube_x0 += hDotsPerChar;
-        printf("brightCounter reset: drawCharacter\n");
+        // printf("brightCounter reset: drawCharacter\n");
         fflush(stdout);
         brightCounter = BRIGHT_COUNTER_INIT;
 }
@@ -911,8 +910,8 @@ void tube_drawPoint(cairo_t *cr, cairo_t *cr2)
                 xlast = tube_x2;
                 ylast = tube_y2;
         }
-printf("brightCounter reset: drawPoint\n");
-fflush(stdout);
+		// printf("brightCounter reset: drawPoint\n");
+		// fflush(stdout);
         brightCounter = BRIGHT_COUNTER_INIT;
 }
 
@@ -930,11 +929,8 @@ void tube_crosshair(cairo_t *cr, cairo_t *cr2)
 
 void tube_drawVector(cairo_t *cr, cairo_t *cr2)
 {
-        if (DEBUG) {
-                printf("********************************************");
-                printf("Drawing from (%d,%d) to (%d,%d), writethrough = %d\n",
-                                tube_x0, tube_y0, tube_x2, tube_y2, writeThroughMode);
-        }
+        // printf("Drawing from (%d,%d) to (%d,%d), writethrough = %d\n",
+        //                        tube_x0, tube_y0, tube_x2, tube_y2, writeThroughMode);
         tube_emulateDeflectionTime();
 
         if ((tube_x2 == tube_x0) && (tube_y2 == tube_y0)) tube_x0++; // cairo cannot draw a dot
@@ -964,8 +960,8 @@ void tube_drawVector(cairo_t *cr, cairo_t *cr2)
                 cairo_line_to(cr2, tube_x2, windowHeight - tube_y2);
                 cairo_stroke(cr2);
         }
-printf("brightCounter reset: drawVector\n");
-fflush(stdout);
+		// printf("brightCounter reset: drawVector\n");
+		// fflush(stdout);
         brightCounter = BRIGHT_COUNTER_INIT; // also to be set if writeThroughMode
 }
 
@@ -995,7 +991,7 @@ void tube_changeCharacterSize(cairo_t *cr, cairo_t *cr2,int charsPerLine, int ch
         if (argARDS) {
                cairo_font_extents(cr, &et);
                currentCharacterOffset =(int)et.ascent;
-               if (DEBUG) printf("Set vertical character offset for ARDS mode to %d\n", currentCharacterOffset);
+               // printf("Set vertical character offset for ARDS mode to %d\n", currentCharacterOffset);
         }
         else
                 currentCharacterOffset = 0;

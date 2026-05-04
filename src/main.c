@@ -34,9 +34,34 @@
 #include <string.h>
 #include <cairo.h>
 #include <gtk/gtk.h>
+#include <sys/time.h>
 
 #include "main.h"
 #include "tube.h"
+
+/*
+ * Automatic performance fallback:
+ *
+ * On slow systems (e.g. virtual machines or high-DPI displays), the
+ * phosphor fading simulation can cause large delays between redraws.
+ * This is perceived by the user as sluggish typing response.
+ *
+ * We measure the actual time between redraws ("lag"). If the lag exceeds
+ * SLOW_THRESHOLD (in milliseconds) several times within a time window,
+ * we assume that the system cannot keep up with full fading and switch
+ * permanently to fast mode (no continuous fading).
+ *
+ * Detection rule:
+ *   - count redraws with lag > SLOW_THRESHOLD
+ *   - if ≥ 3 such events occur within WINDOW_MSEC
+ *     → switch to fast mode
+ *
+ * The switch is one-way (no automatic return to normal mode) to avoid
+ * unstable or oscillating behavior.
+ */
+
+#define SLOW_THRESHOLD 100      // ms: acceptable redraw latency
+#define WINDOW_MSEC    10000    // ms: time window for detecting slow behavior
 
 extern FILE *putKeys;
 
@@ -61,10 +86,13 @@ extern int tube_doClearPersistent;
 
 static void do_drawing(cairo_t *, GtkWidget *);
 
-#include <sys/time.h>
-void debug_timer_interval(const char *where)
+void check_timer_interval(void)
 {
         static long last = 0;
+        static int slowCount = 0;
+        static long firstSlowTime = 0;
+        static int fastSwitched = 0;
+
         struct timeval tv;
         long now;
         long diff;
@@ -74,9 +102,28 @@ void debug_timer_interval(const char *where)
 
         if (last != 0) {
                 diff = now - last;
-                if (diff > 100) {
-                        printf("%s gap %ld ms\n", where, diff);
-                        fflush(stdout);
+
+                if (!fastSwitched && diff > SLOW_THRESHOLD) {
+                        if (slowCount == 0) {
+                                firstSlowTime = now;
+                                slowCount = 1;
+                        }
+                        else if ((now - firstSlowTime) <= WINDOW_MSEC) {
+                                slowCount++;
+                        }
+                        else {
+                                // restart detection window
+                                firstSlowTime = now;
+                                slowCount = 1;
+                        }
+
+                        if (slowCount >= 3) {
+                                argFast = 1;
+                                fastSwitched = 1;
+
+                                printf("Slow graphics response -> switched to fast mode\n");
+                                fflush(stdout);
+                        }
                 }
         }
 
@@ -92,16 +139,16 @@ static gboolean on_draw_event(GtkWidget *widget, cairo_t *cr,
 
 static gboolean on_timer_event(GtkWidget *widget)
 {
-	static int count = 0;
-
+/*	static int count = 0;
         count++;
         if (count >= 100) {
                 printf("timer heartbeat\n");
                 fflush(stdout);
                 count = 0;
         }
+*/
 
-	debug_timer_interval("timer");
+	check_timer_interval();
     if (tube_on_timer_event())
         gtk_widget_queue_draw(widget);
     return TRUE;
@@ -204,7 +251,7 @@ static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_da
 
         if (event->keyval == 0x8BF) {           // "option b" sends break code to target
                 if (putKeys) {
-                printf("sending break code\n");
+                // printf("sending break code\n");
                 putc(0xFF, putKeys);
                 putc(0xF3, putKeys);
                 fflush(putKeys);
@@ -246,7 +293,7 @@ static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_da
         else if (event->keyval == 0xFF54) ch = 14;  // arrow down for history down
 
         else if ((event->state & GDK_MOD1_MASK) && (aplMode)) {   // alt key
-                printf("alt key, ch = %4X\n", event->keyval & 0x7F);
+                // printf("alt key, ch = %4X\n", event->keyval & 0x7F);
                 ch = (event->keyval & 0x7F) + 128;
         }
 
