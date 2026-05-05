@@ -122,8 +122,8 @@ void check_graphics_response(long lag)
 
         now = tube_mSeconds();
 
-        printf("Slow response %ldmsec, slowCount=%d, brightCounter=%d\n",
-          lag, slowCount, brightCounter);
+        //printf("Slow response %ldmsec, slowCount=%d, brightCounter=%d\n",
+        //  lag, slowCount, brightCounter);
 
         if (slowCount == 0) {
                 firstSlowTime = now;
@@ -138,7 +138,7 @@ void check_graphics_response(long lag)
                 slowCount = 1;
         }
 
-        if (slowCount >= 3) {
+        if (slowCount >= 2) {
                 argFast = 1;
                 fastSwitched = 1;
 
