@@ -48,7 +48,7 @@ void endDraw()
     fflush(stdout);
 }
 
-int drawCircle(int x,int y,int r)
+void drawCircle(int x,int y,int r)
 {
 	int i;
 	double arg;
@@ -63,12 +63,12 @@ int drawCircle(int x,int y,int r)
 int main (int argc, char *argv[])
 {
 	drawCircle(512, 340, 200);
-        drawCircle(612, 340, 100);
-        drawCircle(412, 340, 100);
-        drawCircle(512, 240, 100);
+  drawCircle(612, 340, 100);
+  drawCircle(412, 340, 100);
+  drawCircle(512, 240, 100);
 	drawCircle(512, 440, 100);
 	startDraw(212,340); draw(812,340); endDraw();
 	startDraw(512,040); draw(512,640); endDraw();
 
-	startDraw(1,1); endDraw(); // move the cursor out of the way
+	//startDraw(1,1); endDraw(); // move the cursor out of the way
 }

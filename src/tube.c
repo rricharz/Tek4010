@@ -84,7 +84,7 @@ struct keyCode {
 
 struct keyCode keyTable[MAXKEYCODES];
 
-int argNoexit = 0;              // options
+int argNoexit = 1;              // options
 int argRaw = 0;
 int argBaud = 19200;
 int argTab1 = 0;
@@ -92,7 +92,7 @@ int argFull = 0;
 int argFullV = 0;
 int argARDS = 0;
 int argAPL = 0;
-int argAutoClear = 0;
+int argAutoClear = 1;
 int argKeepSize = 0;
 int argHideCursor = 0;
 int argWait = 0;
@@ -119,6 +119,7 @@ int specialPlotMode = 0;
 int defocussed = 0;
 int intensity = 100;
 int aplMode = 0;
+pid_t childPid = -1;
 int argPty = 0;
 
 
@@ -314,6 +315,8 @@ void tube_init(int argc, char* argv[])
         size_t bufsize = 127;
         int firstArg = 1;
 		int ptyMaster = -1;
+		argAutoClear = 1;
+		argNoexit = 1;
         printf("tek4010 version 2.0\n");
         windowName = "Tektronix 4010/4014 emulator";
 		if (argc > 19) {
@@ -338,6 +341,8 @@ void tube_init(int argc, char* argv[])
                         argRaw = 1;
                 else if (strcmp(argv[firstArg],"-noexit") == 0)
                         argNoexit = 1;
+                else if (strcmp(argv[firstArg],"-exit") == 0)
+                        argNoexit = 0;
                 else if (strcmp(argv[firstArg],"-b100000") == 0)
                         argBaud = 100000;
                 else if (strcmp(argv[firstArg],"-b38400") == 0)
@@ -364,6 +369,8 @@ void tube_init(int argc, char* argv[])
                         argFullV = 1;
                 else if (strcmp(argv[firstArg],"-autoClear") == 0)
                         argAutoClear = 1;
+                else if (strcmp(argv[firstArg],"-noAutoClear") == 0)
+                        argAutoClear = 0;
                 else if (strcmp(argv[firstArg],"-keepsize") == 0)
                         argKeepSize = 1;
                 else if (strcmp(argv[firstArg],"-hidecursor") == 0)
@@ -429,13 +436,14 @@ void tube_init(int argc, char* argv[])
 						printf("Cannot fork pseudo terminal\n");
 						exit(1);
 				}
-else if (pid == 0) {
-        setenv("TERM", "vt100", 1);
-        setenv("PS1", "Tek4010$ ", 1);
-        execl("/bin/sh", "sh", "-i", (char *) NULL);
-        _exit(127);
-}
-
+				else if (pid == 0) {
+					setenv("TERM", "vt100", 1);
+					setenv("PS1", "tek4010$ ", 1);
+					execl("/bin/sh", "sh", "-i", (char *) NULL);
+					_exit(127);
+				}
+				
+				childPid = pid;
                 getDataPipe[0] = ptyMaster;
                 putKeysPipe[1] = dup(ptyMaster);
                 if (putKeysPipe[1] == -1) {
@@ -516,6 +524,9 @@ else if (pid == 0) {
                 }
 
                 // parent process
+                
+                childPid = pid;
+                
                 free(str);
 
                 close(getDataPipe[1]); // not used
@@ -566,31 +577,34 @@ int tube_on_timer_event()
 
         // is child process still running?
 
-        int status;
-        if (argWait && (tube_isInput() == 0) && (waitpid(-1, &status, WNOHANG))) {
-                if (firstWait == 0)
-                        firstWait = tube_mSeconds();
-                else {
-                        if ((int)((tube_mSeconds() - firstWait) / 1000) > argWait) {
-                                tube_quit();
-                                gtk_main_quit();
-                                printf("Process has been terminated after %d seconds\n", argWait);
-                                exit(0);
-                        }
-                }
-        }
-        else if ((!argNoexit) && (tube_isInput() == 0) && (waitpid(-1, &status, WNOHANG))) {
-                long t = tube_mSeconds();
-                // printf("Execution time: %0.3f sec\n", (double)t/1000.0);
-                // if (t > 0) {
-                //         printf("Average screen refresh rate: %0.1f Hz\n",(double)(1000.0*refreshCount)/t);
-                //         printf("Average character rate: %0.0f baud\n",(double)(8000.0*charCount)/t);
-                // }
-                tube_quit();
-                gtk_main_quit();
-                printf("Process has been terminated\n");
-                exit(0);
-        }
+		int status;
+		int childExited = 0;
+
+		if (childPid > 0) {
+				if (waitpid(childPid, &status, WNOHANG) == childPid)
+						childExited = 1;
+		}
+
+		if (childExited) {
+				if (argPty || !argNoexit) {
+						tube_quit();
+						gtk_main_quit();
+						printf("Process has been terminated\n");
+						exit(0);
+				}
+
+				if (argWait) {
+						if (firstWait == 0)
+								firstWait = tube_mSeconds();
+						else if ((int)((tube_mSeconds() - firstWait) / 1000) > argWait) {
+								tube_quit();
+								gtk_main_quit();
+								printf("Process has been terminated after %d seconds\n", argWait);
+								exit(0);
+						}
+				}
+		}
+
         if (brightCounter > 0)
         brightCounter--;
 

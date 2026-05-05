@@ -47,6 +47,7 @@ extern int aplMode;
 
 extern int plotPointMode;
 extern int writeThroughMode;
+extern pid_t childPid;
 extern int argPty;
 
 extern int tube_x0, tube_x2, tube_y0, tube_y2;

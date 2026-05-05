@@ -107,6 +107,9 @@ void check_graphics_response(long lag)
 
         long now = tube_mSeconds();
         
+		if (brightCounter <= 0)
+			return;
+        
         // ignore startup phase (first 1000 ms)
         if (now < STARTUP_IGNORE_MSEC)
                 return;
@@ -439,8 +442,11 @@ int main (int argc, char *argv[])
         }
 
         gtk_window_set_title(GTK_WINDOW(window), windowName);
-
+        
+        gtk_widget_set_can_focus(window, TRUE);
         gtk_widget_show_all(window);
+		gtk_window_present(GTK_WINDOW(window));
+		gtk_widget_grab_focus(window);
 
         gtk_main();
 
