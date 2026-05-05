@@ -418,47 +418,25 @@ void tube_init(int argc, char* argv[])
         
         // printf("argc=%d firstArg=%d argPty=%d\n", argc, firstArg, argPty);
 		fflush(stdout);
-        
+		
+// ****************************** forkpty code        **********************
+
+{
+        char *str = NULL;
+        pid_t pid;
+
         if (argPty) {
-                char *shell;
-                pid_t pid;
-                
-				printf("Running in terminal mode (PTY)\n");
-				fflush(stdout);
-
-				shell = getenv("SHELL");
-				if ((shell == NULL) || (shell[0] == 0))
-						shell = "/bin/sh";
-
-				pid = forkpty(&ptyMaster, NULL, NULL, NULL);
-
-				if (pid == -1) {
-						printf("Cannot fork pseudo terminal\n");
-						exit(1);
-				}
-				else if (pid == 0) {
-					setenv("TERM", "vt100", 1);
-					setenv("PS1", "tek4010$ ", 1);
-					execl("/bin/sh", "sh", "-i", (char *) NULL);
-					_exit(127);
-				}
-				
-				childPid = pid;
-                getDataPipe[0] = ptyMaster;
-                putKeysPipe[1] = dup(ptyMaster);
-                if (putKeysPipe[1] == -1) {
-                        printf("Cannot duplicate pseudo terminal\n");
-                        exit(1);
-                }
-                
+                // printf("Running in terminal mode\n");
+                // fflush(stdout);
         }
         else {
-                // expand argv[firstArg] to full path and check, whether it exists
-                char *str = (char *) malloc(bufsize * sizeof(char));
+                // expand argv[firstArg] to full path and check whether it exists
+                str = (char *) malloc(bufsize * sizeof(char));
                 if (str == NULL) {
                         printf("Cannot allocate memory for absolute path\n");
                         exit(1);
                 }
+
                 strcpy(str, "which ");
                 strcat(str, argv[firstArg]);
 
@@ -481,59 +459,49 @@ void tube_init(int argc, char* argv[])
                         printf("Unknown command %s\n", argv[firstArg]);
                         exit(1);
                 }
+        }
 
-                // create pipes for communication between parent and child
-                if (pipe(getDataPipe) == -1) {
-                        printf("Cannot initialize data pipe\n");
-                        exit(1);
+        pid = forkpty(&ptyMaster, NULL, NULL, NULL);
+
+        if (pid == -1) {
+                printf("Cannot fork pseudo terminal\n");
+                exit(1);
+        }
+        else if (pid == 0) {
+                setenv("TERM", "vt100", 1);
+
+                if (argPty) {
+                        setenv("PS1", "tek4010$ ", 1);
+                        execl("/bin/sh", "sh", "-i", (char *) NULL);
                 }
-
-                if (pipe(putKeysPipe) == -1) {
-                        printf("Cannot initialize key pipe\n");
-                        exit(1);
-                }
-
-                // now fork a child process
-                pid_t pid = fork();
-                if (pid == -1) {
-                        printf("Cannot fork child process\n");
-                        exit(1);
-                }
-                else if (pid == 0) {  // child process
-
+                else {
                         // we need a second string array with an empty string as last item!
                         argv2[0] = argv[firstArg];
                         for (int i = 1; i < argc; i++)
                                 argv2[i] = argv[firstArg + i - 1];
                         argv2[argc - firstArg + 1] = (char*) NULL;
 
-                        // set stdout of child process to getDataPipe
-                        while ((dup2(getDataPipe[1], STDOUT_FILENO) == -1) && (errno == EINTR)) {}
-                        close(getDataPipe[1]); // not used anymore
-                        close(getDataPipe[0]); // not used
-
-                        // set stdin of child process to putKeysPipe
-                        while ((dup2(putKeysPipe[0], STDIN_FILENO) == -1) && (errno == EINTR)) {}
-                        close(putKeysPipe[1]); // not used
-                        close(putKeysPipe[0]); // not used anymore
-
-                        // run program in the child process
                         execv(argv2[0], argv2 + 1);
-                        free(str);
-                        exit(0);
                 }
 
-                // parent process
-                
-                childPid = pid;
-                
+                _exit(127);
+			}
+
+			// parent process
+
+			childPid = pid;
+
+			if (str != NULL)
                 free(str);
 
-                close(getDataPipe[1]); // not used
-                close(putKeysPipe[0]); // not used
-        }
+			getDataPipe[0] = ptyMaster;
+			putKeysPipe[1] = dup(ptyMaster);
+			if (putKeysPipe[1] == -1) {
+                printf("Cannot duplicate pseudo terminal\n");
+                exit(1);
+			}
+		}
 
-        // common setup for both PTY and pipe mode
 
         characterInterval = 100000 / argBaud; // in 100 usecs, assuming 1 start and 1 stop bit.
 

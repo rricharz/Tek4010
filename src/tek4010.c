@@ -302,7 +302,7 @@ void tek4010_escapeCodeHandler(cairo_t *cr, cairo_t *cr2, int ch)
                 case 'w': ltype = SOLID;    writeThroughMode = 1; mode = 101; showCursor = 0; break;
 
                 default:
-                        printf("Ignoring escape code: 0x%02x\n",ch);
+                        // printf("Ignoring escape code: 0x%02x\n",ch);
                         mode = 0;
                         break;
         }
