@@ -106,10 +106,10 @@ void check_graphics_response(long lag)
         static int fastSwitched = 0;
 
         long now = tube_mSeconds();
-        
+
 		if (brightCounter <= 0)
 			return;
-        
+
         // ignore startup phase (first 1000 ms)
         if (now < STARTUP_IGNORE_MSEC)
                 return;
@@ -121,6 +121,9 @@ void check_graphics_response(long lag)
                 return;
 
         now = tube_mSeconds();
+
+        printf("Slow response %ldmsec, slowCount=%d, brightCounter=%d\n",
+          lag, slowCount, brightCounter);
 
         if (slowCount == 0) {
                 firstSlowTime = now;
@@ -218,7 +221,7 @@ static void do_drawing(cairo_t *cr, GtkWidget *widget)
                 printf("Cannot create drawing surfaces\n");
                 exit(1);
         }
-        
+
         if (argARDS)
                 ards_draw(permanent_cr, temporary_cr, global_firstcall);
         else
@@ -334,7 +337,7 @@ static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_da
                         }
                 }
                 else {
- 
+
 /*       if (ch == '\r')
                 printf("KEY <CR>\n");
         else if (ch == '\n')
@@ -442,7 +445,7 @@ int main (int argc, char *argv[])
         }
 
         gtk_window_set_title(GTK_WINDOW(window), windowName);
-        
+
         gtk_widget_set_can_focus(window, TRUE);
         gtk_widget_show_all(window);
 		gtk_window_present(GTK_WINDOW(window));

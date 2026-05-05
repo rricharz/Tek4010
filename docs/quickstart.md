@@ -30,6 +30,11 @@ Animation:
 Demo script:
 
     sh demos/demo.sh
+    
+If typing feels slow, start tek4010 with the -fast option.
+
+Without -fast, tek4010 will automatically switch to fast mode when it
+detects slow graphics response. This may take a while.
 
 ---
 
