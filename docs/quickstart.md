@@ -58,17 +58,12 @@ Break
 Quit
 
     Window close button
-    Fullscreen mode: Left Option-Q / Alt-Q
+    Ctrl-D
 
 APL mode (only if APL support enabled)
 
     Left Option-N    switch to APL character set
     Left Option-O    switch back to normal character set
-
-History convenience
-
-    Up Arrow          previous command
-    Down Arrow        next command
 
 All normal ASCII keys and control characters (Ctrl-C, Ctrl-D, etc.)
 are passed through unchanged.

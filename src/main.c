@@ -279,35 +279,41 @@ static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_da
             (event->keyval == 0x13BD)) {        // Mac left Option-Q
                 on_quit_event();
                 return;
-        }
-        else if (argAPL &&
+			}
+			else if (argAPL &&
                  ((event->keyval == 0x006E) ||  // Alt-N
                   (event->keyval == 0x02DC))) { // Mac left Option-N
                 aplMode = 1;
                 return;
-        }
-        else if (argAPL &&
+			}
+			else if (argAPL &&
                  ((event->keyval == 0x006F) ||  // Alt-O
                   (event->keyval == 0x00F8))) { // Mac left Option-O
                 aplMode = 0;
                 return;
-        }
-        else if ((event->keyval == 0x0062) ||   // Alt-B
+			}
+			else if ((event->keyval == 0x0062) ||   // Alt-B
                  (event->keyval == 0x222B)) {   // Mac left Option-B
                 tcsendbreak(fileno(putKeys), 0);
                 return;
-        }
-}
+			}
+		}
+		
+		// exit on ctrl-c if child has exited
+		if (childExited &&
+			(event->state & GDK_CONTROL_MASK) && (event->keyval == 0x0064)) {
+			on_quit_event();
+			return;
+		}
 
         // control keys
-        else if ((event->keyval >= 0xFF00) && (event->keyval <= 0xFF1F))
+        else if ((event->keyval >= 0xFF00) && (event->keyval <= 0xFF1F)) 
                 ch = event->keyval & 0x1F;
                 
-		
-		// Up/Down arrows generate Ctrl-P/Ctrl-N for simple shell history navigation.
-		else if (event->keyval == 0xFF52) ch = 16;  // Up    -> Ctrl-P
-		else if (event->keyval == 0xFF54) ch = 14;  // Down  -> Ctrl-N
-
+                // ctrl-letter keys: pass through as ASCII control characters        
+        else if (event->state & GDK_CONTROL_MASK)
+                ch = event->keyval & 0x1F;
+                		
         // normal keys
         else if ((event->keyval >= 0x0020) && (event->keyval <= 0x007F))
                 ch = event->keyval & 0x7F;

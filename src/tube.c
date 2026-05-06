@@ -151,6 +151,8 @@ int getDataPipe[2];
 FILE *putKeys;
 int putKeysPipe[2];
 
+int childExited = 0;
+
 static void tube_set_source_rgb(cairo_t *cr, double intensity, double saturation);
 
 long tube_mSeconds()
@@ -547,7 +549,6 @@ int tube_on_timer_event()
 
 		static int childFinishedShown = 0;
 		int status;
-		int childExited = 0;
 
 		if (childPid > 0) {
 				if (waitpid(childPid, &status, WNOHANG) == childPid)
