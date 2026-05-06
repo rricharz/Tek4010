@@ -99,6 +99,12 @@ long now_msec(void)
         return tv.tv_sec * 1000L + tv.tv_usec / 1000L;
 }
 
+void main_finished()
+{
+		printf("tek4010 - finished");
+		gtk_window_set_title(GTK_WINDOW(window), "tek4010 - finished");
+}
+
 void check_graphics_response(long lag)
 {
         static int slowCount = 0;
@@ -249,13 +255,11 @@ static void do_drawing(cairo_t *cr, GtkWidget *widget)
 
 static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
 {
-        int ch;
+		int ch;
+		
         // printf("key pressed, state =%04X, keyval=%04X, isGinMode = %d\r\n", event->state, event->keyval, isGinMode);
 
-        if ((event->keyval == 0xFF50) ||        // "home" key
-                (event->keyval == 0xFF55) ||    // "page up" key
-                (event->keyval == 0xFF56))      // "page down" key
-        {
+        if (event->keyval == 0xFF50) {        // "home" key, use fn <left cursor> on Mac
                 tube_doClearPersistent = 1;
                 gtk_widget_queue_draw(widget);
                 return;
@@ -263,55 +267,46 @@ static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_da
 
         if (event->keyval == 0x8BF) {           // "option b" sends break code to target
                 if (putKeys) {
-                // printf("sending break code\n");
-					if (argPty)
-						tcsendbreak(fileno(putKeys), 0);
-					else {
-						putc(0xFF, putKeys);
-						putc(0xF3, putKeys);
-					}
-                fflush(putKeys);
+					// printf("sending break code\n");
+					tcsendbreak(fileno(putKeys), 0);
                 }
         }
+        
+        // alt/option keys: local tek4010 functions
+		else if (event->state & GDK_MOD1_MASK) {
+
+        if ((event->keyval == 0x0071) ||        // Alt-Q
+            (event->keyval == 0x13BD)) {        // Mac left Option-Q
+                on_quit_event();
+                return;
+        }
+        else if (argAPL &&
+                 ((event->keyval == 0x006E) ||  // Alt-N
+                  (event->keyval == 0x02DC))) { // Mac left Option-N
+                aplMode = 1;
+                return;
+        }
+        else if (argAPL &&
+                 ((event->keyval == 0x006F) ||  // Alt-O
+                  (event->keyval == 0x00F8))) { // Mac left Option-O
+                aplMode = 0;
+                return;
+        }
+        else if ((event->keyval == 0x0062) ||   // Alt-B
+                 (event->keyval == 0x222B)) {   // Mac left Option-B
+                tcsendbreak(fileno(putKeys), 0);
+                return;
+        }
+}
 
         // control keys
         else if ((event->keyval >= 0xFF00) && (event->keyval <= 0xFF1F))
                 ch = event->keyval & 0x1F;
-        else if (event->state & GDK_CONTROL_MASK) {
-                if ((event->keyval == 0xFF51) ||    // "<ctrl>left arrow" key
-                    (event->keyval == 0xFF52)) {    // "<ctrl>up arrow" key
-                        tube_doClearPersistent = 1;
-                        gtk_widget_queue_draw(widget);
-                        return;
-                }
-                else if (event->keyval == 0x0077) { // "<ctrl>w" makes screendump
-                        system("scrot --focussed");
-                        return;
-                }
-                else if (event->keyval == 0x0071) { // "<ctrl>q" quits tek4010
-                        on_quit_event();
-                        return;
-                }
-                else if (argAPL && (event->keyval == 0x006E)) { // "<ctrl>n" switch to alternative character set
-                        aplMode = 1;
-                        // printf("Setting APL mode to 1 from keyboard\n");
-                        return;
-                }
-                else if (argAPL && (event->keyval == 0x006F)) { // "<ctrl>o" switch to normalcharacter set
-                        aplMode = 0;
-                        // printf("Setting APL mode to 0 from keyboard\n");
-                        return;
-                }
-                else
-                        ch = event->keyval & 0x1F;
-        }
-        else if (event->keyval == 0xFF52) ch = 16;  // arrow up for history up
-        else if (event->keyval == 0xFF54) ch = 14;  // arrow down for history down
-
-        else if ((event->state & GDK_MOD1_MASK) && (aplMode)) {   // alt key
-                // printf("alt key, ch = %4X\n", event->keyval & 0x7F);
-                ch = (event->keyval & 0x7F) + 128;
-        }
+                
+		
+		// Up/Down arrows generate Ctrl-P/Ctrl-N for simple shell history navigation.
+		else if (event->keyval == 0xFF52) ch = 16;  // Up    -> Ctrl-P
+		else if (event->keyval == 0xFF54) ch = 14;  // Down  -> Ctrl-N
 
         // normal keys
         else if ((event->keyval >= 0x0020) && (event->keyval <= 0x007F))
@@ -337,17 +332,6 @@ static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_da
                         }
                 }
                 else {
-
-/*       if (ch == '\r')
-                printf("KEY <CR>\n");
-        else if (ch == '\n')
-                printf("KEY <LF>\n");
-        else if ((ch >= 32) && (ch < 127))
-                printf("KEY %c\n", ch);
-        else
-                printf("KEY <%02X>\n", ch & 0xFF);
-        fflush(stdout);
-*/
 
 				putc(ch, putKeys);
 				fflush(putKeys);

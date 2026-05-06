@@ -468,10 +468,10 @@ void tube_init(int argc, char* argv[])
                 exit(1);
         }
         else if (pid == 0) {
-                setenv("TERM", "vt100", 1);
+                setenv("TERM", "tek4014", 1);
 
                 if (argPty) {
-                        setenv("PS1", "tek4010$ ", 1);
+                        // setenv("PS1", "tek4010$ ", 1);
                         execl("/bin/sh", "sh", "-i", (char *) NULL);
                 }
                 else {
@@ -545,6 +545,7 @@ int tube_on_timer_event()
 
         // is child process still running?
 
+		static int childFinishedShown = 0;
 		int status;
 		int childExited = 0;
 
@@ -559,6 +560,11 @@ int tube_on_timer_event()
 						gtk_main_quit();
 						printf("Process has been terminated\n");
 						exit(0);
+				}
+				
+				if (!childFinishedShown) {
+					    main_finished();
+						childFinishedShown = 1;
 				}
 
 				if (argWait) {
