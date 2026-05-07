@@ -24,6 +24,6 @@ int main (int argc, char *argv[])
                                         (int)(ycenter + radius * sin (rad * angle1)));
                 }
         }
-	      moveAlpha(34,0);
+	      moveAlpha(35,0);
         exit(0);
 }

@@ -27,9 +27,10 @@ These files contain a short and simple installation guide.
 
 More detailed instructions are available in:
 
-- [docs/raspberrypi.md](docs/raspberrypi.md)
-- [docs/macos.md](docs/macos.md)
-- [docs/windows-wsl.md](docs/windows-wsl.md)
+- [Raspberry Pi: docs/raspberrypi.md](docs/raspberrypi.md)
+- [Macintosh: docs/macos.md](docs/macos.md)
+- [Windows: docs/windows-wsl.md](docs/windows-wsl.md)
+- [Release Notes (version 2.0): docs/release_notes.txt](docs/release_notes.txt)
 
 ---
 

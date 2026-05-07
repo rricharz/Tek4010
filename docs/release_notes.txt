@@ -1,0 +1,54 @@
+tek4010 Version 2 Release Notes
+===============================
+
+Version 2 introduces integrated terminal support based on pseudo terminals
+(PTYs). The emulator can now be used interactively with local shells,
+ssh, telnet and historical operating systems while preserving the behavior
+of the original Tektronix terminals as closely as possible.
+
+The goal of Version 2 is not to emulate a modern VT100 or xterm terminal.
+Instead, tek4010 intentionally behaves more like an original Tektronix
+storage tube terminal.
+
+Important changes
+-----------------
+
+- All child processes are now executed through PTYs.
+
+- tek4010 can directly execute commands such as
+
+	tek4010 ssh system
+	tek4010 telnet system
+	tek4010 cat test.plt
+
+- Starting tek4010 without arguments starts a local sh shell.
+
+- The default shell environment now uses TERM=tek4014.
+
+- Terminal handling and keyboard behavior are now much closer to the
+  behavior of historical Tektronix terminals.
+
+- Ctrl-D exits the local shell. After the child process has terminated,
+  Ctrl-D closes the tek4010 window.
+
+- Minimal line editing is supported. The delete key moves the cursor
+  one character position to the left, allowing characters to be
+  overwritten. This reproduces the behavior of the original terminals.
+
+- The previous local arrow-key history handling has been removed.
+
+- BREAK support has been added.
+
+- screen, tmux and similar terminal multiplexers are now explicitly
+  unsupported because they interfere with Tektronix graphics data.
+
+Compatibility notes
+-------------------
+
+tek4010 is optimized for command-line operation, historical operating
+systems and Tektronix graphics applications.
+
+Full-screen terminal applications such as vi, curses programs or modern
+terminal user interfaces are generally unsuitable because they assume
+a modern cursor-addressable terminal rather than a persistent storage
+tube display.
