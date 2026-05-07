@@ -38,7 +38,7 @@ More detailed instructions are available in:
 
 After installation, run in your Tek4010 directory:
 
-    make test
+    make check
 
 You should see a graphical display.
 
