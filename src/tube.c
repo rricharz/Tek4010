@@ -421,8 +421,6 @@ void tube_init(int argc, char* argv[])
         // printf("argc=%d firstArg=%d argPty=%d\n", argc, firstArg, argPty);
 		fflush(stdout);
 		
-// ****************************** forkpty code        **********************
-
 {
         char *str = NULL;
         pid_t pid;
@@ -473,6 +471,18 @@ void tube_init(int argc, char* argv[])
                 setenv("TERM", "tek4014", 1);
 
                 if (argPty) {
+
+						// configure local sh for Tektronix-style line editing					
+						struct termios tio;
+						if (tcgetattr(STDIN_FILENO, &tio) == 0) {
+							#ifdef ECHOCTL
+								tio.c_lflag &= ~ECHOCTL;
+							#endif
+							tio.c_lflag |= ECHOE;
+							tio.c_cc[VERASE] = 0x08;
+							tcsetattr(STDIN_FILENO, TCSANOW, &tio);
+						}	
+				
                         // setenv("PS1", "tek4010$ ", 1);
                         execl("/bin/sh", "sh", "-i", (char *) NULL);
                 }
