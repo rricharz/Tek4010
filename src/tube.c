@@ -155,6 +155,78 @@ int childExited = 0;
 
 static void tube_set_source_rgb(cairo_t *cr, double intensity, double saturation);
 
+// debug esc support facility
+
+#define ESCDEBUG_LEN 16
+
+static int argEscDebug = 0;
+
+static int escDebugActive = 0;
+static int escDebugCount = 0;
+static int escDebugBuf[ESCDEBUG_LEN];
+
+static void escdebug_print_char(int ch)
+{
+        ch &= 0xff;
+
+        if (ch == 27)
+                printf("<ESC>");
+        else if (ch == 7)
+                printf("<BEL>");
+        else if (ch == '\r')
+                printf("<CR>");
+        else if (ch == '\n')
+                printf("<LF>");
+        else if ((ch >= 32) && (ch < 127))
+                putchar(ch);
+        else
+                printf("<%02X>", ch);
+}
+
+void escdebug_print(void)
+{
+        int i;
+
+        printf("ESCDEBUG: ");
+        for (i = 0; i < escDebugCount; i++)
+                escdebug_print_char(escDebugBuf[i]);
+        printf("\n");
+        fflush(stdout);
+}
+
+void escdebug_char(int ch)
+{
+        if (!argEscDebug)
+                return;
+
+        ch &= 0xff;
+
+        if (ch == 27) {
+                if (escDebugActive && escDebugCount > 0)
+                        escdebug_print();
+
+                escDebugActive = 1;
+                escDebugCount = 0;
+                escDebugBuf[escDebugCount++] = ch;
+                return;
+        }
+
+        if (!escDebugActive)
+                return;
+
+        if (escDebugCount < ESCDEBUG_LEN)
+                escDebugBuf[escDebugCount++] = ch;
+
+        if ((ch == '\r') || (ch == '\n') ||
+            (escDebugCount >= ESCDEBUG_LEN)) {
+                escdebug_print();
+                escDebugActive = 0;
+                escDebugCount = 0;
+        }
+}
+
+// helpers for timing
+
 long tube_mSeconds()
 // return time in msec since start of program
 {
@@ -225,7 +297,10 @@ int tube_getInputChar()
                 int c = getc(getData) & 0x7F;
                 charCount++;
                 charResetCount++;
-                lastTime = t;                              
+                lastTime = t;
+                
+                escdebug_char(c);                              
+                
                 return c;
         }
         else
@@ -404,6 +479,8 @@ void tube_init(int argc, char* argv[])
                 }
                 else if (strcmp(argv[firstArg],"-half") == 0)
                         argHalf = 1;
+                else if (strcmp(argv[firstArg],"-escdebug") == 0)
+                        argEscDebug = 1;
                 else {
                         printf("tek4010: unknown argument %s\n", argv[firstArg]);
                         exit(1);
@@ -467,37 +544,50 @@ void tube_init(int argc, char* argv[])
                 printf("Cannot fork pseudo terminal\n");
                 exit(1);
         }
-        else if (pid == 0) {
-                setenv("TERM", "tek4014", 1);
+		else if (pid == 0) {
 
-                if (argPty) {
+			char *shell;
 
-						// configure local sh for Tektronix-style line editing					
-						struct termios tio;
-						if (tcgetattr(STDIN_FILENO, &tio) == 0) {
-							#ifdef ECHOCTL
-								tio.c_lflag &= ~ECHOCTL;
-							#endif
-							tio.c_lflag |= ECHOE;
-							tio.c_cc[VERASE] = 0x08;
-							tcsetattr(STDIN_FILENO, TCSANOW, &tio);
-						}	
-				
-                        // setenv("PS1", "tek4010$ ", 1);
-                        execl("/bin/sh", "sh", "-i", (char *) NULL);
-                }
-                else {
-                        // we need a second string array with an empty string as last item!
-                        argv2[0] = argv[firstArg];
-                        for (int i = 1; i < argc; i++)
-                                argv2[i] = argv[firstArg + i - 1];
-                        argv2[argc - firstArg + 1] = (char*) NULL;
+			setenv("TERM", "tek4014", 1);
 
-                        execv(argv2[0], argv2 + 1);
+			if (argPty) {
+
+                shell = getenv("SHELL");
+
+                if ((shell == NULL) || (shell[0] == 0) ||
+                    (strstr(shell, "zsh") != NULL))
+                        shell = "/bin/sh";
+
+                // configure default shell for Tektronix-style line editing
+                struct termios tio;
+
+                if (tcgetattr(STDIN_FILENO, &tio) == 0) {
+#ifdef ECHOCTL
+                        tio.c_lflag &= ~ECHOCTL;
+#endif
+                        tio.c_lflag |= ECHOE;
+                        tio.c_cc[VERASE] = 0x08;
+                        tcsetattr(STDIN_FILENO, TCSANOW, &tio);
                 }
 
-                _exit(127);
-			}
+                char *shell_argv[] = { shell, "-i", NULL };
+				execvp(shell, shell_argv);
+        }
+
+        else {
+                // we need a second string array with an empty string as last item!
+                argv2[0] = argv[firstArg];
+
+                for (int i = 1; i < argc; i++)
+                        argv2[i] = argv[firstArg + i - 1];
+
+                argv2[argc - firstArg + 1] = (char*) NULL;
+
+                execv(argv2[0], argv2 + 1);
+        }
+
+        _exit(127);
+}
 
 			// parent process
 
