@@ -57,4 +57,4 @@ fi
 
 echo
 echo "Done. You can now test with:"
-echo "tek4010 -APL -noexit ./apltest"
+echo "tek4010 -APL ./apltest"
