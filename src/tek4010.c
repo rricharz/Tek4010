@@ -312,6 +312,9 @@ int tek4010_checkReturnToAlpha(int ch)
 // test for return to alpha character set
 // see 4014 manual, page F-10, note 1
 {
+        if (mode == 0)
+				return 0;
+        
         if (ch == 27)
                 savemode = mode;
         if ((ch==31) || (ch==13) || (ch==27) /*|| (ch==12)*/) {
@@ -437,7 +440,7 @@ void tek4010_draw(cairo_t *cr, cairo_t *cr2, int first)
                                         goto endDo;
                         case 10:        // new line
                                         tube_y0 -= vDotsPerChar;
-                                        if (!argRaw) tube_x0 = leftmargin;
+                                        // if (!argRaw) tube_x0 = leftmargin;
                                         tek4010_checkLimits(cr, cr2);
                                         goto endDo;
                         case 13:        // return

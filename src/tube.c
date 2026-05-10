@@ -397,7 +397,7 @@ void tube_init(int argc, char* argv[])
 		int ptyMaster = -1;
 		argAutoClear = 1;
 		argNoexit = 1;
-        printf("tek4010 version 2.0.1\n");
+        printf("tek4010 version 2.0.2\n");
         windowName = "Tektronix 4010/4014 emulator";
 		if (argc > 19) {
 	            printf("Error: Too many arguments\n");
