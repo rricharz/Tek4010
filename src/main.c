@@ -305,11 +305,12 @@ static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_da
 		// Backspace/Delete/Rubout key
         else if ((event->keyval == 0xFF08) ||      // Backspace
                  (event->keyval == 0xFFFF)) {      // Delete/Rubout
+				fflush(stdout);	 
                 ch = argEraseChar;
         }
 		
 		// exit on ctrl-c if child has exited
-		if (childExited &&
+		else if (childExited &&
 			(event->state & GDK_CONTROL_MASK) && (event->keyval == 0x0064)) {
 			on_quit_event();
 			return;
@@ -347,7 +348,7 @@ static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_da
                         }
                 }
                 else {
-
+					
 				putc(ch, putKeys);
 				fflush(putKeys);
 			}
