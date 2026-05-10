@@ -89,6 +89,9 @@ guint global_timeout_ref;
 
 extern int tube_doClearPersistent;
 
+#define ERASE_BS   0x08
+#define ERASE_DEL  0x7F
+
 static void do_drawing(cairo_t *, GtkWidget *);
 
 long now_msec(void)
@@ -299,6 +302,12 @@ static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_da
 			}
 		}
 		
+		// Backspace/Delete/Rubout key
+        else if ((event->keyval == 0xFF08) ||      // Backspace
+                 (event->keyval == 0xFFFF)) {      // Delete/Rubout
+                ch = argEraseChar;
+        }
+		
 		// exit on ctrl-c if child has exited
 		if (childExited &&
 			(event->state & GDK_CONTROL_MASK) && (event->keyval == 0x0064)) {
@@ -310,7 +319,7 @@ static void on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_da
         else if ((event->keyval >= 0xFF00) && (event->keyval <= 0xFF1F)) 
                 ch = event->keyval & 0x1F;
                 
-                // ctrl-letter keys: pass through as ASCII control characters        
+        // ctrl-letter keys: pass through as ASCII control characters        
         else if (event->state & GDK_CONTROL_MASK)
                 ch = event->keyval & 0x1F;
                 		

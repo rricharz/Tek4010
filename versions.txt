@@ -1,3 +1,7 @@
+Version 2.0.1 April 9, 2026
+===========================
+added -eraseBS and -eraseDEL options
+
 Version 2.0 April 9, 2026
 =========================
 Terminal mode added. Improved timing.

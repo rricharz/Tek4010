@@ -122,6 +122,9 @@ int aplMode = 0;
 pid_t childPid = -1;
 int argPty = 0;
 
+#define ERASE_BS   0x08
+#define ERASE_DEL  0x7F
+int argEraseChar = ERASE_BS;
 
 int tube_x0, tube_x2,tube_y0, tube_y2;
 
@@ -394,7 +397,7 @@ void tube_init(int argc, char* argv[])
 		int ptyMaster = -1;
 		argAutoClear = 1;
 		argNoexit = 1;
-        printf("tek4010 version 2.0\n");
+        printf("tek4010 version 2.0.1\n");
         windowName = "Tektronix 4010/4014 emulator";
 		if (argc > 19) {
 	            printf("Error: Too many arguments\n");
@@ -481,6 +484,12 @@ void tube_init(int argc, char* argv[])
                         argHalf = 1;
                 else if (strcmp(argv[firstArg],"-escdebug") == 0)
                         argEscDebug = 1;
+                        
+                else if (strcmp(argv[firstArg],"-eraseBS") == 0)
+                        argEraseChar = ERASE_BS;
+                else if (strcmp(argv[firstArg],"-eraseDEL") == 0)
+                        argEraseChar = ERASE_DEL;
+                        
                 else {
                         printf("tek4010: unknown argument %s\n", argv[firstArg]);
                         exit(1);
@@ -566,7 +575,7 @@ void tube_init(int argc, char* argv[])
                         tio.c_lflag &= ~ECHOCTL;
 #endif
                         tio.c_lflag |= ECHOE;
-                        tio.c_cc[VERASE] = 0x08;
+                        tio.c_cc[VERASE] = argEraseChar;
                         tcsetattr(STDIN_FILENO, TCSANOW, &tio);
                 }
 

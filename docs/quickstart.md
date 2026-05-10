@@ -82,6 +82,17 @@ Use -noAutoClear to disable this.
 | -half    | Use half of the screen width.            |
 | -b9600…  | Emulate terminal baud rates              |
 
+Some historical systems expect BS (^H, 0x08) as the erase character,
+while others expect DEL (^?, 0x7F).
+
+If the Backspace/Delete key does not work correctly, try:
+
+    tek4010 -eraseBS
+
+or
+
+    tek4010 -eraseDEL
+
 ---
 
 More options and detailed information, including
